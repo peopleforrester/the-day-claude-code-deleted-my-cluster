@@ -1,0 +1,53 @@
+---
+# Test that entire cluster is upgraded to v1.33.4
+
+- name: Test Cluster Upgrade to v1.33.4 Complete
+  hosts: k8s01
+  gather_facts: no
+  
+  tasks:
+    - name: TEST | Get all node versions
+      command: kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.kubeletVersion}{"\n"}{end}'
+      register: node_versions
+      changed_when: false
+      
+    - name: TEST | Display all node versions
+      debug:
+        var: node_versions.stdout_lines
+        
+    - name: TEST | Verify all nodes are on v1.33.4
+      assert:
+        that:
+          - "'v1.32' not in node_versions.stdout"
+          - "'v1.31' not in node_versions.stdout"
+          - "'v1.33.4' in item"
+        fail_msg: "Node upgrade incomplete - found nodes not on v1.33.4"
+        success_msg: "All nodes successfully upgraded to v1.33.4"
+      loop: "{{ node_versions.stdout_lines }}"
+      
+    - name: TEST | Check cluster components
+      command: kubectl version
+      register: cluster_version
+      changed_when: false
+      
+    - name: TEST | Verify server version
+      assert:
+        that:
+          - "'Server Version: v1.33.4' in cluster_version.stdout"
+        fail_msg: "Server version mismatch"
+        success_msg: "Server running v1.33.4"
+      
+    - name: TEST | Check all pods are running
+      shell: kubectl get pods -A --no-headers | grep -v Running | grep -v Completed | wc -l
+      register: problem_pods
+      changed_when: false
+      
+    - name: TEST | Display problem pod count
+      debug:
+        msg: "Number of pods with issues: {{ problem_pods.stdout }}"
+      
+    - name: TEST | Final success message
+      debug:
+        msg: |
+          ✅ Kubernetes cluster successfully upgraded from v1.32.8 to v1.33.4!
+          All 9 nodes (3 control plane + 6 workers) are running v1.33.4

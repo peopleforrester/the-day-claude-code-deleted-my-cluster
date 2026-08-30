@@ -1,0 +1,55 @@
+{
+  "cluster_name": "k8s-ha-cluster",
+  "vip": "192.168.0.180",
+  "nodes": [
+    {
+      "hostname": "master1",
+      "role": "control-plane",
+      "ip": "192.168.0.100",
+      "status": "accessible",
+      "os": "Ubuntu 24.04.2 LTS",
+      "kernel": "6.8.0-64-generic",
+      "cpu": 2,
+      "memory": "3.8Gi",
+      "disk": "22G"
+    },
+    {
+      "hostname": "master2",
+      "role": "control-plane",
+      "ip": "192.168.0.101",
+      "status": "not accessible - permission denied",
+      "os": "unknown",
+      "kernel": "unknown"
+    },
+    {
+      "hostname": "master3",
+      "role": "control-plane",
+      "ip": "192.168.0.102",
+      "status": "not accessible - permission denied",
+      "os": "unknown",
+      "kernel": "unknown"
+    },
+    {
+      "hostname": "worker1",
+      "role": "worker",
+      "ip": "192.168.0.103",
+      "status": "not accessible - connection timeout",
+      "os": "unknown",
+      "kernel": "unknown"
+    },
+    {
+      "hostname": "worker2",
+      "role": "worker",
+      "ip": "192.168.0.104",
+      "status": "not accessible - permission denied",
+      "os": "unknown",
+      "kernel": "unknown"
+    }
+  ],
+  "connectivity_test": {
+    "total_nodes": 5,
+    "accessible": 1,
+    "not_accessible": 4,
+    "test_date": "2025-08-04T08:30:00Z"
+  }
+}

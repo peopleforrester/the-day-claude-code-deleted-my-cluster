@@ -1,0 +1,36 @@
+{
+  "containerd": {
+    "version": "v2.1.4",
+    "commit": "75cb2b7193e4e490e9fbdc236c0e811ccaba3376",
+    "binary_location": "/usr/local/bin/containerd",
+    "config_file": "/etc/containerd/config.toml",
+    "service_file": "/usr/local/lib/systemd/system/containerd.service",
+    "runtime_endpoint": "unix:///run/containerd/containerd.sock",
+    "cgroup_driver": "systemd"
+  },
+  "runc": {
+    "version": "v1.2.4",
+    "binary_location": "/usr/local/sbin/runc"
+  },
+  "cni_plugins": {
+    "version": "v1.6.2",
+    "location": "/opt/cni/bin/"
+  },
+  "crictl": {
+    "version": "v1.34.0",
+    "binary_location": "/usr/local/bin/crictl",
+    "config_file": "/etc/crictl.yaml"
+  },
+  "verification": {
+    "all_nodes_version_match": true,
+    "service_status": "active",
+    "cri_endpoint_functional": true
+  },
+  "nodes_installed": [
+    "192.168.0.100",
+    "192.168.0.101",
+    "192.168.0.102",
+    "192.168.0.103",
+    "192.168.0.104"
+  ]
+}

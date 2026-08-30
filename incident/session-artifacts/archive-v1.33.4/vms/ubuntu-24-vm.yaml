@@ -1,0 +1,129 @@
+# Ubuntu 24.04 VM at 192.168.0.100 with root SSH access
+# Password: <REDACTED-PASSWORD>
+# Single bridge interface only
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu24-vm-disk
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-fixed
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu24-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu24-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          # CRITICAL: Disable pod network auto-attachment
+          autoattachPodInterface: false
+
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+
+          interfaces:
+          # Only bridge interface - no pod network
+          - name: bridge-net
+            bridge: {}
+
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+
+      networks:
+      # Only bridge network
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+
+      volumes:
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: ubuntu24-vm-disk
+
+      - name: containerdisk
+        containerDisk:
+          # Ubuntu 24.04 Noble
+          image: quay.io/containerdisks/ubuntu:24.04
+
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+
+          userData: |
+            #cloud-config
+            hostname: ubuntu24-vm
+            manage_etc_hosts: true
+
+            # Set root password
+            chpasswd:
+              list: |
+                root:demo123
+              expire: false
+
+            # Enable root SSH login
+            ssh_pwauth: true
+            disable_root: false
+
+            # Configure SSH to allow root login
+            runcmd:
+              # Reset machine ID
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+              - rm -f /var/lib/systemd/random-seed
+
+              # Configure SSH for root login
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+              - systemctl restart sshd
+
+              # Install useful packages
+              - apt-get update
+              - apt-get install -y qemu-guest-agent net-tools htop vim curl wget
+              - systemctl enable qemu-guest-agent
+              - systemctl start qemu-guest-agent
+
+              # Set MOTD
+              - echo "Ubuntu 24.04 VM - IP: 192.168.0.100" > /etc/motd
+              - echo "Root login enabled - Password: <REDACTED-PASSWORD>" >> /etc/motd
+
+              # Ensure networking is correct
+              - ip addr show
+              - netplan apply

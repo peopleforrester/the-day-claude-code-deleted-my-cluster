@@ -1,0 +1,73 @@
+# Ubuntu 24.04 VM using official containerdisk
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm-cd
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm-cd
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/containerdisks/ubuntu:24.04
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+
+            users:
+              - name: root
+                lock_passwd: false
+                passwd: $6$xyz$1B.uqZKZfVqDqP0LbKraNfl5pQLPWZpqGKgYbPVLPZe0ceQhJZvLf9J3jz8X/zDXDQp1v7cGLeZ5ODLzVAoNn0
+
+            ssh_pwauth: true
+            disable_root: false
+
+            runcmd:
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - systemctl restart ssh

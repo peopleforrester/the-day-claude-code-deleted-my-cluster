@@ -1,0 +1,15 @@
+# ABOUTME: Encryption at rest configuration for Kubernetes Secrets
+# ABOUTME: Uses AES-CBC with PKCS#7 padding for etcd encryption
+
+apiVersion: apiserver.config.k8s.io/v1
+kind: EncryptionConfiguration
+resources:
+  - resources:
+      - secrets
+      - configmaps
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: <REDACTED-SECRET>
+      - identity: {}

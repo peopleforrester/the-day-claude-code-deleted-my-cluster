@@ -1,0 +1,31 @@
+---
+# Add Kubernetes 1.33 Repository
+# This playbook adds the correct repository for upgrading to Kubernetes 1.33
+
+- name: Configure Kubernetes 1.33 Repository
+  hosts: all
+  gather_facts: no
+  
+  tasks:
+    - name: Add Kubernetes 1.33 apt repository
+      copy:
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /
+        dest: /etc/apt/sources.list.d/kubernetes-v1.33.list
+        owner: root
+        group: root
+        mode: '0644'
+        
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      changed_when: false
+      
+    - name: Check available 1.33 versions
+      shell: apt-cache madison kubeadm | grep '1.33' | head -5
+      register: available_versions
+      changed_when: false
+      
+    - name: Display available 1.33 versions
+      debug:
+        var: available_versions.stdout_lines

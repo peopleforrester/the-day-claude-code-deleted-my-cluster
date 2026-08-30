@@ -1,0 +1,72 @@
+# Add default disk to Longhorn nodes
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s04
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240  # 10GB reserved
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s05
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s06
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s07
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s08
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240
+---
+apiVersion: longhorn.io/v1beta2
+kind: Node
+metadata:
+  name: k8s09
+  namespace: longhorn-system
+spec:
+  disks:
+    default-disk:
+      path: /var/lib/longhorn
+      allowScheduling: true
+      storageReserved: 10737418240

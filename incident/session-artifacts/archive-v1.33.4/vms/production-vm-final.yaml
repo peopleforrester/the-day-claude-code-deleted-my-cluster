@@ -1,0 +1,114 @@
+# Production VM with Ubuntu 24.04 and single bridge interface
+# Static IP: 192.168.0.100
+# Specs: 2 CPU, 4GB RAM, 20GB Disk
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: production-vm-disk
+  namespace: default
+spec:
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: longhorn-fixed
+    resources:
+      requests:
+        storage: 20Gi
+  source:
+    pvc:
+      name: ubuntu-24-04-base
+      namespace: default
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: production-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: production-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          # Disable auto-attachment of pod network interface
+          autoattachPodInterface: false  # This is the key setting
+
+          disks:
+          - disk:
+              bus: virtio
+            name: disk0
+          - disk:
+              bus: virtio
+            name: cloudinit
+
+          interfaces:
+          # Only define the bridge interface, no pod network
+          - name: bridge-net
+            bridge: {}
+
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+
+      networks:
+      # Only bridge network, no pod network
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+
+      volumes:
+      - name: disk0
+        dataVolume:
+          name: production-vm-disk
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: production-vm
+            manage_etc_hosts: true
+            users:
+              - name: admin
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: users, admin
+                home: /home/admin
+                shell: /bin/bash
+                lock_passwd: false
+                ssh-authorized-keys:
+                  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEXrHT4bR2uRy3YjM7z8vQFp/CAE6L0RlYXm7s0lH3am root@k8s01
+            ssh_pwauth: true
+            disable_root: false
+            chpasswd:
+              list: |
+                root:kubevirt
+                admin:kubevirt
+              expire: false
+            package_update: true
+            packages:
+              - qemu-guest-agent
+              - net-tools
+              - htop
+              - vim
+            runcmd:
+              - systemctl enable qemu-guest-agent
+              - systemctl start qemu-guest-agent
+              - echo "VM configured with static IP 192.168.0.100 - Single NIC bridge mode" > /etc/motd

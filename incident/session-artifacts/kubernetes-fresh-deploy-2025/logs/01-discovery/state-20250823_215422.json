@@ -1,0 +1,17 @@
+{
+  "timestamp": "20250823_215422",
+  "control_plane": [
+    {"ip": "192.168.0.50", "name": "k8s01", "role": "control-plane"},
+    {"ip": "192.168.0.51", "name": "k8s02", "role": "control-plane"},
+    {"ip": "192.168.0.52", "name": "k8s03", "role": "control-plane"}
+  ],
+  "workers": [
+    {"ip": "192.168.0.53", "name": "k8s04", "role": "worker"},
+    {"ip": "192.168.0.54", "name": "k8s05", "role": "worker"},
+    {"ip": "192.168.0.55", "name": "k8s06", "role": "worker"},
+    {"ip": "192.168.0.56", "name": "k8s07", "role": "worker"},
+    {"ip": "192.168.0.57", "name": "k8s08", "role": "worker"},
+    {"ip": "192.168.0.58", "name": "k8s09", "role": "worker"}
+  ],
+  "vip": "192.168.0.199"
+}

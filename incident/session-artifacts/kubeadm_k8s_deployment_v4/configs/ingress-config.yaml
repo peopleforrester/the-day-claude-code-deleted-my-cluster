@@ -1,0 +1,42 @@
+---
+# NGINX Ingress Controller Configuration
+component: ingress-nginx
+version: v1.11.1
+namespace: ingress-nginx
+
+controller:
+  deployment_name: ingress-nginx-controller
+  replicas: 1
+  service_type: LoadBalancer
+  node_ports:
+    http: 32067
+    https: 32676
+
+ingress_class:
+  name: nginx
+  controller: k8s.io/ingress-nginx
+  default: true
+
+services:
+  - name: ingress-nginx-controller
+    type: LoadBalancer
+    ports:
+      - 80:32067/TCP
+      - 443:32676/TCP
+  - name: ingress-nginx-controller-admission
+    type: ClusterIP
+    port: 443
+
+features:
+  - HTTP/HTTPS routing
+  - SSL/TLS termination
+  - Path-based routing
+  - Host-based routing
+  - Load balancing
+  - Rate limiting support
+  - WebSocket support
+
+verification:
+  controller_running: true
+  service_created: true
+  ingress_class_available: true

@@ -1,0 +1,163 @@
+# Falco rules tuned for AI-agent failure modes. Drop into Helm values as customRules,
+# or mount as /etc/falco/rules.d/falco-rules-ai-agent.yaml.
+required_engine_version: 0.37.0
+
+- list: ai_agent_shell_binaries
+  items: [bash, sh, dash, zsh, ksh, csh, tcsh, ash, fish]
+- list: ai_agent_trusted_etcd_processes
+  items: [etcd, etcdctl, etcdutl, etcd-manager, kube-apiserver]
+- list: ai_agent_k8s_system_namespaces
+  items: [kube-system, kube-public, kube-node-lease, etcd, cert-manager, falco, kyverno, argocd, flux-system]
+- list: ai_agent_container_runtime_sockets
+  items:
+    - /var/run/docker.sock
+    - /run/docker.sock
+    - /var/run/containerd/containerd.sock
+    - /run/containerd/containerd.sock
+    - /var/run/crio/crio.sock
+
+- macro: spawned_process
+  condition: (evt.type in (execve, execveat) and evt.dir=<)
+- macro: open_write
+  condition: (evt.type in (open,openat,openat2) and evt.is_open_write=true and fd.typechar='f')
+- macro: open_read
+  condition: (evt.type in (open,openat,openat2) and evt.is_open_read=true and fd.typechar='f')
+- macro: container
+  condition: (container.id != host)
+- macro: kevt
+  condition: (jevt.value[/stage] in ("ResponseComplete"))
+- macro: pod
+  condition: ka.target.resource=pods and not ka.target.subresource exists
+- macro: pod_exec
+  condition: ka.target.resource=pods and ka.target.subresource=exec
+- macro: kdelete
+  condition: ka.verb=delete
+- macro: non_system_user
+  condition: (not ka.user.name startswith "system:")
+
+- rule: AI Agent Ran kubeadm reset
+  desc: kubeadm reset tears down a control-plane or worker node.
+  condition: spawned_process and proc.name=kubeadm and proc.cmdline contains "reset"
+  output: "EMERGENCY: kubeadm reset executed (user=%user.name cmd=%proc.cmdline parent=%proc.pname)"
+  priority: EMERGENCY
+  tags: [ai_agent_behavior, host, k8s, destructive, T1485]
+
+- rule: AI Agent Destructive etcdctl or etcd Invocation
+  desc: Dangerous etcd/etcdctl flags commonly seen in AI-agent destruction incidents.
+  condition: >
+    spawned_process and proc.name in (etcd, etcdctl, etcdutl)
+    and (proc.cmdline contains "--force-new-cluster"
+         or proc.cmdline contains "snapshot restore"
+         or proc.cmdline contains "member remove"
+         or (proc.cmdline contains "del" and proc.cmdline contains "--prefix"))
+  output: "EMERGENCY: destructive etcd invocation (cmd=%proc.cmdline user=%user.name)"
+  priority: EMERGENCY
+  tags: [ai_agent_behavior, etcd, destructive, T1485]
+
+- rule: AI Agent Modified Netplan Configuration
+  desc: Writes to /etc/netplan or netplan apply - the bridge/NIC vector.
+  condition: >
+    ((open_write and fd.name startswith "/etc/netplan/")
+     or (spawned_process and proc.name=netplan and proc.cmdline contains "apply"))
+  output: "CRITICAL: netplan changed (file=%fd.name cmd=%proc.cmdline user=%user.name)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, network, T1562.004]
+
+- rule: Unauthorized Access to etcd Data Directory
+  desc: Any non-etcd process touching /var/lib/etcd.
+  condition: >
+    (open_write or open_read)
+    and (fd.name startswith "/var/lib/etcd")
+    and not proc.name in (ai_agent_trusted_etcd_processes)
+  output: "CRITICAL: etcd dir accessed by %proc.name (file=%fd.name user=%user.name)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, etcd, T1485]
+
+- rule: Static Pod Manifest Modified
+  desc: Writes to /etc/kubernetes/manifests or /etc/kubernetes/pki (bypasses admission).
+  condition: >
+    open_write
+    and (fd.name startswith "/etc/kubernetes/manifests"
+         or fd.name startswith "/etc/kubernetes/pki")
+    and not proc.name in (kubeadm, kubelet, kube-apiserver)
+  output: "CRITICAL: static-pod manifest or PKI modified (file=%fd.name cmd=%proc.cmdline)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, persistence, T1053]
+
+- rule: Shell Spawned In Kubernetes System Pod
+  desc: Shell in a control-plane pod (distroless by default = suspicious).
+  condition: >
+    spawned_process and container and proc.name in (ai_agent_shell_binaries)
+    and k8s.ns.name in (ai_agent_k8s_system_namespaces)
+    and (k8s.pod.name startswith "kube-apiserver"
+         or k8s.pod.name startswith "etcd"
+         or k8s.pod.name startswith "kube-controller-manager"
+         or k8s.pod.name startswith "kube-scheduler")
+  output: "CRITICAL: shell in system pod (pod=%k8s.pod.name shell=%proc.name cmd=%proc.cmdline)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, container, T1059]
+
+- rule: Container Runtime Socket Accessed From Container
+  desc: docker.sock / containerd.sock access from inside a pod = escape.
+  condition: >
+    (evt.type in (open,openat,openat2,connect)) and container
+    and (fd.name in (ai_agent_container_runtime_sockets))
+  output: "CRITICAL: runtime socket accessed from container (socket=%fd.name pod=%k8s.pod.name)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, container_escape, T1611]
+
+- rule: ServiceAccount Token Read By Unexpected Process
+  desc: SA token read by shells, curl, kubectl etc.
+  condition: >
+    open_read and container
+    and fd.name endswith "/serviceaccount/token"
+    and proc.name in (ai_agent_shell_binaries, curl, wget, kubectl, nc, ncat, socat, python, python3, node)
+  output: "CRITICAL: SA token read by %proc.name (pod=%k8s.pod.name)"
+  priority: CRITICAL
+  tags: [ai_agent_behavior, credential_access, T1552.001]
+
+- rule: AI Agent Recursive Force Delete
+  desc: rm -rf on sensitive paths.
+  condition: >
+    spawned_process and proc.name=rm
+    and (proc.cmdline contains "-rf" or proc.cmdline contains "-fr")
+    and (proc.cmdline contains "/etc/kubernetes"
+         or proc.cmdline contains "/var/lib/etcd"
+         or proc.cmdline contains "/var/lib/kubelet"
+         or proc.cmdline contains "/etc/cni")
+  output: "EMERGENCY: rm -rf on critical path (cmd=%proc.cmdline user=%user.name)"
+  priority: EMERGENCY
+  tags: [ai_agent_behavior, destructive, T1485]
+
+- rule: Pod Deleted In Kubernetes System Namespace
+  desc: Any delete of a system-namespace pod via API.
+  condition: >
+    kevt and pod and kdelete and non_system_user
+    and ka.target.namespace in (ai_agent_k8s_system_namespaces)
+  output: "CRITICAL: system-ns pod deleted (user=%ka.user.name pod=%ka.target.name ns=%ka.target.namespace)"
+  source: k8s_audit
+  priority: CRITICAL
+  tags: [ai_agent_behavior, k8s, T1485]
+
+- rule: Exec Into Kubernetes System Pod
+  desc: kubectl exec into kube-system.
+  condition: >
+    kevt and pod_exec and ka.target.namespace in (ai_agent_k8s_system_namespaces)
+    and non_system_user
+  output: "CRITICAL: exec into system pod (user=%ka.user.name pod=%ka.target.name ns=%ka.target.namespace)"
+  source: k8s_audit
+  priority: CRITICAL
+  tags: [ai_agent_behavior, k8s, T1609]
+
+- rule: Privileged Pod Created At Runtime
+  desc: Backstop for Kyverno bypass.
+  condition: >
+    kevt and pod and ka.verb=create
+    and (ka.req.pod.containers.privileged intersects (true)
+         or ka.req.pod.host_network intersects (true)
+         or ka.req.pod.host_pid intersects (true))
+    and non_system_user
+  output: "CRITICAL: privileged pod created (user=%ka.user.name pod=%ka.resp.name images=%ka.req.pod.containers.image)"
+  source: k8s_audit
+  priority: CRITICAL
+  tags: [ai_agent_behavior, T1611]

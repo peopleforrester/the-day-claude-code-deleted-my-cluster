@@ -1,0 +1,29 @@
+---
+# Calico CNI Configuration
+calico_version: v3.28.0
+installation_method: tigera-operator
+pod_network_cidr: 10.244.0.0/16
+
+components:
+  operator:
+    namespace: tigera-operator
+    deployment: tigera-operator
+
+  calico_system:
+    namespace: calico-system
+    components:
+      - calico-kube-controllers
+      - calico-node (DaemonSet)
+      - calico-typha
+      - csi-node-driver (DaemonSet)
+
+features:
+  dataplane: iptables
+  ipam: calico-ipam
+  network_policy: enabled
+  csi_driver: enabled
+
+verification:
+  nodes_ready: true
+  coredns_running: true
+  all_pods_healthy: true

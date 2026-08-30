@@ -1,0 +1,82 @@
+# Ubuntu 24.04 (Noble) VM for console access debugging
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-noble
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-noble
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - name: rootdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        containerDisk:
+          image: quay.io/containerdisks/ubuntu:24.04
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-noble
+
+            # Create users with passwords
+            users:
+              - name: ubuntu
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: users, admin
+                lock_passwd: false
+                passwd: $6$xyz$1B.uqZKZfVqDqP0LbKraNfl5pQLPWZpqGKgYbPVLPZe0ceQhJZvLf9J3jz8X/zDXDQp1v7cGLeZ5ODLzVAoNn0
+                shell: /bin/bash
+
+            # Set root password
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Enable password auth
+            ssh_pwauth: true
+            disable_root: false

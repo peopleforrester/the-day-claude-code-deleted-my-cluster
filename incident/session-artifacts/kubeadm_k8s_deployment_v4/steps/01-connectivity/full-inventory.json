@@ -1,0 +1,61 @@
+{"nodes": [
+  {
+    "hostname": "master1",
+    "role": "control-plane",
+    "ip": "192.168.0.100",
+    "status": "accessible",
+    "os": "Ubuntu 24.04.2 LTS",
+    "kernel": "6.8.0-64-generic",
+    "cpu": 2,
+    "memory": "3.8Gi",
+    "disk": "22G"
+  }
+,
+  {
+    "hostname": "master2",
+    "role": "control-plane",
+    "ip": "192.168.0.101",
+    "status": "accessible",
+    "os": "Ubuntu 24.04.2 LTS",
+    "kernel": "6.8.0-64-generic",
+    "cpu": 2,
+    "memory": "3.8Gi",
+    "disk": "22G"
+  }
+,
+  {
+    "hostname": "master3",
+    "role": "control-plane",
+    "ip": "192.168.0.102",
+    "status": "accessible",
+    "os": "Ubuntu 24.04.2 LTS",
+    "kernel": "6.8.0-64-generic",
+    "cpu": 2,
+    "memory": "3.8Gi",
+    "disk": "22G"
+  }
+,
+  {
+    "hostname": "worker1",
+    "role": "worker",
+    "ip": "192.168.0.103",
+    "status": "accessible",
+    "os": "Ubuntu 24.04.2 LTS",
+    "kernel": "6.8.0-64-generic",
+    "cpu": 2,
+    "memory": "3.8Gi",
+    "disk": "17G"
+  }
+,
+  {
+    "hostname": "worker2",
+    "role": "worker",
+    "ip": "192.168.0.104",
+    "status": "accessible",
+    "os": "Ubuntu 24.04.2 LTS",
+    "kernel": "6.8.0-64-generic",
+    "cpu": 2,
+    "memory": "3.8Gi",
+    "disk": "17G"
+  }
+]}

@@ -1,0 +1,26 @@
+# Safe bridge configuration for k8s04
+# This creates br0 WITHOUT moving the primary IP
+# This allows us to test bridge creation without losing connectivity
+network:
+  version: 2
+  ethernets:
+    enp1s0:
+      addresses:
+      - "192.168.0.53/24"
+      nameservers:
+        addresses:
+        - 192.168.0.90
+        - 192.168.0.91
+        - 9.9.9.9
+        search: []
+      routes:
+      - to: "default"
+        via: "192.168.0.1"
+  bridges:
+    br0:
+      interfaces: []
+      addresses:
+      - "192.168.100.53/24"  # Test IP on different subnet
+      parameters:
+        stp: false
+        forward-delay: 0

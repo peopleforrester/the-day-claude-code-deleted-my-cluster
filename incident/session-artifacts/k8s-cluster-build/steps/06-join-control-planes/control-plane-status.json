@@ -1,0 +1,17 @@
+NAME      STATUS     ROLES           AGE    VERSION
+master1   NotReady   control-plane   4m3s   v1.31.11
+master2   NotReady   control-plane   67s    v1.31.11
+master3   NotReady   control-plane   16s    v1.31.11
+---
+etcd-master1                      1/1     Running   0          4m
+etcd-master2                      1/1     Running   0          64s
+etcd-master3                      1/1     Running   0          13s
+kube-apiserver-master1            1/1     Running   0          4m
+kube-apiserver-master2            1/1     Running   0          64s
+kube-apiserver-master3            0/1     Running   0          14s
+kube-controller-manager-master1   1/1     Running   1          4m
+kube-controller-manager-master2   1/1     Running   0          65s
+kube-controller-manager-master3   0/1     Running   0          14s
+kube-scheduler-master1            1/1     Running   1          4m
+kube-scheduler-master2            1/1     Running   0          64s
+kube-scheduler-master3            0/1     Running   0          13s

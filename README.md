@@ -1,95 +1,74 @@
-# The Day an AI Agent Deleted My Cluster
+# The Day Claude Code Deleted My Cluster
 
-### And the Guardrails That Would Have Stopped It
+**Canonical home for the talk, its evidence, and the guardrails that came out of it.**
 
-A 30-minute talk by **Michael Forrester** at
-[**SREday Austin Q2 2026**](https://sreday.com/2026-austin-q2/).
+This repo is named for the talk rather than for any one conference, because the
+talk has been given more than once and will be again. Event-specific repos point
+here; the material lives here.
 
-I gave Claude Code full Kubernetes cluster access and told it to fix
-a networking issue. Forty minutes later the cluster was gone — etcd
-force-overridden, netplan deleted across every control plane node,
-no gate stopping any of it. The talk is the full incident, and the
-**Eight Guardrails Framework** I spent the next six months building
-to let agents operate fast inside a boundary they can't break out of.
+## Given at
 
-> **When** — Monday, May 11, 2026 · 12:30 PM (30 minutes)
-> **Where** — The Sunset Room, 310 E 3rd St, Austin, TX 78701
-> **Format** — single track, 10:00 AM – 6:00 PM
-> **Tickets** — [sreday.com/2026-austin-q2](https://sreday.com/2026-austin-q2/)
+| Event | Date | Format | What that version emphasised |
+|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | The incident, closing on three deterministic layers |
+| SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework |
+| DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | In preparation |
 
----
+The Ignite came first and the long form followed. The three-layer model is the
+five-minute condensation; the Eight Guardrails Framework is the full articulation.
+Neither supersedes the other, and which one you want depends on how many minutes
+you have.
 
-## What you'll walk away with
+## The incident
 
-- **Lessons learned.** The actual command sequence, recovery, and the
-  forty-minute timeline — pulled from real session JSONL, not
-  reconstructed.
-- **Deep dives.** The three-layer guardrail architecture: Git hooks
-  (deterministic, local), Claude Code hooks (pre-tool-use blocking),
-  and Kubernetes infrastructure (admission webhooks, RBAC, Falco
-  runtime detection).
-- **Culture and ways of working.** Why "the AI knows what it's doing"
-  is the most dangerous assumption in modern SRE, and how to build
-  operational habits that treat AI agents as nondeterministic systems.
+A home-lab Kubernetes cluster, August and September 2025. An agent session with
+cluster access initialised a new etcd cluster over the existing one and modified
+netplan across the Linux nodes. The cluster was gone and the nodes lost their
+networking.
 
-The full as-submitted abstract is in
-[**`abstract/abstract.md`**](abstract/abstract.md).
+It is documented from primary sources, not reconstructed from memory: the session
+transcripts, the command history, and the scripts that actually ran, all recovered
+from git history in `mforrester-home-lab` and cited back to specific commits. See
+[`incident/INDEX.md`](incident/INDEX.md) for the provenance and
+[`incident/ANALYSIS.md`](incident/ANALYSIS.md) for the timeline and root causes.
 
-## Just saw the talk?
+## What is here
 
-Two entry points, depending on what you want:
+| Path | What |
+|---|---|
+| [`incident/`](incident/) | The forensics. Session artifacts, the prompts that ran, recovered scripts, commit diffs, and the analysis with citations |
+| [`docs/the-framework.md`](docs/the-framework.md) | The **Eight Guardrails Framework**, with the bypass column filled in for every enforcement artifact |
+| [`hooks/`](hooks/) | The enforcement artifacts themselves: eight agent lifecycle hooks and two git hooks, copy-paste ready |
+| [`workflows/`](workflows/) | CI and end-to-end workflows as the defence-in-depth backstop |
+| [`guardrails-three-layer/`](guardrails-three-layer/) | The Ignite-length condensation: three layers, an install script each, and a Monday-morning rollout with a clock on it |
+| [`abstract/`](abstract/) | As-submitted abstracts and speaker bio |
+| [`presentations/`](presentations/) | Decks. The SREday PPTX is the editable source; the Atlanta PDF is the Ignite cut |
+| [`tests/`](tests/) | Consistency checks over the repo's own claims |
 
-- **Understand the framework** → [**`docs/the-framework.md`**](docs/the-framework.md).
-  The four-layer mental model from the slides, with the **bypass
-  column filled in** for every enforcement artifact. Eight Claude
-  Code lifecycle hooks, two git hooks, two GitHub Actions workflows,
-  one systemd timer; what each one catches, and what gets past it.
-- **Install this on your own machine** → [**`hooks/README.md`**](hooks/README.md).
-  Copy-paste-ready scripts: the eight lifecycle hooks for
-  `~/.claude/hooks/`, the pre-commit and pre-push hooks for your
-  repo's `.git/hooks/`, plus the GitHub Actions workflow in
-  [`workflows/`](workflows/) as the defense-in-depth backstop.
+## Just saw the talk
 
-## What's in this repo
+Two entry points.
 
-- [**`abstract/`**](abstract/) — the as-submitted talk abstract and
-  speaker bio (canonical text for the talk).
-- [**`presentations/`**](presentations/) — slide decks (PPTX,
-  Keynote, or Markdown source).
-- [**`hooks/`**](hooks/) — the actual enforcement artifacts from the
-  talk: Claude Code lifecycle hooks and tiered git hooks, with a
-  `README.md` covering install, what each one does, and what
-  bypasses it.
-- [**`workflows/`**](workflows/) — GitHub Actions backstop (`ci.yml`).
-- [**`docs/`**](docs/) — the framework reference and supporting
-  documents.
-- [**`tests/`**](tests/) — a small consistency suite that asserts the
-  durable-state files in this repo match reality (event date matches
-  the conference page, GitHub owner matches `git remote`, README
-  layout matches what is on disk, etc.).
+**Understand the model.** [`docs/the-framework.md`](docs/the-framework.md) is the
+full four-layer mental model with what each control catches and what gets past it.
 
-After the talk, slides-as-delivered, the recording link, and audience
-follow-ups will land in `post-event/`.
+**Install it Monday morning.**
+[`guardrails-three-layer/START_HERE.md`](guardrails-three-layer/START_HERE.md) is
+the fastest path: Layer 1 green by lunch, Layer 3 by end of day, Layer 2 planned by
+Friday. About thirty minutes for the minimum posture.
 
-## Speaker
+## Provenance
 
-**Michael Forrester** — AI Workforce Transformation Specialist at
-Accenture. 30 years of infrastructure experience across federal,
-Fortune 50, and startup environments. Has personally taught over
-100,000 engineers platform engineering and AI/ML infrastructure.
-Speaker at KubeCon EU Cloud Native University and KubeAuto AI Day
-Europe.
+Seeded from `peopleforrester/SREday-Texas-2026`, whose git history this repo
+carries, with the incident forensics and the three-layer install brought over from
+`peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite`. Both remain in
+place as records of their own deliveries and point here.
 
-Full bio: [**`abstract/bio.md`**](abstract/bio.md).
-Contact: [michaelrishiforrester@gmail.com](mailto:michaelrishiforrester@gmail.com)
-· [michael.r.forrester@accenture.com](mailto:michael.r.forrester@accenture.com)
+## Open
 
-## License
-
-Talk content — abstract, slides, speaker notes, and prose in this
-repository — is licensed under [**CC BY 4.0**](LICENSE). Reuse with
-attribution.
-
-If you cite the talk: *Forrester, Michael. "The Day an AI Agent
-Deleted My Cluster (And the Guardrails That Would Have Stopped It)."
-SREday Austin Q2 2026, May 11, 2026.*
+The incident is told slightly differently across versions. The long form describes
+a networking task and a forty-minute timeline; the Portland abstract describes full
+pipeline access and stepping away for thirty seconds. Both are probably true of the
+same event, the first being the damage window and the second the moment of handing
+over. A five-minute talk has no room to be vague about which, so the deck should
+commit to one telling and check it against `incident/ANALYSIS.md`.

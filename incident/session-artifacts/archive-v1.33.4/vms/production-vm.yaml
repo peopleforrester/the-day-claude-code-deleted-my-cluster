@@ -1,0 +1,95 @@
+# Production VM with static IP 192.168.0.100
+# Specs: 2 CPU, 4GB RAM, 20GB Disk
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: production-vm-disk
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-fixed
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: production-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: production-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+          - name: rootdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: bridge
+            bridge: {}
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: production-vm-disk
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              eth0:
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: production-vm
+            manage_etc_hosts: true
+            users:
+              - name: admin
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: users, admin
+                home: /home/admin
+                shell: /bin/bash
+                lock_passwd: false
+                passwd: $6$rounds=4096$8AoNw9CR$HqnRqbVPHVzHkbiSZYb7SL8LfvPcOLp.YJmQ5jxK5kZ0kxL5xZ2fxGxGWE1uQqz1K1X0fY.tK8xVHq8lZ9lFx0
+            ssh_pwauth: true
+            disable_root: false
+            chpasswd:
+              list: |
+                root:kubevirt
+                admin:kubevirt
+              expire: false
+            package_update: true
+            packages:
+              - qemu-guest-agent
+              - net-tools
+            runcmd:
+              - systemctl start qemu-guest-agent
+              - echo "VM configured with static IP 192.168.0.100" > /etc/motd

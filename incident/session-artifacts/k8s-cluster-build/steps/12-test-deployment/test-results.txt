@@ -1,0 +1,29 @@
+Test Application Deployment Results
+===================================
+
+Deployment Status:
+- Namespace: test-app created successfully
+- Deployment: nginx-test with 3 replicas
+- Service: nginx-service (ClusterIP)
+- Ingress: nginx-ingress (host: test.k8s.local)
+- HPA: nginx-hpa (min: 3, max: 10)
+
+Pod Distribution:
+- Pods successfully distributed across worker nodes
+- Pod anti-affinity working as expected
+
+Connectivity Test:
+- Successfully accessed via ingress controller
+- HTTP 200 response received
+- URL: http://<node-ip>:31077 with Host header
+
+High Availability Test:
+- Deleted pod nginx-test-6d45ddb7d4-dgphg
+- Kubernetes automatically recreated the pod
+- Self-healing capability confirmed
+
+Test Application Details:
+- Image: nginx:1.25-alpine
+- Resource limits configured
+- Liveness and readiness probes active
+- HPA monitoring CPU and memory utilization

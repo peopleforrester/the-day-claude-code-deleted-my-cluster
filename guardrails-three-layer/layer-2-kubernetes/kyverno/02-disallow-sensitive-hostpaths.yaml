@@ -1,0 +1,54 @@
+# Block pods mounting host paths that allow node-level escalation.
+# Directly addresses the incident vector: a pod mounting /var/lib/etcd or /etc/netplan
+# and running destructive host commands from inside the container.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-sensitive-hostpaths
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: block-control-plane-hostpaths
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "HostPath '{{ element.hostPath.path }}' is forbidden (/etc/kubernetes, /var/lib/etcd, /etc/netplan, /var/lib/kubelet, /, /proc, /sys, container-runtime sockets)."
+        foreach:
+          - list: "request.object.spec.volumes[?hostPath]"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.hostPath.path }}"
+                    operator: AnyIn
+                    value:
+                      - /
+                      - /etc
+                      - /etc/kubernetes
+                      - /etc/netplan
+                      - /etc/cni
+                      - /var
+                      - /var/lib
+                      - /var/lib/etcd
+                      - /var/lib/kubelet
+                      - /var/lib/docker
+                      - /var/lib/containerd
+                      - /var/run
+                      - /var/run/docker.sock
+                      - /var/run/containerd/containerd.sock
+                      - /proc
+                      - /sys
+                      - /root
+                      - /home
+                      - /boot
+                  - key: "{{ regex_match('^/etc/kubernetes(/.*)?$', element.hostPath.path) }}"
+                    operator: Equals
+                    value: true
+                  - key: "{{ regex_match('^/var/lib/etcd(/.*)?$', element.hostPath.path) }}"
+                    operator: Equals
+                    value: true
+                  - key: "{{ regex_match('^/etc/netplan(/.*)?$', element.hostPath.path) }}"
+                    operator: Equals
+                    value: true

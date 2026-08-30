@@ -1,0 +1,65 @@
+# ABOUTME: Kubernetes audit policy for compliance and security
+# ABOUTME: Logs important cluster events and API requests
+
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+  # Don't log requests to the following paths
+  - level: None
+    paths:
+      - "/healthz*"
+      - "/livez*"
+      - "/readyz*"
+      - "/metrics"
+      - "/swagger*"
+
+  # Don't log watch requests by kube-system
+  - level: None
+    users:
+      - "system:kube-scheduler"
+      - "system:kube-proxy"
+    verbs:
+      - "watch"
+    namespaces:
+      - "kube-system"
+
+  # Don't log authenticated requests to certain non-resource URL paths
+  - level: None
+    userGroups:
+      - "system:authenticated"
+    nonResourceURLs:
+      - "/api*"
+      - "/version"
+
+  # Log metadata for all requests to secrets and configmaps
+  - level: Metadata
+    resources:
+      - group: ""
+        resources:
+          - "secrets"
+          - "configmaps"
+
+  # Log metadata for pod exec, attach, and port-forward
+  - level: Metadata
+    resources:
+      - group: ""
+        resources:
+          - "pods/exec"
+          - "pods/attach"
+          - "pods/portforward"
+
+  # Log request and response for pod create, update, patch
+  - level: RequestResponse
+    verbs:
+      - "create"
+      - "update"
+      - "patch"
+    resources:
+      - group: ""
+        resources:
+          - "pods"
+
+  # Log request for everything else at Metadata level
+  - level: Metadata
+    omitStages:
+      - RequestReceived

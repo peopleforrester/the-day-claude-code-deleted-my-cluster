@@ -1,0 +1,3 @@
+
+=== Dashboard Access Token ===
+<REDACTED-K8S-SERVICEACCOUNT-JWT>

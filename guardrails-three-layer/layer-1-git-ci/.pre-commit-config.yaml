@@ -1,0 +1,59 @@
+# Layer 1 client-side orchestration. Fast hooks only; heavy scans live in CI.
+minimum_pre_commit_version: "3.5.0"
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+default_stages: [pre-commit]
+fail_fast: false
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: ["--branch", "main", "--branch", "master"]
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.10.0.1
+    hooks:
+      - id: shellcheck
+        args: ["-S", "warning"]
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/bridgecrewio/checkov
+    rev: 3.2.334
+    hooks:
+      - id: checkov
+        args: ["--framework=kubernetes,terraform,helm,dockerfile,github_actions", "--quiet", "--compact"]
+        files: '\.(yaml|yml|tf|Dockerfile)$'
+  - repo: https://github.com/stackrox/kube-linter
+    rev: v0.7.1
+    hooks:
+      - id: kube-linter
+        files: '^(k8s|manifests|charts)/.*\.(yaml|yml)$'
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, chore, docs, refactor, perf, test, build, ci, revert, style, security]
+  - repo: local
+    hooks:
+      - id: block-destructive-ai
+        name: Block destructive AI-agent patterns
+        entry: .githooks/pre-commit
+        language: system
+        pass_filenames: false
+        always_run: true

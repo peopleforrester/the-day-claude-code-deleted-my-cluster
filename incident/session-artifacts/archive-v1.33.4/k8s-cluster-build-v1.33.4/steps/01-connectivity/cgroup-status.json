@@ -1,0 +1,68 @@
+{
+  "check_timestamp": "2025-08-24T21:12:13-04:00",
+  "nodes": {
+    "k8s01": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s02": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s03": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s04": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s05": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s06": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s07": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s08": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+,
+    "k8s09": {
+      "filesystem_type": "cgroup2fs",
+      "version": "v2",
+      "controllers": "cpuset cpu io memory hugetlb pids rdma misc",
+      "systemd_cgroup_driver": "enabled"
+    }
+
+  }
+}

@@ -1,0 +1,18 @@
+# Sensitive data
+state/tokens.encrypted
+state/certificates/*.key
+state/certificates/*.crt
+*.pem
+*.key
+kubeconfig
+admin.conf
+
+# Temporary files
+*.tmp
+*.log.gz
+*.swp
+*.bak
+
+# System files
+.DS_Store
+Thumbs.db

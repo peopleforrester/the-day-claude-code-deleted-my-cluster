@@ -1,0 +1,37 @@
+# Cilium v1.18.0 Configuration for Kubernetes v1.33.4
+# Pod CIDR: 10.244.0.0/16
+# Service CIDR: 10.96.0.0/12
+
+version: v1.18.0
+cluster:
+  name: kubernetes
+  id: 0
+ipam:
+  mode: kubernetes
+  operator:
+    clusterPoolIPv4PodCIDRList: ["10.244.0.0/16"]
+kubeProxyReplacement: strict
+k8sServiceHost: 192.168.0.200
+k8sServicePort: 6443
+tunnel: vxlan
+enableIPv4Masquerade: true
+enableIPv6Masquerade: false
+enableBPFMasquerade: true
+enableL7Proxy: true
+installNoConntrackIptablesRules: true
+autoDirectNodeRoutes: false
+ipv4NativeRoutingCIDR: 10.244.0.0/16
+bpf:
+  masquerade: true
+  tproxy: true
+  mountFsWithOptions: true
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: false  # Can enable later if needed
+operator:
+  replicas: 1  # Single replica for now, can increase for HA
+endpointRoutes:
+  enabled: true

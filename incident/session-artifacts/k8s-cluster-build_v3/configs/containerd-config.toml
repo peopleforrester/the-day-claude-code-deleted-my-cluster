@@ -1,0 +1,9 @@
+# Key containerd configuration settings for Kubernetes
+# Full config is at /etc/containerd/config.toml on each node
+
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+
+[plugins."io.containerd.grpc.v1.cri"]
+  sandbox_image = "registry.k8s.io/pause:3.9"

@@ -1,0 +1,17 @@
+# Base Ubuntu 24.04 image stored in Longhorn for cloning
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-24-04-base
+  namespace: default
+spec:
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: longhorn-fixed
+    resources:
+      requests:
+        storage: 20Gi
+  source:
+    http:
+      url: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"

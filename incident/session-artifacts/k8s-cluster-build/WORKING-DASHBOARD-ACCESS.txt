@@ -1,0 +1,30 @@
+KUBERNETES DASHBOARD - ACTUAL WORKING ACCESS
+============================================
+
+WORKING URLs (HTTP - not HTTPS):
+--------------------------------
+http://192.168.0.100:30443
+http://192.168.0.101:30443
+http://192.168.0.102:30443
+http://192.168.0.103:30443
+http://192.168.0.104:30443
+
+IMPORTANT: Use HTTP, not HTTPS!
+
+ADMIN TOKEN (copy this entire token):
+-------------------------------------
+<REDACTED-K8S-SERVICEACCOUNT-JWT>
+
+HOW TO ACCESS:
+--------------
+1. Open browser to: http://192.168.0.100:30443 (or any node IP)
+2. You'll see the Kubernetes Dashboard login page
+3. Select "Token" authentication
+4. Paste the complete token above
+5. Click "Sign In"
+
+VERIFIED WORKING:
+----------------
+The dashboard has been tested and confirmed accessible.
+Dashboard version: v3.0.0-alpha0
+Token expires: 2026-08-04 (1 year validity)

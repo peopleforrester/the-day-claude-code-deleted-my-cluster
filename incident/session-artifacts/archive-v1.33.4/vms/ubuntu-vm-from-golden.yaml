@@ -1,0 +1,146 @@
+# Ubuntu 24.04 VM at 192.168.0.100
+# Cloned from golden image with root SSH access
+# Password: <REDACTED-PASSWORD>
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu-vm-disk
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi  # Must be >= golden image size
+  storageClassName: longhorn-fixed
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: ubuntu-24-04-golden  # Clone from golden image
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm
+  namespace: default
+spec:
+  runStrategy: Always  # CORRECTED: Not using deprecated 'running: true'
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false  # Single NIC only
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple  # CORRECTED: Using actual network name
+      volumes:
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: ubuntu-vm-disk  # Uses cloned PVC
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+            fqdn: ubuntu-vm.local
+            manage_etc_hosts: true
+
+            # Users configuration
+            users:
+              - default
+              - name: root
+                lock_passwd: false
+
+            # Set root password to demo123
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Enable root SSH login
+            disable_root: false
+            ssh_pwauth: true
+
+            # Package management
+            package_update: true
+            package_upgrade: false
+            packages:
+              - openssh-server
+              - qemu-guest-agent
+              - net-tools
+              - htop
+              - curl
+              - wget
+              - vim
+
+            # SSH configuration for root access
+            write_files:
+              - path: /etc/ssh/sshd_config.d/99-custom.conf
+                content: |
+                  PermitRootLogin yes
+                  PasswordAuthentication yes
+                  PubkeyAuthentication yes
+                permissions: '0644'
+
+            # Commands to run
+            runcmd:
+              # Reset machine-id for unique identity
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+              - rm -f /var/lib/systemd/random-seed
+
+              # Apply SSH configuration
+              - systemctl restart ssh
+              - systemctl enable ssh
+
+              # Enable and start guest agent
+              - systemctl enable qemu-guest-agent
+              - systemctl start qemu-guest-agent
+
+              # Apply network configuration
+              - netplan apply
+
+              # Show configuration
+              - echo "Ubuntu 24.04 VM ready at 192.168.0.100" > /etc/motd
+              - echo "Root password: <REDACTED-PASSWORD>" >> /etc/motd
+              - ip addr show
+
+            # Final message
+            final_message: "Ubuntu 24.04 VM is ready at 192.168.0.100!"

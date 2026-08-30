@@ -1,0 +1,20 @@
+# Sensitive data
+state/tokens.encrypted
+state/certificates/*.pem
+state/certificates/*.key
+state/certificates/*.crt
+
+# Temporary files
+*.tmp
+*.log.tmp
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo

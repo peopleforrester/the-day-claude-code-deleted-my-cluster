@@ -1,0 +1,38 @@
+# Falco Helm values. Modern eBPF driver, JSON output, Slack + PagerDuty via falcosidekick.
+# Fill in SLACK_WEBHOOK_URL and PAGERDUTY_INTEGRATION_KEY before install.
+driver:
+  kind: modern_ebpf
+
+falco:
+  rules_files:
+    - /etc/falco/falco_rules.yaml
+    - /etc/falco/k8s_audit_rules.yaml
+    - /etc/falco/rules.d
+  json_output: true
+  json_include_tags_property: true
+  http_output:
+    enabled: true
+    url: "http://falco-falcosidekick:2801/"
+  priority: notice
+
+customRules:
+  falco-rules-ai-agent.yaml: |-
+    # paste the full contents of falco-rules-ai-agent.yaml here when deploying,
+    # or reference via --set-file customRules.falco-rules-ai-agent\.yaml=falco-rules-ai-agent.yaml
+
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: true
+  config:
+    slack:
+      webhookurl: "REPLACE_WITH_SLACK_WEBHOOK_URL"
+      channel: "#sec-k8s-alerts"
+      minimumpriority: "warning"
+    pagerduty:
+      routingkey: "REPLACE_WITH_PAGERDUTY_INTEGRATION_KEY"
+      minimumpriority: "critical"
+    # talon: auto-remediation. Install falco-talon separately.
+    # talon:
+    #   address: "http://falco-talon.falco.svc:2803"
+    #   minimumpriority: "warning"

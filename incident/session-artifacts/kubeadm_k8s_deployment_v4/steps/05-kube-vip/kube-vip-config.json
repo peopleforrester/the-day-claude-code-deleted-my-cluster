@@ -1,0 +1,15 @@
+{
+  "kube_vip_version": "v0.8.3",
+  "vip_address": "192.168.0.199",
+  "vip_port": "6443",
+  "vip_interface": "eth0",
+  "ha_mode": "leader_election",
+  "control_plane_nodes": [
+    "192.168.0.100",
+    "192.168.0.101",
+    "192.168.0.102"
+  ],
+  "manifest_location": "/tmp/kube-vip.yaml",
+  "deployment_method": "static_pod",
+  "notes": "Manifest will be copied to /etc/kubernetes/manifests/ during kubeadm init"
+}

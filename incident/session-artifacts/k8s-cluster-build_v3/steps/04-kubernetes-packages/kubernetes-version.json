@@ -1,0 +1,13 @@
+{
+  "kubernetes_version": "1.31.11",
+  "packages_installed": {
+    "kubeadm": "1.31.11-1.1",
+    "kubelet": "1.31.11-1.1",
+    "kubectl": "1.31.11-1.1",
+    "kubernetes-cni": "1.5.1-1.1",
+    "cri-tools": "1.31.1-1.1"
+  },
+  "repository": "https://pkgs.k8s.io/core:/stable:/v1.31/deb/",
+  "package_hold": true,
+  "timestamp": "2025-08-03"
+}

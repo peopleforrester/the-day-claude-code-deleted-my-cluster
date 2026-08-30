@@ -1,0 +1,16 @@
+name: merge-queue
+on:
+  merge_group:
+permissions:
+  contents: read
+  security-events: write
+concurrency:
+  group: merge-queue-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  all-green:
+    name: all-green
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "merge_group event; all checks report via pull_request + merge_group triggers"

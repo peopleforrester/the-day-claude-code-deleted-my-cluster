@@ -1,0 +1,76 @@
+# ABOUTME: kubeadm configuration for HA Kubernetes cluster
+# ABOUTME: Configures control plane endpoint at VIP 192.168.0.199
+
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "192.168.0.100"  # Will be updated per node
+  bindPort: 6443
+nodeRegistration:
+  criSocket: "unix:///run/containerd/containerd.sock"
+  imagePullPolicy: IfNotPresent
+  kubeletExtraArgs:
+    cgroup-driver: "systemd"
+    container-runtime-endpoint: "unix:///run/containerd/containerd.sock"
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: "v1.33.4"
+controlPlaneEndpoint: "192.168.0.199:6443"  # VIP for HA
+certificatesDir: "/etc/kubernetes/pki"
+clusterName: "kubernetes"
+networking:
+  serviceSubnet: "10.96.0.0/12"
+  podSubnet: "10.244.0.0/16"
+  dnsDomain: "cluster.local"
+dns:
+  imageRepository: "registry.k8s.io/coredns"
+  imageTag: "v1.12.0"  # CoreDNS version for K8s 1.33
+etcd:
+  local:
+    dataDir: "/var/lib/etcd"
+    serverCertSANs:
+      - "192.168.0.199"
+      - "192.168.0.100"
+      - "192.168.0.101"
+      - "192.168.0.102"
+apiServer:
+  certSANs:
+    - "192.168.0.199"
+    - "192.168.0.100"
+    - "192.168.0.101"
+    - "192.168.0.102"
+    - "master1"
+    - "master2"
+    - "master3"
+    - "kubernetes"
+    - "kubernetes.default"
+    - "kubernetes.default.svc"
+    - "kubernetes.default.svc.cluster.local"
+  extraArgs:
+    enable-admission-plugins: "NodeRestriction,ResourceQuota,PodSecurity"
+    audit-log-maxage: "30"
+    audit-log-maxbackup: "3"
+    audit-log-maxsize: "100"
+    audit-log-path: "/var/log/kubernetes/audit.log"
+    encryption-provider-config: "/etc/kubernetes/pki/encryption-config.yaml"
+controllerManager:
+  extraArgs:
+    bind-address: "0.0.0.0"
+scheduler:
+  extraArgs:
+    bind-address: "0.0.0.0"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
+serverTLSBootstrap: true
+rotateCertificates: true
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+clusterCIDR: "10.244.0.0/16"
+mode: "ipvs"
+ipvs:
+  strictARP: true

@@ -1,0 +1,36 @@
+# System Configuration Applied to All Nodes
+# Generated: 2025-08-03
+
+system_prerequisites:
+  swap:
+    status: disabled
+    fstab_modified: true
+
+  kernel_modules:
+    loaded:
+      - overlay
+      - br_netfilter
+    persistent_config: /etc/modules-load.d/kubernetes.conf
+
+  sysctl_parameters:
+    config_file: /etc/sysctl.d/99-kubernetes.conf
+    settings:
+      net.bridge.bridge-nf-call-iptables: 1
+      net.bridge.bridge-nf-call-ip6tables: 1
+      net.ipv4.ip_forward: 1
+
+  packages_installed:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gpg
+
+validation_results:
+  all_nodes_passed: true
+  timestamp: "2025-08-03T15:23:15Z"
+  nodes_validated:
+    - master1 (192.168.0.183)
+    - master2 (192.168.0.194)
+    - master3 (192.168.0.196)
+    - worker1 (192.168.0.197)
+    - worker2 (192.168.0.198)

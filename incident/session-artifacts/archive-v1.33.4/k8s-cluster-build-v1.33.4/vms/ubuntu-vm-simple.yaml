@@ -1,0 +1,112 @@
+# Simplified Ubuntu 24.04 VM at 192.168.0.100
+# Using golden image with minimal cloud-init
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu-vm-disk-simple
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: longhorn-fixed
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: ubuntu-24-04-golden
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm-simple
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm-simple
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: ubuntu-vm-disk-simple
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+            manage_etc_hosts: true
+
+            # Set passwords
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Enable root login
+            disable_root: false
+            ssh_pwauth: true
+
+            # SSH configuration
+            write_files:
+              - path: /etc/ssh/sshd_config.d/99-allow-root.conf
+                content: |
+                  PermitRootLogin yes
+                  PasswordAuthentication yes
+                permissions: '0644'
+
+            # Commands to run
+            runcmd:
+              # Reset machine ID
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+
+              # Restart SSH
+              - systemctl restart ssh
+              - systemctl enable ssh
+
+              # Show IP
+              - ip addr show

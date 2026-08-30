@@ -1,0 +1,159 @@
+{
+  "verification_timestamp": "2025-08-24T21:24:51-04:00",
+  "nodes": {
+    "k8s01": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s02": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s03": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s04": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s05": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s06": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s07": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s08": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+,
+    "k8s09": {
+      "swap_disabled": true,
+      "ip_forwarding": true,
+      "kernel_modules": {
+        "br_netfilter": true,
+        "overlay": true,
+        "ip_vs": true,
+        "ip_vs_rr": true,
+        "ip_vs_wrr": true,
+        "ip_vs_sh": true,
+        "all_loaded": true
+      },
+      "bridge_netfilter": true,
+      "time_sync": true,
+      "systemd_cgroup": true
+    }
+
+  },
+  "all_nodes_pass": true
+}

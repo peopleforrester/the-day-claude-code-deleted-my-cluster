@@ -1,0 +1,113 @@
+# Ubuntu 24.04 VM with SSH installation
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false  # Single NIC only
+          disks:
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/containerdisks/ubuntu:24.04
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+
+            # CRITICAL: Install SSH server first!
+            package_update: true
+            packages:
+              - openssh-server
+              - net-tools
+              - curl
+              - wget
+              - vim
+              - qemu-guest-agent
+
+            # Configure SSH after installation
+            ssh_pwauth: true
+            disable_root: false
+
+            # Set root password
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Reset machine ID for unique identity
+            bootcmd:
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+
+            # Ensure SSH service is enabled and started
+            runcmd:
+              # Configure SSH for root login
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+              # Restart SSH to apply changes
+              - systemctl enable ssh
+              - systemctl restart ssh
+              # Start guest agent
+              - systemctl enable qemu-guest-agent
+              - systemctl start qemu-guest-agent
+              # Debug output
+              - echo "SSH installation completed" > /var/log/cloud-init-ssh.log
+              - systemctl status ssh >> /var/log/cloud-init-ssh.log 2>&1
+              - ip addr show >> /var/log/cloud-init-ssh.log 2>&1
+
+            # Also create a regular user as backup
+            users:
+              - name: ubuntu
+                lock_passwd: false
+                passwd: $6$rounds=4096$8dkK1P/oE$2DGKKt0wLlmaCw/5UuIITBTDe2UE8yVDvg0sN9BiNcAVwR8HqVh9pBDHdPBp4SQqUgqDlRTA4KONdIDxNe0IT1
+                shell: /bin/bash
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: [sudo, users]

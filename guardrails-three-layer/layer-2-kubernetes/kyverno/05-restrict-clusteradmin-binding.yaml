@@ -1,0 +1,33 @@
+# Forbid new bindings to cluster-admin / system:masters / system:node and friends.
+# Most incidents start with "I'll just give the agent cluster-admin so it stops getting blocked."
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-binding-clusteradmin
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: clusteradmin-bindings
+      match:
+        any:
+          - resources:
+              kinds: [ClusterRoleBinding, RoleBinding]
+      exclude:
+        any:
+          - subjects:
+              - kind: User
+                name: break-glass-admin
+      validate:
+        message: "Binding to cluster-admin/system:masters/system:node is not allowed."
+        deny:
+          conditions:
+            any:
+              - key: "{{ request.object.roleRef.name }}"
+                operator: AnyIn
+                value:
+                  - cluster-admin
+                  - system:masters
+                  - system:node
+                  - system:kube-scheduler
+                  - system:kube-controller-manager

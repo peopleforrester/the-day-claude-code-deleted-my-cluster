@@ -1,0 +1,43 @@
+# Sensitive files
+state/tokens.encrypted
+state/certificates/
+*.key
+*.crt
+*.pem
+*-token.txt
+*-secret.yaml
+
+# Kubeconfig files
+*.kubeconfig
+.kube/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Log files that might contain sensitive data
+logs/*.log
+
+# Backup files
+*.bak
+*.backup
+
+# Editor directories
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Terraform state (if used later)
+*.tfstate
+*.tfstate.*
+.terraform/

@@ -1,0 +1,52 @@
+# Pod Security Standards (baseline + selected restricted checks) in Kyverno form.
+# Complements the namespace-label-based built-in PSA enforcer.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pss-baseline-ai-guardrails
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: disallow-privileged-containers
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "securityContext.privileged must be false on every container."
+        pattern:
+          spec:
+            =(ephemeralContainers):
+              - =(securityContext):
+                  =(privileged): "false"
+            =(initContainers):
+              - =(securityContext):
+                  =(privileged): "false"
+            containers:
+              - =(securityContext):
+                  =(privileged): "false"
+    - name: disallow-host-namespaces
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "hostNetwork, hostPID, hostIPC must be false."
+        pattern:
+          spec:
+            =(hostPID): "false"
+            =(hostIPC): "false"
+            =(hostNetwork): "false"
+    - name: disallow-privilege-escalation
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+      validate:
+        message: "allowPrivilegeEscalation must be false."
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  allowPrivilegeEscalation: "false"

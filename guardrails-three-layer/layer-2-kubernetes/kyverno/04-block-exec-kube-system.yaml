@@ -1,0 +1,32 @@
+# Deny kubectl exec into protected namespaces.
+# Prevents the "get a shell in a kube-apiserver pod and run etcdctl" escalation path.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: block-exec-into-system-pods
+spec:
+  validationFailureAction: Audit
+  background: false
+  rules:
+    - name: deny-exec-in-protected-namespaces
+      match:
+        any:
+          - resources:
+              kinds: [PodExecOptions]
+      preconditions:
+        all:
+          - key: "{{ request.namespace }}"
+            operator: AnyIn
+            value:
+              - kube-system
+              - kube-public
+              - kube-node-lease
+              - kyverno
+              - argocd
+              - flux-system
+              - cert-manager
+              - falco
+              - gatekeeper-system
+      validate:
+        message: "Exec into pods in '{{ request.namespace }}' is forbidden."
+        deny: {}

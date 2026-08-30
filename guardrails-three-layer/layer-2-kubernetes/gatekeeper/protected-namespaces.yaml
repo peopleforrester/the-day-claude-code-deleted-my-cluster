@@ -1,0 +1,54 @@
+# OPA/Gatekeeper equivalent of Kyverno's protect-system-namespaces.
+# Use this if Rego is already in your stack; otherwise prefer Kyverno.
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sprotectednamespaces
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sProtectedNamespaces
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            protectedNames:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sprotectednamespaces
+        violation[{"msg": msg}] {
+          input.review.operation == "DELETE"
+          input.review.kind.kind == "Namespace"
+          name := input.review.name
+          protected := input.parameters.protectedNames[_]
+          name == protected
+          msg := sprintf("Deletion of protected namespace %q forbidden", [name])
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sProtectedNamespaces
+metadata:
+  name: block-system-namespace-delete
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: [Namespace]
+  parameters:
+    protectedNames:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - default
+      - kyverno
+      - argocd
+      - gatekeeper-system
+      - flux-system
+      - cert-manager
+      - falco

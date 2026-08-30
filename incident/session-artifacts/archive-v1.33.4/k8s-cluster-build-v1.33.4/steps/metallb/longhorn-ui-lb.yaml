@@ -1,0 +1,17 @@
+# LoadBalancer service for Longhorn UI
+apiVersion: v1
+kind: Service
+metadata:
+  name: longhorn-ui-lb
+  namespace: longhorn-system
+  labels:
+    app: longhorn-ui
+spec:
+  type: LoadBalancer
+  selector:
+    app: longhorn-ui
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP

@@ -1,0 +1,82 @@
+# Ubuntu 24.04 VM with proper bridged networking
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-bridged
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-bridged
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false  # Critical - no pod network
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: cloudinit
+            disk:
+              bus: virtio
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple  # Uses our fixed br0
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/containerdisks/ubuntu:24.04
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-bridged
+
+            # Create users
+            users:
+              - name: ubuntu
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: users, admin
+                lock_passwd: false
+                shell: /bin/bash
+                passwd: $6$xyz$1B.uqZKZfVqDqP0LbKraNfl5pQLPWZpqGKgYbPVLPZe0ceQhJZvLf9J3jz8X/zDXDQp1v7cGLeZ5ODLzVAoNn0
+
+            # Set root password
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Enable password auth and root login
+            ssh_pwauth: true
+            disable_root: false

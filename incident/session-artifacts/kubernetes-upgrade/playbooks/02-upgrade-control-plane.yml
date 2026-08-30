@@ -1,0 +1,314 @@
+---
+# Control Plane Rolling Upgrade Playbook
+# Upgrades control plane nodes one at a time with health checks
+# Supports automatic rollback on failure
+
+- name: Upgrade Kubernetes Control Plane Nodes
+  hosts: control_plane
+  serial: 1  # Process one control plane node at a time
+  max_fail_percentage: 0  # Stop immediately if any node fails
+  gather_facts: yes
+  become: yes
+  
+  vars:
+    upgrade_log_file: "/var/log/kubernetes-upgrade-{{ kubernetes_version_target }}-{{ ansible_date_time.epoch }}.log"
+    upgrade_state_file: "/etc/kubernetes/upgrade.state"
+    rollback_triggered: false
+    upgrade_start_time: "{{ ansible_date_time.epoch }}"
+    health_check_max_retries: 10
+    health_check_delay: 30
+    
+  pre_tasks:
+    - name: Validate target node
+      assert:
+        that:
+          - inventory_hostname in groups['control_plane']
+          - kubernetes_version_target is defined
+          - kubernetes_version_current is defined
+        fail_msg: "Invalid node or undefined variables"
+        
+    - name: Create upgrade state file
+      copy:
+        content: |
+          node: {{ inventory_hostname }}
+          start_time: {{ upgrade_start_time }}
+          current_version: {{ kubernetes_version_current }}
+          target_version: {{ kubernetes_version_target }}
+          status: in_progress
+        dest: "{{ upgrade_state_file }}"
+        
+    - name: Start upgrade logging
+      shell: |
+        echo "=== Control Plane Upgrade Started ===" >> {{ upgrade_log_file }}
+        echo "Node: {{ inventory_hostname }}" >> {{ upgrade_log_file }}
+        echo "Time: {{ ansible_date_time.iso8601 }}" >> {{ upgrade_log_file }}
+        echo "Current Version: {{ kubernetes_version_current }}" >> {{ upgrade_log_file }}
+        echo "Target Version: {{ kubernetes_version_target }}" >> {{ upgrade_log_file }}
+        
+  tasks:
+    # ============================================
+    # SECTION 1: Pre-upgrade health check
+    # ============================================
+    - name: "PRE-UPGRADE | Check node health"
+      command: kubectl get node {{ ansible_hostname }} -o json
+      register: node_health
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      
+    - name: "PRE-UPGRADE | Verify node is Ready"
+      assert:
+        that:
+          - (node_health.stdout | from_json).status.conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | first == 'True'
+        fail_msg: "Node {{ ansible_hostname }} is not Ready"
+        
+    - name: "PRE-UPGRADE | Check etcd health"
+      shell: |
+        ETCDCTL_API=3 etcdctl \
+          --endpoints=https://127.0.0.1:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+          --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+          endpoint health
+      register: etcd_health_pre
+      
+    # ============================================
+    # SECTION 2: Update package repositories
+    # ============================================
+    - name: "PREPARE | Update apt cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        
+    - name: "PREPARE | Add Kubernetes apt key"
+      apt_key:
+        url: "{{ kubernetes_repo_key }}"
+        state: present
+        
+    - name: "PREPARE | Add Kubernetes repository"
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] {{ kubernetes_repo_url }} /"
+        state: present
+        update_cache: yes
+        
+    # ============================================
+    # SECTION 3: Upgrade kubeadm
+    # ============================================
+    - name: "UPGRADE | Unhold kubeadm package"
+      dpkg_selections:
+        name: kubeadm
+        selection: install
+        
+    - name: "UPGRADE | Install target kubeadm version"
+      apt:
+        name: "kubeadm={{ kubernetes_version_target }}-*"
+        state: present
+        allow_downgrade: no
+      register: kubeadm_upgrade
+      
+    - name: "UPGRADE | Verify kubeadm version"
+      command: kubeadm version -o short
+      register: kubeadm_version_check
+      changed_when: false
+      
+    - name: "UPGRADE | Hold kubeadm package"
+      dpkg_selections:
+        name: kubeadm
+        selection: hold
+        
+    # ============================================
+    # SECTION 4: Plan and apply upgrade
+    # ============================================
+    - block:
+        - name: "UPGRADE | Drain node (for secondary masters)"
+          command: kubectl drain {{ ansible_hostname }} --ignore-daemonsets --delete-emptydir-data --force --timeout={{ drain_timeout }}s
+          delegate_to: "{{ groups['control_plane'][0] }}"
+          when: inventory_hostname != groups['control_plane'][0]
+          
+        - name: "UPGRADE | Run kubeadm upgrade plan"
+          command: kubeadm upgrade plan
+          register: upgrade_plan
+          when: inventory_hostname == groups['control_plane'][0]
+          
+        - name: "UPGRADE | Apply upgrade on first master"
+          command: kubeadm upgrade apply {{ kubernetes_version_target }} --yes
+          when: inventory_hostname == groups['control_plane'][0]
+          register: upgrade_apply
+          async: 1800
+          poll: 30
+          
+        - name: "UPGRADE | Upgrade other control plane nodes"
+          command: kubeadm upgrade node
+          when: inventory_hostname != groups['control_plane'][0]
+          register: upgrade_node
+          async: 900
+          poll: 30
+          
+      rescue:
+        - name: "ROLLBACK | Upgrade failed - initiating rollback"
+          set_fact:
+            rollback_triggered: true
+            
+        - name: "ROLLBACK | Log failure"
+          shell: |
+            echo "UPGRADE FAILED at {{ ansible_date_time.iso8601 }}" >> {{ upgrade_log_file }}
+            echo "Error: {{ ansible_failed_result.msg | default('Unknown error') }}" >> {{ upgrade_log_file }}
+            
+    # ============================================
+    # SECTION 5: Upgrade kubelet and kubectl
+    # ============================================
+    - name: "UPGRADE | Unhold kubelet and kubectl"
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: install
+      loop:
+        - kubelet
+        - kubectl
+      when: not rollback_triggered
+      
+    - name: "UPGRADE | Upgrade kubelet and kubectl"
+      apt:
+        name:
+          - "kubelet={{ kubernetes_version_target }}-*"
+          - "kubectl={{ kubernetes_version_target }}-*"
+        state: present
+        allow_downgrade: no
+      when: not rollback_triggered
+      register: kubelet_upgrade
+      
+    - name: "UPGRADE | Hold kubelet and kubectl"
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubectl
+      when: not rollback_triggered
+      
+    - name: "UPGRADE | Restart kubelet"
+      systemd:
+        name: kubelet
+        state: restarted
+        daemon_reload: yes
+      when: not rollback_triggered
+      
+    # ============================================
+    # SECTION 6: Post-upgrade verification
+    # ============================================
+    - name: "VERIFY | Wait for node to be Ready"
+      shell: kubectl get node {{ ansible_hostname }} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'
+      register: node_ready
+      until: node_ready.stdout == "True"
+      retries: "{{ health_check_max_retries }}"
+      delay: "{{ health_check_delay }}"
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      when: not rollback_triggered
+      
+    - name: "VERIFY | Uncordon node"
+      command: kubectl uncordon {{ ansible_hostname }}
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      when: 
+        - not rollback_triggered
+        - inventory_hostname != groups['control_plane'][0]
+        
+    - name: "VERIFY | Check API server health"
+      uri:
+        url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
+        validate_certs: no
+        status_code: 200
+      retries: 5
+      delay: 10
+      when: not rollback_triggered
+      
+    - name: "VERIFY | Check all control plane components"
+      shell: |
+        kubectl get componentstatuses
+        kubectl get pods -n kube-system -l tier=control-plane
+      register: component_health
+      delegate_to: "{{ inventory_hostname }}"
+      when: not rollback_triggered
+      
+    - name: "VERIFY | Verify etcd cluster health"
+      shell: |
+        ETCDCTL_API=3 etcdctl \
+          --endpoints=https://127.0.0.1:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+          --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+          member list
+      register: etcd_members
+      when: not rollback_triggered
+      
+    - name: "VERIFY | Check cluster version"
+      command: kubectl version
+      register: cluster_version
+      changed_when: false
+      when: not rollback_triggered
+      
+    # ============================================
+    # SECTION 7: Update upgrade state
+    # ============================================
+    - name: "STATE | Update upgrade state file"
+      copy:
+        content: |
+          node: {{ inventory_hostname }}
+          start_time: {{ upgrade_start_time }}
+          end_time: {{ ansible_date_time.epoch }}
+          current_version: {{ kubernetes_version_target if not rollback_triggered else kubernetes_version_current }}
+          status: {{ 'completed' if not rollback_triggered else 'rolled_back' }}
+        dest: "{{ upgrade_state_file }}"
+        
+  post_tasks:
+    - name: "REPORT | Generate node upgrade report"
+      template:
+        src: node_upgrade_report.j2
+        dest: "/tmp/upgrade-report-{{ inventory_hostname }}-{{ ansible_date_time.epoch }}.html"
+        
+    - name: "REPORT | Display upgrade summary"
+      debug:
+        msg: |
+          ===============================================
+          Control Plane Node Upgrade {{ 'Complete' if not rollback_triggered else 'FAILED - Rolled Back' }}
+          ===============================================
+          Node: {{ inventory_hostname }}
+          Status: {{ 'SUCCESS' if not rollback_triggered else 'ROLLBACK' }}
+          Version: {{ kubernetes_version_target if not rollback_triggered else kubernetes_version_current }}
+          Duration: {{ ((ansible_date_time.epoch | int) - (upgrade_start_time | int)) }} seconds
+          ===============================================
+          
+    - name: "NOTIFY | Send completion notification"
+      uri:
+        url: "{{ slack_webhook_url }}"
+        method: POST
+        body_format: json
+        body:
+          text: "Control plane node {{ inventory_hostname }} upgrade {{ 'completed' if not rollback_triggered else 'failed and rolled back' }}"
+          attachments:
+            - color: "{{ 'good' if not rollback_triggered else 'danger' }}"
+              title: "Node {{ inventory_hostname }}"
+              fields:
+                - title: "Status"
+                  value: "{{ 'Upgraded' if not rollback_triggered else 'Rolled Back' }}"
+                  short: true
+                - title: "Version"
+                  value: "{{ kubernetes_version_target if not rollback_triggered else kubernetes_version_current }}"
+                  short: true
+      when: notifications_enabled and slack_webhook_url != ""
+      
+    - name: "WAIT | Pause before next node"
+      pause:
+        seconds: 60
+        prompt: "Waiting 60 seconds before proceeding to next node. Press Ctrl+C to abort..."
+      when: 
+        - not rollback_triggered
+        - inventory_hostname != groups['control_plane'][-1]
+        
+  handlers:
+    - name: restart kubelet
+      systemd:
+        name: kubelet
+        state: restarted
+        daemon_reload: yes
+        
+    - name: restart containerd
+      systemd:
+        name: containerd
+        state: restarted

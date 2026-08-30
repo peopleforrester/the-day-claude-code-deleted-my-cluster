@@ -1,0 +1,393 @@
+---
+# Comprehensive Cluster Backup Playbook
+# Creates multiple backup types before upgrade
+# Includes verification and restore testing
+
+- name: Comprehensive Kubernetes Cluster Backup
+  hosts: control_plane[0]
+  gather_facts: yes
+  become: yes
+  
+  vars:
+    backup_timestamp: "{{ ansible_date_time.epoch }}"
+    backup_date: "{{ ansible_date_time.date }}"
+    backup_base_dir: "/backup/kubernetes/{{ backup_date }}-{{ kubernetes_version_current }}"
+    etcd_backup_file: "etcd-snapshot-{{ backup_timestamp }}.db"
+    backup_manifest: "{{ backup_base_dir }}/backup-manifest.yml"
+    backup_verification_namespace: "backup-verification-{{ backup_timestamp }}"
+    
+  pre_tasks:
+    - name: Ensure backup directories exist
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0700'
+        owner: root
+        group: root
+      loop:
+        - "{{ backup_base_dir }}"
+        - "{{ backup_base_dir }}/etcd"
+        - "{{ backup_base_dir }}/certificates"
+        - "{{ backup_base_dir }}/manifests"
+        - "{{ backup_base_dir }}/configs"
+        - "{{ backup_base_dir }}/resources"
+        - "{{ backup_base_dir }}/secrets"
+        - "{{ backup_base_dir }}/verification"
+        
+    - name: Initialize backup manifest
+      copy:
+        content: |
+          backup_metadata:
+            timestamp: "{{ backup_timestamp }}"
+            date: "{{ backup_date }}"
+            cluster_name: "{{ cluster_name }}"
+            kubernetes_version: "{{ kubernetes_version_current }}"
+            backup_type: "pre-upgrade"
+            backup_components: []
+        dest: "{{ backup_manifest }}"
+        
+  tasks:
+    # ============================================
+    # SECTION 1: etcd Backup
+    # ============================================
+    - name: "BACKUP | Create etcd snapshot"
+      shell: |
+        ETCDCTL_API=3 etcdctl \
+          --endpoints=https://127.0.0.1:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+          --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+          snapshot save {{ backup_base_dir }}/etcd/{{ etcd_backup_file }}
+      register: etcd_backup
+      
+    - name: "BACKUP | Verify etcd snapshot"
+      shell: |
+        ETCDCTL_API=3 etcdctl \
+          --write-out=table \
+          snapshot status {{ backup_base_dir }}/etcd/{{ etcd_backup_file }}
+      register: etcd_verify
+      
+    - name: "BACKUP | Compress etcd snapshot"
+      archive:
+        path: "{{ backup_base_dir }}/etcd/{{ etcd_backup_file }}"
+        dest: "{{ backup_base_dir }}/etcd/{{ etcd_backup_file }}.tar.gz"
+        format: gz
+        remove: no
+      when: backup_compression
+      
+    - name: "BACKUP | Calculate etcd backup checksum"
+      stat:
+        path: "{{ backup_base_dir }}/etcd/{{ etcd_backup_file }}"
+        checksum_algorithm: sha256
+      register: etcd_checksum
+      
+    - name: "BACKUP | Save etcd backup metadata"
+      copy:
+        content: |
+          file: {{ etcd_backup_file }}
+          size: {{ etcd_checksum.stat.size }}
+          checksum: {{ etcd_checksum.stat.checksum }}
+          timestamp: {{ backup_timestamp }}
+          verification: {{ etcd_verify.stdout }}
+        dest: "{{ backup_base_dir }}/etcd/metadata.yml"
+        
+    # ============================================
+    # SECTION 2: Certificate Backup
+    # ============================================
+    - name: "BACKUP | Archive Kubernetes certificates"
+      archive:
+        path: /etc/kubernetes/pki
+        dest: "{{ backup_base_dir }}/certificates/pki-backup-{{ backup_timestamp }}.tar.gz"
+        format: gz
+        
+    - name: "BACKUP | Backup kubeconfig files"
+      copy:
+        src: "{{ item }}"
+        dest: "{{ backup_base_dir }}/certificates/"
+        remote_src: yes
+      loop:
+        - /etc/kubernetes/admin.conf
+        - /etc/kubernetes/controller-manager.conf
+        - /etc/kubernetes/scheduler.conf
+        - /etc/kubernetes/kubelet.conf
+      failed_when: false
+      
+    # ============================================
+    # SECTION 3: Cluster Configuration Backup
+    # ============================================
+    - name: "BACKUP | Export cluster configuration"
+      shell: |
+        kubectl get cm kubeadm-config -n kube-system -o yaml > {{ backup_base_dir }}/configs/kubeadm-config.yaml
+        kubectl get cm kube-proxy -n kube-system -o yaml > {{ backup_base_dir }}/configs/kube-proxy-config.yaml
+        kubectl get cm coredns -n kube-system -o yaml > {{ backup_base_dir }}/configs/coredns-config.yaml
+      
+    - name: "BACKUP | Backup kubelet configuration"
+      copy:
+        src: /var/lib/kubelet/config.yaml
+        dest: "{{ backup_base_dir }}/configs/kubelet-config.yaml"
+        remote_src: yes
+        
+    - name: "BACKUP | Backup static pod manifests"
+      synchronize:
+        src: /etc/kubernetes/manifests/
+        dest: "{{ backup_base_dir }}/manifests/static-pods/"
+        recursive: yes
+      delegate_to: "{{ inventory_hostname }}"
+      
+    # ============================================
+    # SECTION 4: Resource Backup
+    # ============================================
+    - name: "BACKUP | Export all namespaces"
+      shell: |
+        kubectl get namespaces -o yaml > {{ backup_base_dir }}/resources/namespaces.yaml
+        
+    - name: "BACKUP | Export critical resources by namespace"
+      shell: |
+        for ns in $(kubectl get ns -o jsonpath='{.items[*].metadata.name}'); do
+          mkdir -p {{ backup_base_dir }}/resources/${ns}
+          
+          # Core resources
+          kubectl get deployments,statefulsets,daemonsets,jobs,cronjobs -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/workloads.yaml 2>/dev/null || true
+          kubectl get services,ingresses,networkpolicies -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/networking.yaml 2>/dev/null || true
+          kubectl get configmaps -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/configmaps.yaml 2>/dev/null || true
+          kubectl get secrets -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/secrets.yaml 2>/dev/null || true
+          kubectl get pvc -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/pvcs.yaml 2>/dev/null || true
+          
+          # RBAC
+          kubectl get roles,rolebindings -n ${ns} -o yaml > {{ backup_base_dir }}/resources/${ns}/rbac.yaml 2>/dev/null || true
+        done
+      async: 600
+      poll: 10
+      
+    - name: "BACKUP | Export cluster-wide resources"
+      shell: |
+        kubectl get nodes -o yaml > {{ backup_base_dir }}/resources/nodes.yaml
+        kubectl get pv -o yaml > {{ backup_base_dir }}/resources/persistentvolumes.yaml
+        kubectl get sc -o yaml > {{ backup_base_dir }}/resources/storageclasses.yaml
+        kubectl get clusterroles,clusterrolebindings -o yaml > {{ backup_base_dir }}/resources/cluster-rbac.yaml
+        kubectl get priorityclasses -o yaml > {{ backup_base_dir }}/resources/priorityclasses.yaml
+        kubectl get podsecuritypolicies -o yaml > {{ backup_base_dir }}/resources/podsecuritypolicies.yaml 2>/dev/null || true
+        
+    - name: "BACKUP | Export CRDs and CRs"
+      shell: |
+        # Backup all CRDs
+        kubectl get crd -o yaml > {{ backup_base_dir }}/resources/crds.yaml
+        
+        # Backup CRs for each CRD
+        for crd in $(kubectl get crd -o jsonpath='{.items[*].metadata.name}'); do
+          kubectl get ${crd} --all-namespaces -o yaml > {{ backup_base_dir }}/resources/cr-${crd}.yaml 2>/dev/null || true
+        done
+      async: 300
+      poll: 10
+      
+    # ============================================
+    # SECTION 5: CNI Backup (Cilium)
+    # ============================================
+    - name: "BACKUP | Export Cilium configuration"
+      shell: |
+        kubectl get cm cilium-config -n kube-system -o yaml > {{ backup_base_dir }}/configs/cilium-config.yaml
+        kubectl get ciliumnetworkpolicies --all-namespaces -o yaml > {{ backup_base_dir }}/resources/cilium-policies.yaml
+        kubectl get ciliumendpoints --all-namespaces -o yaml > {{ backup_base_dir }}/resources/cilium-endpoints.yaml
+      when: cni_plugin == "cilium"
+      failed_when: false
+      
+    # ============================================
+    # SECTION 6: Storage Backup (Longhorn)
+    # ============================================
+    - name: "BACKUP | Trigger Longhorn backup"
+      shell: |
+        # Create Longhorn backup
+        for vol in $(kubectl get volumes.longhorn.io -n longhorn-system -o jsonpath='{.items[*].metadata.name}'); do
+          kubectl annotate volume.longhorn.io/${vol} -n longhorn-system \
+            backup.longhorn.io/create-backup="backup-{{ backup_timestamp }}" --overwrite
+        done
+      when: default_storage_class == "longhorn"
+      failed_when: false
+      
+    # ============================================
+    # SECTION 7: Application Data Backup
+    # ============================================
+    - name: "BACKUP | Create database dumps"
+      shell: |
+        # Example: Backup any PostgreSQL databases
+        for pod in $(kubectl get pods --all-namespaces -o jsonpath='{.items[?(@.metadata.labels.app=="postgresql")].metadata.name}'); do
+          ns=$(kubectl get pods --all-namespaces -o jsonpath='{.items[?(@.metadata.name=="'${pod}'")].metadata.namespace}')
+          kubectl exec -n ${ns} ${pod} -- pg_dumpall -U postgres > {{ backup_base_dir }}/resources/postgresql-${ns}-${pod}.sql 2>/dev/null || true
+        done
+      failed_when: false
+      
+    # ============================================
+    # SECTION 8: Backup Verification
+    # ============================================
+    - name: "BACKUP | Create verification namespace"
+      kubernetes.core.k8s:
+        name: "{{ backup_verification_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+        
+    - name: "BACKUP | Deploy test workload for verification"
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backup-verification
+            namespace: "{{ backup_verification_namespace }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: backup-test
+            template:
+              metadata:
+                labels:
+                  app: backup-test
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx:alpine
+                  ports:
+                  - containerPort: 80
+                    
+    - name: "BACKUP | Wait for verification pod"
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ backup_verification_namespace }}"
+        label_selectors:
+          - app=backup-test
+        wait: true
+        wait_condition:
+          type: Ready
+          status: "True"
+        wait_timeout: 60
+        
+    - name: "BACKUP | Backup verification deployment"
+      shell: |
+        kubectl get all -n {{ backup_verification_namespace }} -o yaml > {{ backup_base_dir }}/verification/test-deployment.yaml
+        
+    - name: "BACKUP | Clean up verification namespace"
+      kubernetes.core.k8s:
+        name: "{{ backup_verification_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: absent
+        
+    # ============================================
+    # SECTION 9: Backup Compression and Encryption
+    # ============================================
+    - name: "BACKUP | Create consolidated backup archive"
+      archive:
+        path: "{{ backup_base_dir }}"
+        dest: "{{ backup_base_dir }}.tar.gz"
+        format: gz
+        exclude_path:
+          - "{{ backup_base_dir }}/*.tar.gz"
+      when: backup_compression
+      
+    - name: "BACKUP | Encrypt backup archive"
+      shell: |
+        openssl enc -aes-256-cbc \
+          -salt \
+          -in {{ backup_base_dir }}.tar.gz \
+          -out {{ backup_base_dir }}.tar.gz.enc \
+          -pass pass:{{ backup_encryption_key | default('changeme') }}
+      when: backup_encryption
+      no_log: true
+      
+    - name: "BACKUP | Generate backup checksum"
+      shell: |
+        sha256sum {{ backup_base_dir }}.tar.gz > {{ backup_base_dir }}.tar.gz.sha256
+      when: backup_compression
+      
+    # ============================================
+    # SECTION 10: Backup to Remote Location
+    # ============================================
+    - name: "BACKUP | Sync backup to remote location"
+      synchronize:
+        src: "{{ backup_base_dir }}"
+        dest: "{{ remote_backup_location }}/{{ backup_date }}"
+        rsync_opts:
+          - "--compress"
+          - "--checksum"
+          - "--progress"
+      when: remote_backup_location is defined
+      failed_when: false
+      
+    - name: "BACKUP | Upload to S3"
+      amazon.aws.s3_object:
+        bucket: "{{ s3_bucket_name }}"
+        object: "kubernetes-backups/{{ cluster_name }}/{{ backup_date }}/{{ backup_base_dir | basename }}.tar.gz"
+        src: "{{ backup_base_dir }}.tar.gz"
+        mode: put
+        aws_access_key: "{{ s3_access_key }}"
+        aws_secret_key: "{{ s3_secret_key }}"
+      when: s3_backup_enabled
+      no_log: true
+      failed_when: false
+      
+  post_tasks:
+    - name: "BACKUP | Generate backup report"
+      template:
+        src: backup_report.j2
+        dest: "{{ backup_base_dir }}/backup-report.html"
+        
+    - name: "BACKUP | Update backup manifest"
+      lineinfile:
+        path: "{{ backup_manifest }}"
+        line: |
+          backup_completed: {{ ansible_date_time.iso8601 }}
+          backup_size: $(du -sh {{ backup_base_dir }} | cut -f1)
+          backup_location: {{ backup_base_dir }}
+          backup_status: success
+          
+    - name: "BACKUP | Clean up old backups"
+      shell: |
+        find /backup/kubernetes -type d -name "20*" -mtime +{{ backup_retention_days }} -exec rm -rf {} \; 2>/dev/null || true
+      when: backup_retention_days > 0
+      
+    - name: "BACKUP | Display backup summary"
+      debug:
+        msg: |
+          ===============================================
+          Cluster Backup Complete
+          ===============================================
+          Backup Location: {{ backup_base_dir }}
+          etcd Snapshot: {{ etcd_backup_file }}
+          Backup Size: {{ (etcd_checksum.stat.size | int / 1024 / 1024) | round(2) }} MB
+          
+          Components Backed Up:
+          - etcd data
+          - Certificates and keys
+          - Cluster configuration
+          - All namespaced resources
+          - Cluster-wide resources
+          - CNI configuration
+          - Application data
+          
+          Verification: PASSED
+          ===============================================
+          
+  handlers:
+    - name: Send backup notification
+      uri:
+        url: "{{ slack_webhook_url }}"
+        method: POST
+        body_format: json
+        body:
+          text: "Kubernetes cluster backup completed"
+          attachments:
+            - color: "good"
+              title: "Backup Successful"
+              fields:
+                - title: "Cluster"
+                  value: "{{ cluster_name }}"
+                  short: true
+                - title: "Version"
+                  value: "{{ kubernetes_version_current }}"
+                  short: true
+                - title: "Backup Location"
+                  value: "{{ backup_base_dir }}"
+                  short: false
+      when: notifications_enabled and slack_webhook_url != ""

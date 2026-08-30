@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+# ABOUTME: Expect script to copy SSH keys with password authentication
+# ABOUTME: Used for automating SSH key distribution to cluster nodes
+
+set timeout 10
+set user [lindex $argv 0]
+set host [lindex $argv 1]
+set password [lindex $argv 2]
+set keyfile [lindex $argv 3]
+
+spawn ssh-copy-id -i $keyfile -o StrictHostKeyChecking=no $user@$host
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "already exist" {
+        exit 0
+    }
+    eof {
+        exit 0
+    }
+    timeout {
+        exit 1
+    }
+}

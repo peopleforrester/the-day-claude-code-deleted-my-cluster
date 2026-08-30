@@ -1,0 +1,38 @@
+# Example hardened Pod spec for workloads the AI agent creates.
+# Rely on the ai-workspace namespace's PSS label (enforce=restricted) as a backstop.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ai-agent-worker
+  namespace: ai-workspace
+  labels:
+    app.kubernetes.io/managed-by: ai-agent
+spec:
+  serviceAccountName: ai-agent
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    fsGroup: 10001
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: agent
+      image: registry.example.io/ai-agent:1.0.0@sha256:REPLACE_WITH_DIGEST
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        runAsNonRoot: true
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        privileged: false
+        capabilities:
+          drop: ["ALL"]
+        seccompProfile:
+          type: RuntimeDefault
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: "1"
+          memory: 512Mi

@@ -1,0 +1,106 @@
+{
+  "verification_timestamp": "2025-08-24T21:37:54-04:00",
+  "required_version": "2.1.4",
+  "nodes": {
+    "k8s01": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s02": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s03": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s04": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s05": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s06": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s07": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s08": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+,
+    "k8s09": {
+      "version_correct": true,
+      "service_active": true,
+      "systemd_cgroup": false,
+      "cri_socket": true,
+      "metrics_enabled": false,
+      "crictl_working": true,
+      "runc_installed": true,
+      "cni_plugins": false
+    }
+
+  },
+  "all_nodes_pass": false
+}

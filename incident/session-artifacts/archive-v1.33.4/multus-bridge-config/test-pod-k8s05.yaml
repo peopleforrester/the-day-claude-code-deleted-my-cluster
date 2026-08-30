@@ -1,0 +1,22 @@
+# Test pod for verifying bridge connectivity on k8s05
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bridge-test-k8s05
+  namespace: default
+  annotations:
+    k8s.v1.cni.cncf.io/networks: bridge-network-simple
+spec:
+  nodeSelector:
+    kubernetes.io/hostname: k8s05
+  containers:
+  - name: alpine
+    image: alpine:latest
+    command: ["sleep", "3600"]
+    resources:
+      limits:
+        memory: "64Mi"
+        cpu: "100m"
+      requests:
+        memory: "32Mi"
+        cpu: "50m"

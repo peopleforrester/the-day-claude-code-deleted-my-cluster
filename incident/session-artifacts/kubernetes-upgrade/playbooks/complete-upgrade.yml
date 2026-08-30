@@ -1,0 +1,48 @@
+---
+# Complete the Kubernetes Upgrade
+# This playbook completes the upgrade that was partially done
+
+- name: Complete Kubernetes Upgrade
+  hosts: k8s01
+  gather_facts: no
+  
+  tasks:
+    - name: Check current cluster version
+      shell: kubectl version | grep "Server Version"
+      register: current_version
+      changed_when: false
+      
+    - name: Display current version
+      debug:
+        var: current_version.stdout
+        
+    - name: Upgrade kubelet and kubectl if needed
+      apt:
+        name:
+          - "kubelet=1.32.8-*"
+          - "kubectl=1.32.8-*"
+        state: present
+        allow_change_held_packages: yes
+        
+    - name: Restart kubelet
+      systemd:
+        name: kubelet
+        state: restarted
+        daemon_reload: yes
+        
+    - name: Wait for node to be ready
+      command: kubectl get node k8s01
+      register: node_status
+      until: "'Ready' in node_status.stdout"
+      retries: 10
+      delay: 10
+      changed_when: false
+      
+    - name: Verify node version
+      shell: kubectl get node k8s01 -o jsonpath='{.status.nodeInfo.kubeletVersion}'
+      register: node_version
+      changed_when: false
+      
+    - name: Display final node version
+      debug:
+        msg: "Node k8s01 is now running {{ node_version.stdout }}"

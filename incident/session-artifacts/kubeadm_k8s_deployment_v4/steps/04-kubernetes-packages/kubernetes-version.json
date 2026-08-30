@@ -1,0 +1,18 @@
+{
+  "kubernetes_version": "v1.31.11",
+  "components": {
+    "kubeadm": "v1.31.11",
+    "kubelet": "v1.31.11",
+    "kubectl": "v1.31.11"
+  },
+  "repository": "https://pkgs.k8s.io/core:/stable:/v1.31/deb/",
+  "packages_held": true,
+  "installed_on": "2025-08-04",
+  "nodes": [
+    "192.168.0.100",
+    "192.168.0.101",
+    "192.168.0.102",
+    "192.168.0.103",
+    "192.168.0.104"
+  ]
+}

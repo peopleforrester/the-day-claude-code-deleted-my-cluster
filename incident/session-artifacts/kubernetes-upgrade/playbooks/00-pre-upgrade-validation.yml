@@ -1,0 +1,402 @@
+---
+# Pre-Upgrade Validation Playbook
+# Comprehensive health checks before starting the upgrade process
+# This playbook is idempotent and can be run multiple times safely
+
+- name: Pre-Upgrade Validation and Health Checks
+  hosts: all
+  gather_facts: yes
+  any_errors_fatal: false
+  serial: 1
+  
+  vars:
+    validation_report_dir: "/tmp/k8s-upgrade-validation-{{ ansible_date_time.epoch }}"
+    validation_failed: false
+    validation_warnings: []
+    validation_errors: []
+    
+  pre_tasks:
+    - name: Create validation report directory
+      file:
+        path: "{{ validation_report_dir }}"
+        state: directory
+        mode: '0755'
+      run_once: true
+      
+    - name: Initialize validation report
+      copy:
+        content: |
+          # Kubernetes Cluster Pre-Upgrade Validation Report
+          Generated: {{ ansible_date_time.iso8601 }}
+          Target Version: {{ kubernetes_version_target }}
+          Current Version: {{ kubernetes_version_current }}
+          ---
+        dest: "{{ validation_report_dir }}/validation-report.md"
+      run_once: true
+
+  tasks:
+    # ============================================
+    # SECTION 1: Node connectivity and basic health
+    # ============================================
+    - name: "VALIDATION | Check SSH connectivity"
+      ping:
+      register: ssh_connectivity
+      
+    - name: "VALIDATION | Verify hostname resolution"
+      command: hostname -f
+      register: hostname_check
+      changed_when: false
+      
+    - name: "VALIDATION | Check system uptime"
+      command: uptime -p
+      register: uptime_check
+      changed_when: false
+      
+    - name: "VALIDATION | Verify node is not in maintenance mode"
+      stat:
+        path: /etc/kubernetes/maintenance.lock
+      register: maintenance_lock
+      failed_when: maintenance_lock.stat.exists
+      
+    # ============================================
+    # SECTION 2: System requirements validation
+    # ============================================
+    - name: "VALIDATION | Check CPU cores"
+      assert:
+        that:
+          - ansible_processor_vcpus >= 2
+        fail_msg: "Node has insufficient CPU cores ({{ ansible_processor_vcpus }}). Minimum 2 cores required."
+        success_msg: "CPU cores check passed ({{ ansible_processor_vcpus }} cores)"
+        
+    - name: "VALIDATION | Check available memory"
+      assert:
+        that:
+          - ansible_memory_mb.real.total >= 2048
+        fail_msg: "Node has insufficient memory ({{ ansible_memory_mb.real.total }}MB). Minimum 2GB required."
+        success_msg: "Memory check passed ({{ ansible_memory_mb.real.total }}MB)"
+        
+    - name: "VALIDATION | Check disk space on root partition"
+      assert:
+        that:
+          - ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | int > 10737418240
+        fail_msg: "Insufficient disk space on root partition"
+        success_msg: "Disk space check passed"
+        
+    - name: "VALIDATION | Verify swap is disabled"
+      command: swapon --show
+      register: swap_check
+      changed_when: false
+      failed_when: swap_check.stdout != ""
+      
+    - name: "VALIDATION | Check kernel version"
+      assert:
+        that:
+          - ansible_kernel is version('5.4', '>=')
+        fail_msg: "Kernel version {{ ansible_kernel }} is too old. Minimum 5.4 required."
+        success_msg: "Kernel version check passed ({{ ansible_kernel }})"
+        
+    # ============================================
+    # SECTION 3: Network connectivity validation
+    # ============================================
+    - name: "VALIDATION | Test connectivity to API server VIP"
+      wait_for:
+        host: "{{ api_server_vip }}"
+        port: "{{ api_server_port }}"
+        timeout: 10
+        state: started
+      when: inventory_hostname != api_server_vip
+      
+    - name: "VALIDATION | Test DNS resolution"
+      command: nslookup kubernetes.default.svc.cluster.local
+      register: dns_check
+      changed_when: false
+      failed_when: false
+      
+    - name: "VALIDATION | Check network interfaces"
+      assert:
+        that:
+          - ansible_interfaces | length > 1
+        fail_msg: "Insufficient network interfaces detected"
+        success_msg: "Network interfaces check passed"
+        
+    - name: "VALIDATION | Test connectivity between nodes"
+      command: ping -c 2 -W 2 {{ hostvars[item]['ansible_host'] }}
+      loop: "{{ groups['all'] }}"
+      when: item != inventory_hostname
+      changed_when: false
+      register: ping_results
+      failed_when: false
+      
+    # ============================================
+    # SECTION 4: Kubernetes component health
+    # ============================================
+    - name: "VALIDATION | Check kubelet service status"
+      systemd:
+        name: kubelet
+        state: started
+      check_mode: yes
+      register: kubelet_status
+      
+    - name: "VALIDATION | Check containerd service status"
+      systemd:
+        name: containerd
+        state: started
+      check_mode: yes
+      register: containerd_status
+      
+    - name: "VALIDATION | Verify kubelet version"
+      command: kubelet --version
+      register: kubelet_version
+      changed_when: false
+      
+    - name: "VALIDATION | Check current node status"
+      command: kubectl get node {{ ansible_hostname }} -o json
+      register: node_status
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      
+    - name: "VALIDATION | Parse node status"
+      set_fact:
+        node_ready: "{{ (node_status.stdout | from_json).status.conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | first == 'True' }}"
+        
+    - name: "VALIDATION | Assert node is Ready"
+      assert:
+        that:
+          - node_ready
+        fail_msg: "Node {{ ansible_hostname }} is not in Ready state"
+        success_msg: "Node {{ ansible_hostname }} is Ready"
+        
+    # ============================================
+    # SECTION 5: Control plane specific checks
+    # ============================================
+    - block:
+        - name: "VALIDATION | Check etcd health"
+          command: |
+            etcdctl --endpoints=https://127.0.0.1:2379 \
+                    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                    --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+                    --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+                    endpoint health
+          register: etcd_health
+          changed_when: false
+          environment:
+            ETCDCTL_API: 3
+            
+        - name: "VALIDATION | Check API server health"
+          uri:
+            url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
+            validate_certs: no
+            status_code: 200
+          register: apiserver_health
+          
+        - name: "VALIDATION | Check controller-manager health"
+          uri:
+            url: "https://127.0.0.1:10257/healthz"
+            validate_certs: no
+            status_code: 200
+          register: controller_health
+          
+        - name: "VALIDATION | Check scheduler health"
+          uri:
+            url: "https://127.0.0.1:10259/healthz"
+            validate_certs: no
+            status_code: 200
+          register: scheduler_health
+          
+        - name: "VALIDATION | Verify etcd cluster members"
+          command: |
+            etcdctl --endpoints=https://127.0.0.1:2379 \
+                    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                    --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+                    --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+                    member list
+          register: etcd_members
+          changed_when: false
+          environment:
+            ETCDCTL_API: 3
+            
+        - name: "VALIDATION | Check certificate expiration"
+          command: kubeadm certs check-expiration
+          register: cert_expiration
+          changed_when: false
+          
+        - name: "VALIDATION | Verify certificates not expiring soon"
+          assert:
+            that:
+              - "'EXPIRED' not in cert_expiration.stdout"
+              - "'WARNING' not in cert_expiration.stdout"
+            fail_msg: "Some certificates are expired or expiring soon"
+            success_msg: "All certificates are valid"
+            
+      when: inventory_hostname in groups['control_plane']
+      
+    # ============================================
+    # SECTION 6: Workload and application checks
+    # ============================================
+    - name: "VALIDATION | Check for pending pods"
+      command: kubectl get pods --all-namespaces --field-selector=status.phase=Pending -o json
+      register: pending_pods
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      
+    - name: "VALIDATION | Parse pending pods"
+      set_fact:
+        pending_pods_count: "{{ (pending_pods.stdout | from_json).items | length }}"
+      run_once: true
+      
+    - name: "VALIDATION | Warn if pending pods exist"
+      debug:
+        msg: "WARNING: {{ pending_pods_count }} pods are in Pending state"
+      when: pending_pods_count | int > 0
+      run_once: true
+      
+    - name: "VALIDATION | Check for pods in CrashLoopBackOff"
+      shell: |
+        kubectl get pods --all-namespaces -o json | \
+        jq -r '.items[] | select(.status.containerStatuses[]?.state.waiting.reason == "CrashLoopBackOff") | .metadata.namespace + "/" + .metadata.name'
+      register: crashloop_pods
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      
+    - name: "VALIDATION | Check PodDisruptionBudgets"
+      command: kubectl get pdb --all-namespaces -o json
+      register: pdbs
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      
+    # ============================================
+    # SECTION 7: Storage validation
+    # ============================================
+    - name: "VALIDATION | Check PersistentVolume status"
+      command: kubectl get pv -o json
+      register: pv_status
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      
+    - name: "VALIDATION | Verify all PVs are bound or available"
+      assert:
+        that:
+          - (pv_status.stdout | from_json).items | selectattr('status.phase', 'in', ['Bound', 'Available']) | list | length == (pv_status.stdout | from_json).items | length
+        fail_msg: "Some PersistentVolumes are in failed state"
+        success_msg: "All PersistentVolumes are healthy"
+      run_once: true
+      
+    - name: "VALIDATION | Check Longhorn health"
+      uri:
+        url: "http://longhorn-frontend.longhorn-system.svc.cluster.local/v1/volumes"
+        method: GET
+      register: longhorn_health
+      failed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      when: default_storage_class == "longhorn"
+      
+    # ============================================
+    # SECTION 8: CNI validation (Cilium)
+    # ============================================
+    - name: "VALIDATION | Check Cilium status"
+      command: cilium status --wait
+      register: cilium_status
+      changed_when: false
+      failed_when: false
+      when: cni_plugin == "cilium"
+      
+    - name: "VALIDATION | Verify Cilium connectivity"
+      command: cilium connectivity test --test-namespace cilium-test
+      register: cilium_connectivity
+      changed_when: false
+      failed_when: false
+      when: cni_plugin == "cilium"
+      run_once: true
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      
+    # ============================================
+    # SECTION 9: Resource capacity validation
+    # ============================================
+    - name: "VALIDATION | Check cluster resource capacity"
+      shell: |
+        kubectl top nodes --no-headers | awk '{
+          cpu+=$3; 
+          mem+=$5; 
+          count++
+        } 
+        END {
+          avg_cpu=cpu/count; 
+          avg_mem=mem/count; 
+          printf "{\"avg_cpu\": %.0f, \"avg_mem\": %.0f}", avg_cpu, avg_mem
+        }'
+      register: resource_usage
+      changed_when: false
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+      
+    - name: "VALIDATION | Parse resource usage"
+      set_fact:
+        cluster_resource_usage: "{{ resource_usage.stdout | from_json }}"
+      run_once: true
+      
+    - name: "VALIDATION | Warn if resource usage is high"
+      debug:
+        msg: "WARNING: Cluster resource usage is high (CPU: {{ cluster_resource_usage.avg_cpu }}%, Memory: {{ cluster_resource_usage.avg_mem }}%)"
+      when: cluster_resource_usage.avg_cpu | int > validation_cpu_threshold or cluster_resource_usage.avg_mem | int > validation_memory_threshold
+      run_once: true
+      
+    # ============================================
+    # SECTION 10: Version compatibility check
+    # ============================================
+    - name: "VALIDATION | Check upgrade path compatibility"
+      assert:
+        that:
+          - kubernetes_version_current is version(kubernetes_version_target, '<')
+          - kubernetes_version_target.split('.')[1] | int - kubernetes_version_current.split('.')[1] | int <= 1
+        fail_msg: "Invalid upgrade path from {{ kubernetes_version_current }} to {{ kubernetes_version_target }}"
+        success_msg: "Upgrade path is valid"
+      run_once: true
+      
+    - name: "VALIDATION | Check kubeadm upgrade availability"
+      command: kubeadm upgrade plan
+      register: upgrade_plan
+      changed_when: false
+      when: inventory_hostname == groups['control_plane'][0]
+      
+  post_tasks:
+    - name: Generate validation summary
+      template:
+        src: validation_summary.j2
+        dest: "{{ validation_report_dir }}/validation-summary.txt"
+      run_once: true
+      
+    - name: Display validation summary
+      debug:
+        msg: |
+          ===============================================
+          Pre-Upgrade Validation Complete
+          ===============================================
+          Nodes Validated: {{ groups['all'] | length }}
+          Control Plane Nodes: {{ groups['control_plane'] | length }}
+          Worker Nodes: {{ groups['workers'] | length }}
+          
+          Current Version: {{ kubernetes_version_current }}
+          Target Version: {{ kubernetes_version_target }}
+          
+          Validation Report: {{ validation_report_dir }}/validation-summary.txt
+          ===============================================
+      run_once: true
+      
+  handlers:
+    - name: Send validation notification
+      uri:
+        url: "{{ slack_webhook_url }}"
+        method: POST
+        body_format: json
+        body:
+          text: "Pre-upgrade validation completed for cluster {{ cluster_name }}"
+          attachments:
+            - color: "{{ 'danger' if validation_failed else 'good' }}"
+              title: "Validation {{ 'Failed' if validation_failed else 'Passed' }}"
+              text: "Target upgrade: {{ kubernetes_version_current }} → {{ kubernetes_version_target }}"
+      when: notifications_enabled and slack_webhook_url != ""

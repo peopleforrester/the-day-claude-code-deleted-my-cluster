@@ -1,0 +1,32 @@
+---
+# System configuration applied to all nodes
+applied_configuration:
+  swap:
+    status: "disabled"
+    fstab_modified: true
+
+  kernel_modules:
+    loaded:
+      - overlay
+      - br_netfilter
+    config_file: "/etc/modules-load.d/k8s.conf"
+
+  sysctl_parameters:
+    settings:
+      net.bridge.bridge-nf-call-iptables: 1
+      net.bridge.bridge-nf-call-ip6tables: 1
+      net.ipv4.ip_forward: 1
+    config_file: "/etc/sysctl.d/k8s.conf"
+
+  system_updates:
+    apt_update: "completed"
+    apt_upgrade: "completed"
+
+nodes_configured:
+  - 192.168.0.100
+  - 192.168.0.101
+  - 192.168.0.102
+  - 192.168.0.103
+  - 192.168.0.104
+
+timestamp: "2025-08-03"

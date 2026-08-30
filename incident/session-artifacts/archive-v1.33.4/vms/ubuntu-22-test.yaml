@@ -1,0 +1,84 @@
+# Ubuntu 22.04 VM to test if cloud-init works with older version
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-22-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-22-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - name: rootdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        dataVolume:
+          name: ubuntu-22-vm-dv
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-22
+            disable_root: false
+            ssh_pwauth: true
+            chpasswd:
+              list: |
+                root:demo123
+              expire: false
+            packages:
+              - openssh-server
+            runcmd:
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - systemctl restart ssh
+              - systemctl enable ssh
+  dataVolumeTemplates:
+  - metadata:
+      name: ubuntu-22-vm-dv
+    spec:
+      source:
+        registry:
+          url: "docker://quay.io/containerdisks/ubuntu:22.04"
+      pvc:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+        storageClassName: longhorn-fixed

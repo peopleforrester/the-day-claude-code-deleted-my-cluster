@@ -1,0 +1,242 @@
+---
+# Prerequisites Test Suite
+# Run before any upgrade operations to ensure environment readiness
+
+- name: Test Prerequisites and Environment Readiness
+  hosts: all
+  gather_facts: yes
+  any_errors_fatal: yes
+  
+  vars:
+    min_ansible_version: "2.15.0"
+    min_python_version: "3.8"
+    required_disk_space_gb: 10
+    required_memory_gb: 2
+    required_cpu_cores: 2
+    test_results: []
+    
+  tasks:
+    # ============================================
+    # Test 1: Ansible Version
+    # ============================================
+    - name: TEST | Check Ansible version
+      assert:
+        that:
+          - ansible_version.full is version(min_ansible_version, '>=')
+        fail_msg: "Ansible version {{ ansible_version.full }} is too old. Minimum {{ min_ansible_version }} required"
+        success_msg: "✓ Ansible version {{ ansible_version.full }} meets requirements"
+      run_once: true
+      
+    # ============================================
+    # Test 2: Python Version
+    # ============================================
+    - name: TEST | Check Python version on control node
+      command: python3 --version
+      register: python_version
+      changed_when: false
+      run_once: true
+      
+    - name: TEST | Validate Python version
+      assert:
+        that:
+          - python_version.stdout.split()[1] is version(min_python_version, '>=')
+        fail_msg: "Python version is too old. Minimum {{ min_python_version }} required"
+        success_msg: "✓ Python version meets requirements"
+      run_once: true
+      
+    # ============================================
+    # Test 3: SSH Connectivity
+    # ============================================
+    - name: TEST | Verify SSH connectivity
+      ping:
+      register: ssh_test
+      
+    - name: TEST | Record SSH test result
+      set_fact:
+        test_results: "{{ test_results + ['SSH connectivity: PASS'] }}"
+        
+    # ============================================
+    # Test 4: Sudo/Root Access
+    # ============================================
+    - name: TEST | Verify root access
+      command: id -u
+      register: user_id
+      changed_when: false
+      
+    - name: TEST | Assert root access
+      assert:
+        that:
+          - user_id.stdout == "0"
+        fail_msg: "Not running as root on {{ inventory_hostname }}"
+        success_msg: "✓ Root access confirmed on {{ inventory_hostname }}"
+        
+    # ============================================
+    # Test 5: Required Commands
+    # ============================================
+    - name: TEST | Check for required commands
+      command: which {{ item }}
+      loop:
+        - kubectl
+        - kubeadm
+        - kubelet
+        - systemctl
+        - apt-get
+        - curl
+        - tar
+        - openssl
+      register: command_checks
+      changed_when: false
+      failed_when: false
+      
+    - name: TEST | Validate all commands exist
+      assert:
+        that:
+          - item.rc == 0
+        fail_msg: "Required command '{{ item.item }}' not found on {{ inventory_hostname }}"
+        success_msg: "✓ Command '{{ item.item }}' found"
+      loop: "{{ command_checks.results }}"
+      
+    # ============================================
+    # Test 6: System Resources
+    # ============================================
+    - name: TEST | Check CPU cores
+      assert:
+        that:
+          - ansible_processor_vcpus >= required_cpu_cores
+        fail_msg: "Insufficient CPU cores: {{ ansible_processor_vcpus }} < {{ required_cpu_cores }}"
+        success_msg: "✓ CPU cores adequate: {{ ansible_processor_vcpus }}"
+        
+    - name: TEST | Check available memory
+      assert:
+        that:
+          - (ansible_memory_mb.real.free + ansible_memory_mb.swap.free) / 1024 >= required_memory_gb
+        fail_msg: "Insufficient free memory"
+        success_msg: "✓ Memory adequate: {{ ansible_memory_mb.real.total }}MB total"
+        
+    - name: TEST | Check disk space
+      assert:
+        that:
+          - item.size_available > (required_disk_space_gb * 1024 * 1024 * 1024)
+        fail_msg: "Insufficient disk space on {{ item.mount }}"
+        success_msg: "✓ Disk space adequate on {{ item.mount }}"
+      loop: "{{ ansible_mounts }}"
+      when: item.mount in ['/', '/var', '/etc']
+      
+    # ============================================
+    # Test 7: Network Connectivity
+    # ============================================
+    - name: TEST | Check DNS resolution
+      command: nslookup kubernetes.io
+      register: dns_test
+      changed_when: false
+      failed_when: false
+      
+    - name: TEST | Validate DNS working
+      assert:
+        that:
+          - dns_test.rc == 0
+        fail_msg: "DNS resolution not working on {{ inventory_hostname }}"
+        success_msg: "✓ DNS resolution working"
+        
+    - name: TEST | Check internet connectivity
+      uri:
+        url: https://registry.k8s.io
+        method: HEAD
+        status_code: [200, 301, 302, 401, 403]
+      register: internet_test
+      failed_when: false
+      
+    - name: TEST | Validate internet access
+      assert:
+        that:
+          - internet_test.status in [200, 301, 302, 401, 403]
+        fail_msg: "Cannot reach container registry"
+        success_msg: "✓ Container registry reachable"
+        
+    # ============================================
+    # Test 8: Kubernetes API Access
+    # ============================================
+    - name: TEST | Check kubeconfig exists
+      stat:
+        path: /etc/kubernetes/admin.conf
+      register: kubeconfig
+      when: inventory_hostname in groups['control_plane']
+      
+    - name: TEST | Validate kubeconfig
+      assert:
+        that:
+          - kubeconfig.stat.exists
+        fail_msg: "Kubeconfig not found on control plane node"
+        success_msg: "✓ Kubeconfig exists"
+      when: inventory_hostname in groups['control_plane']
+      
+    # ============================================
+    # Test 9: Service Status
+    # ============================================
+    - name: TEST | Check critical services
+      systemd:
+        name: "{{ item }}"
+      register: service_status
+      loop:
+        - kubelet
+        - containerd
+      failed_when: false
+      
+    - name: TEST | Validate services are running
+      assert:
+        that:
+          - item.status.ActiveState == "active"
+        fail_msg: "Service {{ item.item }} is not active"
+        success_msg: "✓ Service {{ item.item }} is active"
+      loop: "{{ service_status.results }}"
+      
+    # ============================================
+    # Test 10: Firewall Rules
+    # ============================================
+    - name: TEST | Check required ports are open
+      wait_for:
+        port: "{{ item }}"
+        host: "{{ ansible_default_ipv4.address }}"
+        timeout: 5
+        state: started
+      loop:
+        - 22    # SSH
+        - 6443  # API server (control plane only)
+        - 2379  # etcd (control plane only)
+        - 10250 # kubelet
+        - 10255 # kubelet read-only
+      failed_when: false
+      register: port_checks
+      
+  post_tasks:
+    - name: Generate prerequisite test report
+      copy:
+        content: |
+          ===============================================
+          PREREQUISITE TEST REPORT
+          ===============================================
+          Timestamp: {{ ansible_date_time.iso8601 }}
+          
+          Environment Checks:
+          - Ansible Version: {{ ansible_version.full }} ✓
+          - Python Version: {{ python_version.stdout }} ✓
+          
+          Node: {{ inventory_hostname }}
+          - OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+          - Kernel: {{ ansible_kernel }}
+          - CPUs: {{ ansible_processor_vcpus }}
+          - Memory: {{ ansible_memory_mb.real.total }}MB
+          - Disk: {{ ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | human_readable }}
+          
+          Test Results:
+          {% for result in test_results %}
+          - {{ result }}
+          {% endfor %}
+          
+          Status: ALL PREREQUISITES MET
+          ===============================================
+        dest: "/tmp/prerequisite-test-{{ inventory_hostname }}-{{ ansible_date_time.epoch }}.txt"
+        
+    - name: Display test summary
+      debug:
+        msg: "✓ All prerequisite tests passed on {{ inventory_hostname }}"

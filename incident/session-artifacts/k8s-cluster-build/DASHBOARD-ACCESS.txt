@@ -1,0 +1,32 @@
+KUBERNETES DASHBOARD ACCESS INFORMATION
+======================================
+
+DASHBOARD URLs:
+--------------
+You can access the dashboard from ANY node using port 30443:
+
+https://192.168.0.100:30443
+https://192.168.0.101:30443
+https://192.168.0.102:30443
+https://192.168.0.103:30443
+https://192.168.0.104:30443
+
+ADMIN TOKEN:
+<REDACTED-TOKEN>
+<REDACTED-K8S-SERVICEACCOUNT-JWT>
+
+HOW TO ACCESS:
+--------------
+1. Open your browser and navigate to one of the URLs above
+2. You'll get a security warning (self-signed certificate) - click "Advanced" and proceed
+3. Select "Token" authentication method
+4. Paste the admin token above
+5. Click "Sign In"
+
+TOKEN VALIDITY:
+--------------
+This token is valid for 1 year (expires: 2026-08-04)
+
+ADMIN PRIVILEGES:
+-----------------
+This token has cluster-admin role with full access to all resources.

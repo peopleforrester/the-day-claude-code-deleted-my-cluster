@@ -1,0 +1,71 @@
+name: pr-validation
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  merge_group:
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  title:
+    name: title
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            chore
+            docs
+            refactor
+            perf
+            test
+            build
+            ci
+            revert
+            style
+            security
+
+  ai-content:
+    name: ai-content-detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: label and require reviewer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          base=${{ github.event.pull_request.base.sha }}
+          head=${{ github.event.pull_request.head.sha }}
+          if git log "$base..$head" --format=%B | grep -Eiq 'Co-authored-by: (Claude|Cursor|GitHub Copilot|Aider|Devin)|Generated with Claude Code'; then
+              gh pr edit "$PR" --add-label "ai-generated" || true
+              if ! git log "$base..$head" --format=%B | grep -Eq '^(Reviewed-by|Signed-off-by): .+<.+@.+>'; then
+                  echo "::error::AI-authored PR has no Reviewed-by/Signed-off-by trailer."
+                  exit 1
+              fi
+          fi
+
+  tamper-check:
+    name: tamper-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: detect disabled Claude Code hooks
+        run: |
+          set -euo pipefail
+          if git diff origin/main... -- .claude/ 2>/dev/null | grep -E '"disableAllHooks"\s*:\s*true'; then
+              echo "::error::Attempt to disable Claude Code hooks via disableAllHooks"
+              exit 1
+          fi

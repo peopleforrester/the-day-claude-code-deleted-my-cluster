@@ -1,0 +1,123 @@
+# Ubuntu 24.04 VM with forced SSH enablement
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu-vm-ssh
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: longhorn-fixed
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: ubuntu-24-04-golden
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm-ssh
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm-ssh
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: ubuntu-vm-ssh
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+            manage_etc_hosts: true
+
+            # Set passwords directly
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # Force SSH setup through script
+            bootcmd:
+              - echo "Starting SSH force-enable script..."
+
+            runcmd:
+              # Force install SSH if not present
+              - apt-get update || true
+              - DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server || true
+
+              # Force enable root login
+              - sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - sed -i 's/#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+              - sed -i 's/PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+              # Ensure root has a password
+              - echo 'root:demo123' | chpasswd
+
+              # Force SSH to start
+              - systemctl enable ssh || true
+              - systemctl enable sshd || true
+              - systemctl restart ssh || systemctl restart sshd || true
+              - service ssh start || service sshd start || true
+
+              # Reset machine ID
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+
+              # Ensure network is up
+              - netplan apply || true
+              - ip addr show
+
+              # Debug - show SSH status
+              - systemctl status ssh || systemctl status sshd || true
+              - netstat -tlpn | grep :22 || true
+              - ps aux | grep sshd || true

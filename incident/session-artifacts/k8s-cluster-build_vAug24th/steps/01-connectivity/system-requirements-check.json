@@ -1,0 +1,58 @@
+{
+  "requirements": {
+    "control_plane": {
+      "min_memory_gb": 4,
+      "min_cpu_cores": 2,
+      "min_disk_gb": 10
+    },
+    "worker": {
+      "min_memory_gb": 2,
+      "min_cpu_cores": 1,
+      "min_disk_gb": 10
+    }
+  },
+  "validation_results": {
+    "master1": {
+      "memory_check": "WARN - 3.8GB < 4GB recommended",
+      "cpu_check": "PASS - 2 cores meets requirement",
+      "disk_check": "PASS - 22GB available",
+      "os_check": "PASS - Ubuntu 24.04 LTS",
+      "cgroup_check": "PASS - cgroup v2 active"
+    },
+    "master2": {
+      "memory_check": "WARN - 3.8GB < 4GB recommended",
+      "cpu_check": "PASS - 2 cores meets requirement",
+      "disk_check": "PASS - 22GB available",
+      "os_check": "PASS - Ubuntu 24.04 LTS",
+      "cgroup_check": "PASS - cgroup v2 active"
+    },
+    "master3": {
+      "memory_check": "WARN - 3.8GB < 4GB recommended",
+      "cpu_check": "PASS - 2 cores meets requirement",
+      "disk_check": "PASS - 22GB available",
+      "os_check": "PASS - Ubuntu 24.04 LTS",
+      "cgroup_check": "PASS - cgroup v2 active"
+    },
+    "worker1": {
+      "memory_check": "PASS - 3.8GB > 2GB required",
+      "cpu_check": "PASS - 2 cores meets requirement",
+      "disk_check": "PASS - 17GB available",
+      "os_check": "PASS - Ubuntu 24.04 LTS",
+      "cgroup_check": "PASS - cgroup v2 active"
+    },
+    "worker2": {
+      "memory_check": "PASS - 3.8GB > 2GB required",
+      "cpu_check": "PASS - 2 cores meets requirement",
+      "disk_check": "PASS - 17GB available",
+      "os_check": "PASS - Ubuntu 24.04 LTS",
+      "cgroup_check": "PASS - cgroup v2 active"
+    }
+  },
+  "overall_status": "PASS_WITH_WARNINGS",
+  "notes": [
+    "Control plane nodes have 3.8GB RAM, slightly below 4GB recommendation",
+    "This should work but may experience pressure under heavy load",
+    "All nodes running Ubuntu 24.04.3 LTS with kernel 6.8.0-71-generic",
+    "Cgroup v2 confirmed active on all nodes (systemd cgroup driver compatible)"
+  ]
+}

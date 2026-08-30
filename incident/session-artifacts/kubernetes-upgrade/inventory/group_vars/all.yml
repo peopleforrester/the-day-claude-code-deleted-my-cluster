@@ -1,0 +1,289 @@
+---
+# Global variables for all hosts
+# These can be overridden at group or host level
+
+# Cluster identification
+cluster_name: "homelab-k8s"
+cluster_environment: "production"
+cluster_region: "home"
+cluster_zone: "upstairs"
+
+# Version management
+kubernetes_version_current: "1.32.8"
+kubernetes_version_target: "1.33.4"
+kubeadm_version: "{{ kubernetes_version_target }}-*"
+kubelet_version: "{{ kubernetes_version_target }}-*"
+kubectl_version: "{{ kubernetes_version_target }}-*"
+
+# Upgrade strategy
+upgrade_strategy: "rolling"  # Options: rolling, blue-green, canary
+upgrade_max_surge: 1
+upgrade_max_unavailable: 1
+drain_timeout_seconds: 300
+eviction_timeout_seconds: 60
+delete_emptydir_data: true
+
+# Component versions
+containerd_version: "1.7.24"
+cilium_version: "1.16.5"
+etcd_version: "3.5.17"
+coredns_version: "1.12.0"
+
+# Repository configuration
+kubernetes_repo_url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version_target_short }}/deb/"
+kubernetes_repo_key: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version_target_short }}/deb/Release.key"
+docker_repo_url: "https://download.docker.com/linux/ubuntu"
+
+# Network configuration
+pod_subnet: "10.0.0.0/16"
+service_subnet: "10.96.0.0/12"
+cluster_dns_domain: "cluster.local"
+cluster_dns_ip: "10.96.0.10"
+nodeport_range: "30000-32767"
+
+# API server configuration
+api_server_vip: "192.168.0.50"
+api_server_port: 6443
+api_server_cert_sans:
+  - "kubernetes"
+  - "kubernetes.default"
+  - "kubernetes.default.svc"
+  - "kubernetes.default.svc.cluster.local"
+  - "{{ api_server_vip }}"
+  - "127.0.0.1"
+  - "localhost"
+
+# etcd configuration
+etcd_data_dir: "/var/lib/etcd"
+etcd_backup_dir: "/backup/etcd"
+etcd_backup_retention_days: 30
+etcd_snapshot_count: 10000
+etcd_heartbeat_interval: 100
+etcd_election_timeout: 1000
+etcd_max_snapshots: 5
+etcd_max_wals: 5
+etcd_quota_backend_bytes: 8589934592  # 8GB
+
+# Backup configuration
+backup_enabled: true
+backup_location: "/backup/kubernetes"
+backup_schedule: "0 2 * * *"  # Daily at 2 AM
+backup_retention_days: 30
+backup_compression: true
+backup_encryption: true
+backup_verification: true
+
+# S3 backup configuration (optional)
+s3_backup_enabled: false
+s3_bucket_name: ""
+s3_bucket_region: "us-east-1"
+s3_access_key: ""  # Store in vault
+s3_secret_key: ""  # Store in vault
+
+# Monitoring and observability
+monitoring_enabled: true
+metrics_server_enabled: true
+prometheus_enabled: true
+grafana_enabled: true
+alertmanager_enabled: true
+log_level: "info"  # debug, info, warn, error
+
+# Health checks
+health_check_enabled: true
+health_check_interval: 60
+health_check_timeout: 10
+health_check_retries: 3
+component_health_checks:
+  - "etcd"
+  - "kube-apiserver"
+  - "kube-controller-manager"
+  - "kube-scheduler"
+  - "kubelet"
+  - "kube-proxy"
+
+# Resource limits
+resource_requests_cpu: "100m"
+resource_requests_memory: "128Mi"
+resource_limits_cpu: "500m"
+resource_limits_memory: "512Mi"
+
+# Security settings
+rbac_enabled: true
+psp_enabled: false  # Deprecated in 1.25+
+pod_security_standards: true
+network_policies_enabled: true
+audit_logging_enabled: true
+encryption_at_rest: true
+rotate_certificates: true
+certificate_validity_days: 365
+
+# Feature gates
+feature_gates:
+  - "RotateKubeletServerCertificate=true"
+  - "ServerSideApply=true"
+  - "GracefulNodeShutdown=true"
+  - "GracefulNodeShutdownBasedOnPodPriority=true"
+
+# Admission controllers
+admission_controllers:
+  - "NamespaceLifecycle"
+  - "LimitRanger"
+  - "ServiceAccount"
+  - "DefaultStorageClass"
+  - "DefaultTolerationSeconds"
+  - "MutatingAdmissionWebhook"
+  - "ValidatingAdmissionWebhook"
+  - "ResourceQuota"
+  - "PodSecurity"
+
+# Storage configuration
+default_storage_class: "longhorn"
+persistent_volume_reclaim_policy: "Retain"
+volume_snapshot_enabled: true
+csi_drivers:
+  - "longhorn"
+
+# Registry configuration
+container_registry: "registry.k8s.io"
+container_registry_mirror: ""
+insecure_registries: []
+registry_credentials: {}  # Store in vault
+
+# Proxy configuration (if needed)
+http_proxy: ""
+https_proxy: ""
+no_proxy: "localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.cluster.local"
+
+# DNS configuration
+upstream_dns_servers:
+  - "192.168.0.91"
+  - "9.9.9.9"
+  - "1.1.1.1"
+
+# System configuration
+kernel_modules:
+  - "overlay"
+  - "br_netfilter"
+  - "ip_vs"
+  - "ip_vs_rr"
+  - "ip_vs_wrr"
+  - "ip_vs_sh"
+  - "nf_conntrack"
+
+sysctl_settings:
+  net.bridge.bridge-nf-call-iptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.ipv4.ip_forward: 1
+  net.ipv6.conf.all.forwarding: 1
+  net.ipv4.tcp_congestion_control: "bbr"
+  net.core.default_qdisc: "fq"
+  net.ipv4.tcp_notsent_lowat: 16384
+  fs.inotify.max_user_instances: 8192
+  fs.inotify.max_user_watches: 524288
+  kernel.pid_max: 4194304
+
+# Swap configuration
+swap_disabled: true
+swappiness: 0
+
+# Package management
+package_update_cache: true
+package_upgrade_system: false
+package_autoremove: true
+package_autoclean: true
+
+# Logging configuration
+log_dir: "/var/log/kubernetes"
+audit_log_dir: "/var/log/kubernetes-audit"
+log_rotation_enabled: true
+log_rotation_size: "100M"
+log_rotation_count: 10
+log_shipping_enabled: false
+log_shipping_target: ""
+
+# Notification configuration
+notifications_enabled: false
+notification_channels:
+  slack:
+    enabled: false
+    webhook_url: ""  # Store in vault
+    channel: "#k8s-upgrades"
+    username: "Ansible K8s Upgrade Bot"
+    icon_emoji: ":kubernetes:"
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+    smtp_user: ""  # Store in vault
+    smtp_password: ""  # Store in vault
+    from_address: ""
+    to_addresses: []
+  teams:
+    enabled: false
+    webhook_url: ""  # Store in vault
+
+# Maintenance window
+maintenance_window_enabled: false
+maintenance_window_start: "02:00"
+maintenance_window_end: "06:00"
+maintenance_window_days:
+  - "saturday"
+  - "sunday"
+
+# Compliance and standards
+cis_compliance_enabled: true
+cis_benchmark_version: "1.8.0"
+compliance_scan_enabled: true
+compliance_scan_schedule: "0 3 * * 0"  # Weekly on Sunday at 3 AM
+
+# Disaster recovery
+dr_enabled: false
+dr_site: ""
+dr_replication_enabled: false
+dr_backup_location: ""
+
+# Tags for resource management
+tags:
+  environment: "production"
+  managed_by: "ansible"
+  automation: "kubernetes-upgrade"
+  cost_center: "homelab"
+  owner: "admin"
+  
+# Ansible behavior
+ansible_become: true
+ansible_become_method: "sudo"
+ansible_become_user: "root"
+gather_facts: true
+gather_subset: "all"
+fact_caching: true
+fact_caching_timeout: 3600
+
+# Validation thresholds
+validation_cpu_threshold: 80  # Percentage
+validation_memory_threshold: 80  # Percentage
+validation_disk_threshold: 85  # Percentage
+validation_pod_restart_threshold: 5  # Number of restarts
+
+# Rollback triggers
+rollback_on_failure: true
+rollback_health_check_failures: 3
+rollback_timeout: 600
+rollback_verification_enabled: true
+
+# Performance tuning
+parallel_operations: 5
+batch_size: 2
+rate_limit: 10  # Operations per minute
+connection_pool_size: 100
+request_timeout: 30
+retry_max_attempts: 3
+retry_delay: 5
+
+# Development/Testing flags
+debug_mode: false
+verbose_output: false
+dry_run_mode: false
+simulation_mode: false
+skip_validation: false
+force_upgrade: false

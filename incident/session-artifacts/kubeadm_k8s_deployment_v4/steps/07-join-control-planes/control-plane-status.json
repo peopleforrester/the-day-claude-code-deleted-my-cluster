@@ -1,0 +1,39 @@
+{
+  "control_plane_nodes": [
+    {
+      "hostname": "master1",
+      "ip": "192.168.0.100",
+      "status": "NotReady",
+      "version": "v1.31.11",
+      "role": "control-plane",
+      "joined": "initial"
+    },
+    {
+      "hostname": "master2",
+      "ip": "192.168.0.101",
+      "status": "NotReady",
+      "version": "v1.31.11",
+      "role": "control-plane",
+      "joined": "2025-08-04T12:52:00Z"
+    },
+    {
+      "hostname": "master3",
+      "ip": "192.168.0.102",
+      "status": "NotReady",
+      "version": "v1.31.11",
+      "role": "control-plane",
+      "joined": "2025-08-04T12:52:30Z"
+    }
+  ],
+  "etcd_cluster": {
+    "members": 3,
+    "healthy": true,
+    "endpoints": [
+      "https://192.168.0.100:2379",
+      "https://192.168.0.101:2379",
+      "https://192.168.0.102:2379"
+    ]
+  },
+  "ha_status": "configured",
+  "notes": "All nodes NotReady - awaiting CNI installation"
+}

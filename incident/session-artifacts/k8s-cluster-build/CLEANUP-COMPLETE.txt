@@ -1,0 +1,56 @@
+KUBERNETES CLUSTER CLEANUP COMPLETE
+===================================
+
+Date: 2025-08-05
+
+The following cleanup actions have been completed on all nodes (192.168.0.100-104):
+
+✓ KUBERNETES COMPONENTS REMOVED:
+  - kubeadm reset executed on all nodes
+  - kubelet, kubeadm, kubectl packages removed
+  - kubernetes-cni package removed
+  - All Kubernetes configuration files deleted
+  - etcd data directory wiped
+
+✓ CONTAINER RUNTIME REMOVED:
+  - containerd package removed
+  - containerd configuration deleted
+  - Container runtime directories cleaned
+
+✓ NETWORK CLEANUP:
+  - CNI network interfaces deleted (cni0, tunl0, etc.)
+  - iptables rules flushed
+  - Calico/CNI configurations removed
+  - Network directories cleaned
+
+✓ SYSTEM CONFIGURATION RESET:
+  - sysctl settings reset
+  - kernel modules configuration removed
+  - systemd services disabled and removed
+  - apt repositories for Kubernetes removed
+
+✓ LOCAL CLEANUP:
+  - kubectl contexts removed from ~/.kube/config
+  - SSH known_hosts entries removed for all cluster nodes
+  - Temporary configuration files deleted
+
+✓ DIRECTORIES REMOVED:
+  - /etc/kubernetes
+  - /var/lib/kubelet
+  - /var/lib/etcd
+  - /var/lib/cni
+  - /var/lib/calico
+  - /etc/cni
+  - /opt/cni
+  - /var/log/pods
+  - /var/log/containers
+  - ~/.kube (on all nodes)
+
+RECOMMENDATION:
+--------------
+For complete cleanup, reboot all nodes:
+for node in 192.168.0.100 192.168.0.101 192.168.0.102 192.168.0.103 192.168.0.104; do
+    ssh root@$node 'reboot'
+done
+
+The systems are now restored to their pre-Kubernetes state.

@@ -1,0 +1,191 @@
+=== CURRENT NETWORK CONFIGURATION DISCOVERY ===
+
+--- k8s04 (192.168.0.53) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enp1s0           UP             e8:ff:1e:d9:42:a0 <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlo1             DOWN           e8:62:be:2f:2f:42 <BROADCAST,MULTICAST>
+cilium_net@cilium_host UP             1a:cc:66:84:df:bc <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             8e:bc:8b:0a:53:7e <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        ae:50:86:a3:2d:80 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if7   UP             86:a8:41:a6:da:0a <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc253a02a301b3@if9 UP             e2:89:1b:29:35:14 <BROADCAST,MULTICAST,UP,LOWER_UP>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enp1s0           UP             192.168.0.53/24 fe80::eaff:1eff:fed9:42a0/64
+wlo1             DOWN
+cilium_net@cilium_host UP             fe80::18cc:66ff:fe84:dfbc/64
+cilium_host@cilium_net UP             10.244.3.244/32 fe80::8cbc:8bff:fe0a:537e/64
+cilium_vxlan     UNKNOWN        fe80::ac50:86ff:fea3:2d80/64
+lxc_health@if7   UP             fe80::84a8:41ff:fea6:da0a/64
+lxc253a02a301b3@if9 UP             fe80::e089:1bff:fe29:3514/64
+kube-ipvs0       DOWN           10.106.136.162/32 10.96.0.10/32 10.96.0.1/32 10.110.130.52/32
+
+Routes:
+default via 192.168.0.1 dev enp1s0 proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive
+
+--- k8s05 (192.168.0.54) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enp1s0           UP             e8:ff:1e:d9:3a:e7 <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlo1             DOWN           94:b6:09:1e:94:61 <BROADCAST,MULTICAST>
+cilium_net@cilium_host UP             da:a4:37:e5:c5:3b <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             6a:25:8d:47:3c:78 <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        fe:37:40:62:56:49 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if7   UP             7a:90:13:ed:6c:a4 <BROADCAST,MULTICAST,UP,LOWER_UP>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enp1s0           UP             192.168.0.54/24 fe80::eaff:1eff:fed9:3ae7/64
+wlo1             DOWN
+cilium_net@cilium_host UP             fe80::d8a4:37ff:fee5:c53b/64
+cilium_host@cilium_net UP             10.244.4.234/32 fe80::6825:8dff:fe47:3c78/64
+cilium_vxlan     UNKNOWN        fe80::fc37:40ff:fe62:5649/64
+lxc_health@if7   UP             fe80::7890:13ff:feed:6ca4/64
+kube-ipvs0       DOWN           10.110.130.52/32 10.106.136.162/32 10.96.0.10/32 10.96.0.1/32
+
+Routes:
+default via 192.168.0.1 dev enp1s0 proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive
+
+--- k8s06 (192.168.0.55) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enx000000000f8d  UP             00:00:00:00:0f:8d <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlp2s0b1         DOWN           68:a8:6d:17:4d:ae <BROADCAST,MULTICAST>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+cilium_net@cilium_host UP             3a:0d:f9:35:e5:1d <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             96:72:3f:55:2e:d1 <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        ea:dd:e0:6f:e1:59 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if9   UP             c2:3d:02:dd:f6:a6 <BROADCAST,MULTICAST,UP,LOWER_UP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enx000000000f8d  UP             192.168.0.55/24 fe80::200:ff:fe00:f8d/64
+wlp2s0b1         DOWN
+kube-ipvs0       DOWN           10.106.136.162/32 10.96.0.10/32 10.96.0.1/32 10.110.130.52/32
+cilium_net@cilium_host UP             fe80::380d:f9ff:fe35:e51d/64
+cilium_host@cilium_net UP             10.244.5.15/32 fe80::9472:3fff:fe55:2ed1/64
+cilium_vxlan     UNKNOWN        fe80::e8dd:e0ff:fe6f:e159/64
+lxc_health@if9   UP             fe80::c03d:2ff:fedd:f6a6/64
+
+Routes:
+default via 192.168.0.1 dev enx000000000f8d proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive
+
+--- k8s07 (192.168.0.56) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enp2s0           UP             c8:5a:cf:34:f5:f5 <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlp1s0           DOWN           b4:b5:b6:de:5a:33 <BROADCAST,MULTICAST>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+cilium_net@cilium_host UP             ce:d0:a3:5c:1c:db <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             22:8a:69:ff:9e:aa <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        8e:71:1d:05:6b:76 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if9   UP             72:16:fc:21:df:35 <BROADCAST,MULTICAST,UP,LOWER_UP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enp2s0           UP             192.168.0.56/24 fe80::ca5a:cfff:fe34:f5f5/64
+wlp1s0           DOWN
+kube-ipvs0       DOWN           10.96.0.1/32 10.110.130.52/32 10.106.136.162/32 10.96.0.10/32
+cilium_net@cilium_host UP             fe80::ccd0:a3ff:fe5c:1cdb/64
+cilium_host@cilium_net UP             10.244.6.102/32 fe80::208a:69ff:feff:9eaa/64
+cilium_vxlan     UNKNOWN        fe80::8c71:1dff:fe05:6b76/64
+lxc_health@if9   UP             fe80::7016:fcff:fe21:df35/64
+
+Routes:
+default via 192.168.0.1 dev enp2s0 proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive
+
+--- k8s08 (192.168.0.57) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enxc8a362359d2c  UP             c8:a3:62:35:9d:2c <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlp1s0           DOWN           ac:ed:5c:ff:94:b1 <BROADCAST,MULTICAST>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+cilium_net@cilium_host UP             2e:e7:14:01:33:e3 <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             ae:8c:95:ee:20:2d <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        fa:fa:97:47:f4:02 <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if9   UP             de:7c:92:6c:ce:5d <BROADCAST,MULTICAST,UP,LOWER_UP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enxc8a362359d2c  UP             192.168.0.57/24 fe80::caa3:62ff:fe35:9d2c/64
+wlp1s0           DOWN
+kube-ipvs0       DOWN           10.96.0.10/32 10.96.0.1/32 10.110.130.52/32 10.106.136.162/32
+cilium_net@cilium_host UP             fe80::2ce7:14ff:fe01:33e3/64
+cilium_host@cilium_net UP             10.244.7.3/32 fe80::ac8c:95ff:feee:202d/64
+cilium_vxlan     UNKNOWN        fe80::f8fa:97ff:fe47:f402/64
+lxc_health@if9   UP             fe80::dc7c:92ff:fe6c:ce5d/64
+
+Routes:
+default via 192.168.0.1 dev enxc8a362359d2c proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive
+
+--- k8s09 (192.168.0.58) ---
+Interfaces:
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP>
+enp3s0           DOWN           60:18:95:3c:48:7b <BROADCAST,MULTICAST>
+enx5c857e38630f  UP             5c:85:7e:38:63:0f <BROADCAST,MULTICAST,UP,LOWER_UP>
+wlp4s0           DOWN           94:e2:3c:38:f7:f2 <BROADCAST,MULTICAST>
+kube-ipvs0       DOWN           fe:47:06:73:1d:55 <BROADCAST,NOARP>
+cilium_net@cilium_host UP             26:9d:c4:85:f6:44 <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_host@cilium_net UP             ea:c3:06:3b:49:94 <BROADCAST,MULTICAST,NOARP,UP,LOWER_UP>
+cilium_vxlan     UNKNOWN        46:16:e8:4d:15:8d <BROADCAST,MULTICAST,UP,LOWER_UP>
+lxc_health@if10  UP             0e:d8:3f:28:ef:7f <BROADCAST,MULTICAST,UP,LOWER_UP>
+
+IP Addresses:
+lo               UNKNOWN        127.0.0.1/8 ::1/128
+enp3s0           DOWN
+enx5c857e38630f  UP             192.168.0.58/24 fe80::5e85:7eff:fe38:630f/64
+wlp4s0           DOWN
+kube-ipvs0       DOWN           10.96.0.10/32 10.96.0.1/32 10.110.130.52/32 10.106.136.162/32
+cilium_net@cilium_host UP             fe80::249d:c4ff:fe85:f644/64
+cilium_host@cilium_net UP             10.244.8.102/32 fe80::e8c3:6ff:fe3b:4994/64
+cilium_vxlan     UNKNOWN        fe80::4416:e8ff:fe4d:158d/64
+lxc_health@if10  UP             fe80::cd8:3fff:fe28:ef7f/64
+
+Routes:
+default via 192.168.0.1 dev enx5c857e38630f proto static
+
+Netplan config:
+50-cloud-init.yaml
+
+Network Manager:
+inactive
+inactive

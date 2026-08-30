@@ -1,0 +1,118 @@
+# Longhorn v1.9.0 Helm Values
+# Date: 2025-08-25
+# Cluster: k8s-cluster-build
+
+# Default replica count for volumes
+defaultSettings:
+  defaultReplicaCount: 3
+  defaultDataLocality: "best-effort"
+  replicaSoftAntiAffinity: true
+  replicaAutoBalance: "best-effort"
+  storageMinimalAvailablePercentage: 10
+  storageOverProvisioningPercentage: 100
+  backupTarget: ""
+  backupTargetCredentialSecret: ""
+  createDefaultDiskLabeledNodes: true
+  defaultLonghornStaticStorageClass: "longhorn-static"
+  nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
+  allowNodeDrainWithLastHealthyReplica: false
+  mkfsExt4Parameters: ""
+  priorityClass: "system-node-critical"
+  autoSalvage: true
+  autoDeletePodWhenVolumeDetachedUnexpectedly: true
+  disableSchedulingOnCordonedNode: true
+  engineReplicaTimeout: 8
+  restoreVolumeRecurringJobs: true
+  backupCompressionMethod: "gzip"
+  backupConcurrentLimit: 5
+  restoreConcurrentLimit: 5
+
+# Persistence configuration
+persistence:
+  defaultClass: true
+  defaultFsType: ext4
+  defaultMkfsParams: ""
+  defaultClassReplicaCount: 3
+  defaultDataLocality: "best-effort"
+  reclaimPolicy: Delete
+  migratable: false
+  recurringJobSelector:
+    enable: false
+    jobList: []
+  backingImage:
+    enable: false
+    name: ""
+    dataSourceType: ""
+    dataSourceParameters: ""
+    expectedChecksum: ""
+  defaultNodeSelector:
+    enable: false
+    selector: []
+  removeSnapshotsDuringFilesystemTrim: true
+
+# Ingress for UI (optional - we'll use NodePort for now)
+ingress:
+  enabled: false
+
+# Service configuration for UI
+service:
+  ui:
+    type: NodePort
+    nodePort: 30888
+
+# CSI Driver configuration
+csi:
+  # Replica count for CSI controllers
+  attacherReplicaCount: 3
+  provisionerReplicaCount: 3
+  resizerReplicaCount: 3
+  snapshotterReplicaCount: 3
+
+# Longhorn Manager configuration
+longhornManager:
+  priorityClass: "system-node-critical"
+  tolerations: []
+  nodeSelector: {}
+
+# Longhorn Driver configuration
+longhornDriver:
+  priorityClass: "system-node-critical"
+  tolerations: []
+  nodeSelector: {}
+
+# Longhorn UI configuration
+longhornUI:
+  priorityClass: "system-cluster-critical"
+  tolerations: []
+  nodeSelector: {}
+
+# Default storage class parameters
+storageClass:
+  name: longhorn
+  isDefault: true
+  reclaimPolicy: Delete
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  parameters:
+    numberOfReplicas: "3"
+    staleReplicaTimeout: "2880"
+    fromBackup: ""
+    fsType: "ext4"
+    dataLocality: "best-effort"
+
+# Resource requirements
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Enable monitoring
+metrics:
+  serviceMonitor:
+    enabled: false
+
+# Namespace to install Longhorn
+namespaceOverride: "longhorn-system"

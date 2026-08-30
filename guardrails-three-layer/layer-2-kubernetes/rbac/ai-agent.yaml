@@ -1,0 +1,87 @@
+# Least-privilege workspace for AI coding agents.
+# Read-heavy, namespace-scoped writes, NO pods/exec, NO secrets, NO namespaces.delete.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-workspace
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    purpose: ai-agent-sandbox
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-agent
+  namespace: ai-workspace
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ai-agent-namespace-role
+  namespace: ai-workspace
+rules:
+  - apiGroups: [""]
+    resources: [pods, services, endpoints, events, persistentvolumeclaims, serviceaccounts]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, statefulsets, daemonsets]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, watch, create, update, patch]   # no delete
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, watch, create, update, patch]   # no delete
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get, list]
+  # Explicitly NOT granted: pods/exec, pods/attach, pods/portforward,
+  # pods/ephemeralcontainers, secrets, namespaces, rbac.authorization.k8s.io/*
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ai-agent-namespace-binding
+  namespace: ai-workspace
+subjects:
+  - kind: ServiceAccount
+    name: ai-agent
+    namespace: ai-workspace
+roleRef:
+  kind: Role
+  name: ai-agent-namespace-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ai-agent-cluster-readonly
+rules:
+  - apiGroups: [""]
+    resources: [pods, services, endpoints, nodes, namespaces, events]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, statefulsets, daemonsets]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, networkpolicies]
+    verbs: [get, list, watch]
+  - apiGroups: [metrics.k8s.io]
+    resources: [pods, nodes]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ai-agent-cluster-readonly-binding
+subjects:
+  - kind: ServiceAccount
+    name: ai-agent
+    namespace: ai-workspace
+roleRef:
+  kind: ClusterRole
+  name: ai-agent-cluster-readonly
+  apiGroup: rbac.authorization.k8s.io

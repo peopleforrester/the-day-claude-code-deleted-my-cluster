@@ -1,0 +1,232 @@
+{
+  "validation_timestamp": "2025-08-24T21:12:13-04:00",
+  "requirements": {
+    "minimum": {
+      "control_plane_memory_mb": 4096,
+      "worker_memory_mb": 2048,
+      "disk_gb": 20,
+      "cpu_cores": 2,
+      "kernel_version": "3.10",
+      "network_latency_ms": 1
+    }
+  },
+  "validation_results": {
+    "k8s01": {
+      "role": "control-plane",
+      "checks": {
+        "memory": {
+          "required_mb": 4096,
+          "actual_mb": 15773,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s02": {
+      "role": "control-plane",
+      "checks": {
+        "memory": {
+          "required_mb": 4096,
+          "actual_mb": 15773,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s03": {
+      "role": "control-plane",
+      "checks": {
+        "memory": {
+          "required_mb": 4096,
+          "actual_mb": 15773,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s04": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 15773,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s05": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 15773,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s06": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 7847,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 412,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s07": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 15633,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 8,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s08": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 15877,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 4,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 440,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+,
+    "k8s09": {
+      "role": "worker",
+      "checks": {
+        "memory": {
+          "required_mb": 2048,
+          "actual_mb": 63645,
+          "pass": true
+        },
+        "cpu": {
+          "required_cores": 2,
+          "actual_cores": 12,
+          "pass": true
+        },
+        "disk": {
+          "required_gb": 20,
+          "available_gb": 1745,
+          "pass": true
+        },
+        "kernel": "6.8.0-78-generic",
+        "swap_lines": 2,
+        "dns_resolution": "FAIL"
+      }
+    }
+
+  },
+  "overall_pass": true
+}

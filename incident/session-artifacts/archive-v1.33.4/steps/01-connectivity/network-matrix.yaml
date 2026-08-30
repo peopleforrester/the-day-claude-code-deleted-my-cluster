@@ -1,0 +1,30 @@
+# Network Connectivity Matrix
+# Generated: Sun Aug 24 21:12:30 EDT 2025
+# Note: ping/nc commands not available on fresh Ubuntu 24.04 installations
+# Network connectivity will be tested after installing required tools
+
+network_test:
+  timestamp: "2025-08-24T21:12:30-04:00"
+  status: "pending_tools_installation"
+  notes:
+    - "Fresh Ubuntu 24.04 systems do not include ping or netcat by default"
+    - "All nodes are on same subnet (192.168.0.0/24)"
+    - "SSH connectivity confirmed between control node and all cluster nodes"
+    - "Network testing tools will be installed in Step 02"
+
+  verified_connectivity:
+    ssh_from_control:
+      - k8s01: "192.168.0.50 - OK"
+      - k8s02: "192.168.0.51 - OK"
+      - k8s03: "192.168.0.52 - OK"
+      - k8s04: "192.168.0.53 - OK"
+      - k8s05: "192.168.0.54 - OK"
+      - k8s06: "192.168.0.55 - OK"
+      - k8s07: "192.168.0.56 - OK"
+      - k8s08: "192.168.0.57 - OK"
+      - k8s09: "192.168.0.58 - OK"
+
+    network_configuration:
+      subnet: "192.168.0.0/24"
+      all_nodes_same_subnet: true
+      expected_latency: "<1ms (local network)"

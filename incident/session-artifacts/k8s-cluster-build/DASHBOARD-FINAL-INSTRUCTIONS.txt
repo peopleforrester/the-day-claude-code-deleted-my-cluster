@@ -1,0 +1,45 @@
+KUBERNETES DASHBOARD - FINAL WORKING INSTRUCTIONS
+=================================================
+
+Since direct kubectl access from this environment isn't working due to network restrictions,
+use the SSH tunnel method:
+
+OPTION 1: Run the provided script
+----------------------------------
+./setup-dashboard-proxy.sh
+
+This script will:
+1. Create an SSH tunnel to the cluster
+2. Run kubectl proxy on the master node
+3. Forward it to your local port 8001
+
+Then access the dashboard at:
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard-web:/proxy/
+
+
+OPTION 2: Manual SSH tunnel
+---------------------------
+Run this command in your terminal:
+
+ssh -L 8001:localhost:8001 root@192.168.0.100 'kubectl proxy --port=8001'
+
+Then access the dashboard at:
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard-web:/proxy/
+
+
+ADMIN TOKEN FOR LOGIN:
+----------------------
+<REDACTED-K8S-SERVICEACCOUNT-JWT>
+
+
+WHAT YOU'LL SEE:
+----------------
+1. The kubectl proxy command will start and show: "Starting to serve on 127.0.0.1:8001"
+2. Open your browser to the URL above
+3. Select "Token" authentication
+4. Paste the admin token
+5. Click "Sign In"
+6. You'll have full cluster admin access through the dashboard
+
+
+NOTE: Keep the terminal running while using the dashboard. Press Ctrl+C to stop when done.

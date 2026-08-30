@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# ABOUTME: Last-chance client-side guard - block force-push to protected refs, run gitleaks on push range.
+# ABOUTME: Server-side branch protection is still authoritative. This is a courtesy early-fail.
+set -euo pipefail
+PROTECTED='^refs/heads/(main|master|release/.+|prod|production|staging)$'
+Z40=0000000000000000000000000000000000000000
+fail=0
+
+while read -r _local_ref local_sha remote_ref remote_sha; do
+    [[ -z "${remote_ref:-}" ]] && continue
+    if [[ "${remote_ref}" =~ ${PROTECTED} ]]; then
+        echo "! Pushing directly to protected ${remote_ref} - server-side branch protection SHOULD reject this." >&2
+    fi
+    if [[ "${remote_sha}" != "${Z40}" && "${local_sha}" != "${Z40}" ]]; then
+        if ! git merge-base --is-ancestor "${remote_sha}" "${local_sha}" 2>/dev/null; then
+            if [[ "${remote_ref}" =~ ${PROTECTED} ]]; then
+                echo "x Force-push to protected ${remote_ref} blocked." >&2
+                fail=1
+            fi
+        fi
+    fi
+done
+
+if command -v gitleaks >/dev/null 2>&1; then
+    gitleaks protect --staged --redact --no-banner 2>/dev/null || fail=1
+fi
+
+[[ "${fail}" -eq 0 ]] || exit 1
+exit 0

@@ -1,0 +1,89 @@
+commit 69a2f0bd52f470138f72909f79a148ccb6ae8e88
+Author: MRF-WSL <michaelrishiforrester@gmail.com>
+Date:   Thu Aug 28 18:56:28 2025 -0400
+
+    Add cluster infrastructure fixes and Longhorn installation
+
+    - Fixed persistent network configurations on all worker nodes
+    - Resolved duplicate MAC address issues with unique MACs per node
+    - Installed Longhorn v1.9.1 distributed storage system
+    - Reduced Longhorn storage reservation from 30% to 10%
+    - Exposed Longhorn UI via MetalLB at 192.168.0.210
+    - Added KubeVirt preparation scripts and documentation
+    - Set up NFS/Samba shares on k8s09 for USB drives
+
+    Network fixes ensure all worker nodes maintain bridge configurations
+    and unique MAC addresses across reboots. Longhorn provides persistent
+    volume storage for stateful workloads.
+
+    🤖 Generated with Claude Code
+
+    Co-Authored-By: Claude <noreply@anthropic.com>
+
+ k8s-cluster-build                                  |     1 +
+ .../.ansible_facts/k8s_upgrade_k8s01               |  1579 ++
+ .../.ansible_facts/k8s_upgrade_k8s02               |  1400 ++
+ .../.ansible_facts/k8s_upgrade_k8s03               |  1566 ++
+ .../.ansible_facts/k8s_upgrade_k8s04               |  2182 ++
+ .../.ansible_facts/k8s_upgrade_k8s05               |  2710 +++
+ .../.ansible_facts/k8s_upgrade_k8s06               |  2298 +++
+ .../.ansible_facts/k8s_upgrade_k8s07               |  3788 ++++
+ .../.ansible_facts/k8s_upgrade_k8s08               |  2944 +++
+ .../.ansible_facts/k8s_upgrade_k8s09               |  3847 ++++
+ kubernetes-upgrade/.upgrade-state                  |     5 +
+ .../library/kubevirt/yaml/kubeadm-vms-fixed.yaml   |   392 +
+ .../library/kubevirt/yaml/kubeadm-vms-proper.yaml  |   462 +
+ .../kubevirt/yaml/kubeadm-vms-recreated.yaml       |   434 +
+ .../kubevirt/yaml/vm-services-kubeadm-pool.yaml    |    81 +
+ kubernetes-upgrade/logs/ansible-upgrade.log        | 20128 +++++++++++++++++++
+ .../logs/upgrade-20250819-090355.log               |    82 +
+ .../test-reports/test-log-20250819-090224.log      |    50 +
+ .../test-reports/test-report-20250819-090224.html  |    39 +
+ library/dns/docs/dns-migration-186-to-91.md        |    43 +
+ library/dns/yaml/dns-redirect-service.yaml         |    37 +
+ library/kubevirt/docs/bridge-networking-setup.md   |    62 +
+ library/kubevirt/docs/final-vm-configuration.md    |    38 +
+ .../docs/golden-image-approach-analysis.md         |   230 +
+ .../kubevirt/docs/golden-image-quick-assessment.md |    92 +
+ .../kubevirt/docs/kubeadm-vms-complete-guide.md    |   264 +
+ library/kubevirt/docs/kubeadm-vms-ready.md         |    48 +
+ library/kubevirt/docs/single-nic-solution.md       |   122 +
+ library/kubevirt/docs/ssh-test-instructions.md     |    67 +
+ .../docs/troubleshooting-lessons-learned.md        |   265 +
+ .../docs/ubuntu-image-security-analysis.md         |   102 +
+ library/kubevirt/docs/updated-vm-ips.md            |    24 +
+ library/kubevirt/docs/virtctl-usage.md             |    76 +
+ library/kubevirt/docs/vm-access-guide.md           |    40 +
+ library/kubevirt/docs/vm-configuration-summary.md  |    62 +
+ library/kubevirt/docs/vm-ip-addresses.txt          |    37 +
+ library/kubevirt/docs/vm-network-addresses.md      |    42 +
+ library/kubevirt/scripts/deploy-single-nic-vms.sh  |   162 +
+ library/kubevirt/scripts/install-cdi.sh            |    21 +
+ library/kubevirt/scripts/install-multus.sh         |    18 +
+ library/kubevirt/scripts/install-virtctl.sh        |    35 +
+ library/kubevirt/scripts/setup-bridge-k8s09.sh     |    40 +
+ library/kubevirt/scripts/test-vm-connectivity.sh   |   103 +
+ library/kubevirt/scripts/test-vm-ssh.sh            |    93 +
+ library/kubevirt/scripts/verify-worker1.sh         |    42 +
+ .../kubevirt/yaml/bridge-network-attachment.yaml   |    17 +
+ library/kubevirt/yaml/fix-worker1.yaml             |    61 +
+ .../kubevirt/yaml/kubeadm-vms-with-metallb.yaml    |   573 +
+ library/kubevirt/yaml/macvlan-network.yaml         |    24 +
+ .../kubevirt/yaml/macvtap-network-attachment.yaml  |    18 +
+ library/kubevirt/yaml/metallb-kubeadm-pool.yaml    |    21 +
+ library/kubevirt/yaml/simple-bridge-test-vm.yaml   |    60 +
+ library/kubevirt/yaml/simple-vms-root.yaml         |   297 +
+ .../kubevirt/yaml/sriov-network-attachment.yaml    |    19 +
+ library/kubevirt/yaml/test-multus-pod.yaml         |    17 +
+ library/kubevirt/yaml/test-vm-macvlan.yaml         |    60 +
+ library/kubevirt/yaml/test-vm-passt.yaml           |    55 +
+ library/kubevirt/yaml/vm-metallb-services.yaml     |   105 +
+ library/kubevirt/yaml/vms-optimized.yaml           |   542 +
+ .../kubevirt/yaml/vms-with-bridge-networking.yaml  |   542 +
+ library/kubevirt/yaml/vms-with-extra-storage.yaml  |   537 +
+ .../kubevirt/yaml/vms-with-longhorn-storage.yaml   |   542 +
+ library/kubevirt/yaml/worker1-fixed.yaml           |    57 +
+ library/kubevirt/yaml/worker1-from-worker2.yaml    |    57 +
+ library/kubevirt/yaml/worker1-ssh-service-198.yaml |    20 +
+ library/kubevirt/yaml/worker2-ssh-service.yaml     |    18 +
+ 66 files changed, 49795 insertions(+)

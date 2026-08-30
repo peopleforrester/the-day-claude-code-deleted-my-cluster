@@ -1,0 +1,145 @@
+---
+# Production-Ready Worker Node Upgrade Playbook
+# Upgrades worker nodes with proper error handling and timeouts
+# Compatible with Kubernetes 1.31.x to 1.32.x upgrades
+
+- name: Upgrade Kubernetes Worker Nodes
+  hosts: workers
+  serial: 2  # Upgrade 2 workers at a time for safety
+  gather_facts: yes
+  strategy: linear  # Override the free strategy for this playbook
+  
+  vars:
+    kubernetes_version: "1.33.4"
+    kubernetes_version_package: "1.33.4-1.1"
+    drain_timeout: 300  # 5 minutes for drain operation
+    drain_grace_period: 60  # Grace period for pod termination
+    
+  pre_tasks:
+    - name: Verify control plane is upgraded first
+      command: kubectl get node {{ groups['control_plane'][0] }} -o jsonpath='{.status.nodeInfo.kubeletVersion}'
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      register: control_plane_version
+      changed_when: false
+      failed_when: "'v1.33' not in control_plane_version.stdout"
+      run_once: true
+      
+    - name: Display current node info
+      debug:
+        msg: "Starting upgrade of {{ ansible_hostname }} ({{ ansible_default_ipv4.address }})"
+        
+  tasks:
+    - name: Check current kubelet version
+      command: kubelet --version
+      register: current_version
+      changed_when: false
+      failed_when: false
+      
+    - name: Add Kubernetes 1.32 repository if needed
+      copy:
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version.split('.')[0:2] | join('.') }}/deb/ /
+        dest: /etc/apt/sources.list.d/kubernetes-v{{ kubernetes_version.split('.')[0:2] | join('.') }}.list
+        mode: '0644'
+      when: "'v1.32' in current_version.stdout"
+      
+    - name: Drain the node (with timeout)
+      shell: |
+        timeout {{ drain_timeout }} kubectl drain {{ ansible_hostname }} \
+          --ignore-daemonsets \
+          --delete-emptydir-data \
+          --force \
+          --grace-period={{ drain_grace_period }}
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      register: drain_result
+      failed_when: 
+        - drain_result.rc != 0
+        - "'drained' not in drain_result.stdout"
+      retries: 2
+      delay: 30
+      
+    - name: Upgrade kubeadm
+      apt:
+        name: "kubeadm={{ kubernetes_version_package }}"
+        state: present
+        allow_change_held_packages: yes
+        update_cache: yes
+        cache_valid_time: 3600
+      register: kubeadm_upgrade
+      
+    - name: Run kubeadm upgrade on worker
+      command: kubeadm upgrade node
+      when: kubeadm_upgrade.changed
+      register: upgrade_result
+      
+    - name: Upgrade kubelet and kubectl
+      apt:
+        name:
+          - "kubelet={{ kubernetes_version_package }}"
+          - "kubectl={{ kubernetes_version_package }}"
+        state: present
+        allow_change_held_packages: yes
+      register: packages_upgrade
+        
+    - name: Restart and enable kubelet
+      systemd:
+        name: kubelet
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+      when: packages_upgrade.changed
+        
+    - name: Wait for kubelet to be healthy
+      wait_for:
+        port: 10250
+        host: "{{ ansible_default_ipv4.address }}"
+        delay: 10
+        timeout: 120
+        
+    - name: Verify kubelet is running
+      systemd:
+        name: kubelet
+        state: started
+      register: kubelet_status
+      until: kubelet_status.status.ActiveState == "active"
+      retries: 5
+      delay: 10
+        
+    - name: Uncordon the node
+      command: kubectl uncordon {{ ansible_hostname }}
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      register: uncordon_result
+      retries: 3
+      delay: 10
+      until: uncordon_result.rc == 0
+      
+    - name: Wait for node to be Ready
+      command: kubectl get node {{ ansible_hostname }} --no-headers
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      register: node_status
+      until: 
+        - "'Ready' in node_status.stdout"
+        - "'SchedulingDisabled' not in node_status.stdout"
+      retries: 30
+      delay: 10
+      changed_when: false
+      
+    - name: Verify final node version
+      command: kubectl get node {{ ansible_hostname }} -o jsonpath='{.status.nodeInfo.kubeletVersion}'
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      register: final_version
+      changed_when: false
+      failed_when: "'v{{ kubernetes_version }}' not in final_version.stdout"
+      
+  post_tasks:
+    - name: Display upgrade completion
+      debug:
+        msg: |
+          ✓ {{ ansible_hostname }} successfully upgraded
+          Version: {{ final_version.stdout }}
+          Status: Ready and schedulable
+          
+    - name: Wait before next batch
+      pause:
+        seconds: 30
+      when: ansible_play_batch | length > 1

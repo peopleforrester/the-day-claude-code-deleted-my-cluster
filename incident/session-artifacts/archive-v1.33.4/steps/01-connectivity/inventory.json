@@ -1,0 +1,186 @@
+{
+  "cluster_name": "k8s-cluster",
+  "discovery_timestamp": "2025-08-24T21:09:31-04:00",
+  "nodes": {
+    "k8s01": {
+      "ip": "192.168.0.50",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) Celeron(R) N5105 @ 2.00GHz Intel(R) Celeron(R) N5105 @ 2.00GHz To Be Filled By O.E.M. CPU @ 2.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 15773,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp2s0,enp3s0,wlp1s0"
+    }
+,
+    "k8s02": {
+      "ip": "192.168.0.51",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) Celeron(R) N5105 @ 2.00GHz Intel(R) Celeron(R) N5105 @ 2.00GHz To Be Filled By O.E.M. CPU @ 2.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 15773,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp2s0,enp3s0,wlp1s0"
+    }
+,
+    "k8s03": {
+      "ip": "192.168.0.52",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) N100 Intel(R) N100 To Be Filled By O.E.M. CPU @ 2.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 15773,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp1s0,wlo1"
+    }
+,
+    "k8s04": {
+      "ip": "192.168.0.53",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) N100 Intel(R) N100 To Be Filled By O.E.M. CPU @ 2.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 15773,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp1s0,wlo1"
+    }
+,
+    "k8s05": {
+      "ip": "192.168.0.54",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) N100 Intel(R) N100 To Be Filled By O.E.M. CPU @ 2.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 15773,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp1s0,wlo1"
+    }
+,
+    "k8s06": {
+      "ip": "192.168.0.55",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) Core(TM) i5-3427U CPU @ 1.80GHz Intel(R) Core(TM) i5-3427U CPU @ 1.80GHz CPU @ 1.8GHz",
+        "cores": 4
+      },
+      "memory_mb": 7847,
+      "disk": {
+        "total_gb": 437,
+        "available_gb": 412
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enx000000000f8d,wlp2s0b1"
+    }
+,
+    "k8s07": {
+      "ip": "192.168.0.56",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz To Be Filled By O.E.M. CPU @ 2.4GHz",
+        "cores": 8
+      },
+      "memory_mb": 15633,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp2s0,wlp1s0"
+    }
+,
+    "k8s08": {
+      "ip": "192.168.0.57",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz To Be Filled By O.E.M. CPU @ 2.6GHz",
+        "cores": 4
+      },
+      "memory_mb": 15877,
+      "disk": {
+        "total_gb": 466,
+        "available_gb": 440
+      },
+      "swap_mb": 4095,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enxc8a362359d2c,wlp1s0"
+    }
+,
+    "k8s09": {
+      "ip": "192.168.0.58",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-78-generic",
+      "cpu": {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics AMD Ryzen 5 5600H with Radeon Graphics Unknown CPU @ 3.3GHz",
+        "cores": 12
+      },
+      "memory_mb": 63645,
+      "disk": {
+        "total_gb": 1831,
+        "available_gb": 1745
+      },
+      "swap_mb": 8191,
+      "cgroup_version": "v2",
+      "ip_forwarding": "0",
+      "network_interfaces": "enp3s0,enx5c857e38630f,wlp4s0"
+    }
+
+  }
+}

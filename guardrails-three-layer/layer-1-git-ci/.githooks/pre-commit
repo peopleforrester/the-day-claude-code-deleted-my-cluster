@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# ABOUTME: Layer 1 client-side guardrail - block destructive AI-agent patterns + secrets.
+# ABOUTME: --no-verify bypasses this. GitHub server-side rulesets are the authoritative gate.
+set -euo pipefail
+if [[ -t 2 ]]; then
+    RED='\033[0;31m'; YEL='\033[1;33m'; GRN='\033[0;32m'; NC='\033[0m'
+else
+    RED=''; YEL=''; GRN=''; NC=''
+fi
+fail=0
+say_fail() { printf "${RED}x BLOCKED:${NC} %s\n" "$*" >&2; fail=1; }
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR)
+[[ -z "${STAGED}" ]] && exit 0
+
+DESTRUCTIVE_PATTERNS=(
+    'rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*f'
+    'rm[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*r'
+    'kubectl[[:space:]]+delete[[:space:]]+(ns|namespace)'
+    'kubectl[[:space:]]+delete[[:space:]]+.*--all'
+    'kubectl[[:space:]]+delete[[:space:]]+.*--force'
+    'kubeadm[[:space:]]+reset'
+    'etcdctl?[[:space:]]+.*--force-new-cluster'
+    'helm[[:space:]]+uninstall[[:space:]]+.*--no-hooks'
+    'terraform[[:space:]]+destroy[[:space:]]+.*-auto-approve'
+    'git[[:space:]]+push[[:space:]]+.*--force'
+    'dd[[:space:]]+if=/dev/zero[[:space:]]+of=/dev/'
+    ':\(\)\{:\|:&\};:'
+    'mkfs\.'
+    'chmod[[:space:]]+-R[[:space:]]+777[[:space:]]+/'
+)
+
+SECRET_PATTERNS=(
+    'AKIA[0-9A-Z]{16}'
+    'ASIA[0-9A-Z]{16}'
+    '-----BEGIN (RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY-----'
+    'ghp_[A-Za-z0-9]{36,}'
+    'github_pat_[A-Za-z0-9_]{22,}'
+    'xox[baprs]-[A-Za-z0-9-]{10,}'
+    'sk-[A-Za-z0-9]{32,}'
+    'AIza[0-9A-Za-z_-]{35}'
+)
+
+for file in ${STAGED}; do
+    [[ -f "${file}" ]] || continue
+    if file --mime "${file}" 2>/dev/null | grep -q 'charset=binary'; then
+        continue
+    fi
+    for pat in "${DESTRUCTIVE_PATTERNS[@]}"; do
+        if grep -nE "${pat}" "${file}" 2>/dev/null | grep -v 'guardrails:allow-destructive' >/dev/null; then
+            say_fail "Destructive pattern in ${file}: ${pat}"
+        fi
+    done
+    for pat in "${SECRET_PATTERNS[@]}"; do
+        if grep -nE "${pat}" "${file}" >/dev/null 2>&1; then
+            say_fail "Possible secret in ${file} matching /${pat}/"
+        fi
+    done
+done
+
+if [[ "${fail}" -ne 0 ]]; then
+    cat >&2 <<EOF
+
+${RED}Commit rejected.${NC} Use marker '# guardrails:allow-destructive'
+on the same line for intentional examples, or open a PR describing why
+the rule should be adjusted.
+
+--no-verify will bypass this locally, but server-side CI and branch
+protection will still block on push. Fix at the source, not with a flag.
+EOF
+    exit 1
+fi
+exit 0

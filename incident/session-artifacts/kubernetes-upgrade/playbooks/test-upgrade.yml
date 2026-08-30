@@ -1,0 +1,47 @@
+---
+# Test Kubernetes Upgrade Playbook
+# Simple test to verify upgrade commands work
+
+- name: Test Kubernetes Upgrade Commands
+  hosts: k8s01
+  gather_facts: yes
+  
+  vars:
+    kubernetes_version_current: "1.31.10"
+    kubernetes_version_target: "1.32.0"
+    
+  tasks:
+    - name: Check current version
+      command: kubectl version
+      register: current_version
+      changed_when: false
+      
+    - name: Display current version
+      debug:
+        var: current_version.stdout_lines
+        
+    - name: Check available kubeadm versions
+      shell: apt-cache madison kubeadm | head -10
+      register: available_versions
+      changed_when: false
+      
+    - name: Display available versions
+      debug:
+        var: available_versions.stdout_lines
+        
+    - name: Run kubeadm upgrade plan
+      command: kubeadm upgrade plan
+      register: upgrade_plan
+      changed_when: false
+      failed_when: false
+      
+    - name: Display upgrade plan
+      debug:
+        var: upgrade_plan.stdout_lines
+        
+    - name: Check if target version is available
+      assert:
+        that:
+          - "'1.32' in available_versions.stdout"
+        fail_msg: "Target version 1.32 not available in apt repository"
+        success_msg: "Target version 1.32 is available"

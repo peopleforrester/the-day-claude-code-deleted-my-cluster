@@ -1,0 +1,89 @@
+# Ubuntu 24.04 VM using proven working configuration
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm-proven
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm-proven
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - name: rootdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        dataVolume:
+          name: ubuntu-vm-proven-dv
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+            disable_root: false
+            ssh_pwauth: true
+            chpasswd:
+              list: |
+                root:demo123
+              expire: false
+            package_update: true
+            package_upgrade: false
+            packages:
+              - openssh-server
+              - curl
+              - wget
+              - vim
+              - net-tools
+            runcmd:
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - systemctl restart ssh
+  dataVolumeTemplates:
+  - metadata:
+      name: ubuntu-vm-proven-dv
+    spec:
+      source:
+        registry:
+          url: "docker://quay.io/containerdisks/ubuntu:24.04"
+      pvc:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+        storageClassName: longhorn-fixed

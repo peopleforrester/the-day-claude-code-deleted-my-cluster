@@ -1,0 +1,46 @@
+# Test VM for KubeVirt verification
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: testvm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: testvm
+    spec:
+      domain:
+        devices:
+          disks:
+          - name: containerdisk
+            disk:
+              bus: virtio
+          - name: cloudinitdisk
+            disk:
+              bus: virtio
+          interfaces:
+          - name: default
+            masquerade: {}
+          - name: bridge
+            bridge: {}
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 500m
+      networks:
+      - name: default
+        pod: {}
+      - name: bridge
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          image: quay.io/kubevirt/cirros-container-disk-demo:latest
+      - name: cloudinitdisk
+        cloudInitNoCloud:
+          userData: |
+            #!/bin/bash
+            echo "Test VM is running" > /home/cirros/test.txt

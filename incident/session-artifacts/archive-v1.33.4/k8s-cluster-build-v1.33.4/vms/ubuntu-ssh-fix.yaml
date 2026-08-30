@@ -1,0 +1,127 @@
+# Ubuntu 24.04 with forced SSH installation via startup script
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ubuntu-ssh-script
+  namespace: default
+data:
+  99-install-ssh.sh: |
+    #!/bin/bash
+    # Force install SSH on boot
+    if ! command -v sshd &> /dev/null; then
+      apt-get update
+      DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+    fi
+    # Configure SSH
+    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+    sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    # Set root password
+    echo 'root:demo123' | chpasswd
+    # Enable and start SSH
+    systemctl enable ssh
+    systemctl restart ssh
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-ssh-fixed
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-ssh-fixed
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: rootdisk
+        dataVolume:
+          name: ubuntu-24-vm-dv  # Reuse the already downloaded image
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+          userData: |
+            #cloud-config
+            hostname: ubuntu-ssh
+
+            # Create default user
+            users:
+              - name: ubuntu
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: users, admin
+                shell: /bin/bash
+                lock_passwd: false
+                passwd: $6$xyz$1B.uqZKZfVqDqP0LbKraNfl5pQLPWZpqGKgYbPVLPZe0ceQhJZvLf9J3jz8X/zDXDQp1v7cGLeZ5ODLzVAoNn0
+
+            # Force package installation at boot
+            package_update: true
+            package_upgrade: false
+            packages:
+              - openssh-server
+              - curl
+              - net-tools
+
+            # Write SSH installation script
+            write_files:
+              - path: /etc/rc.local
+                permissions: '0755'
+                content: |
+                  #!/bin/bash
+                  # Install SSH if not present
+                  if ! systemctl is-active ssh > /dev/null 2>&1; then
+                    apt-get update
+                    DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server
+                    sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+                    sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+                    echo 'root:demo123' | chpasswd
+                    systemctl enable ssh
+                    systemctl start ssh
+                  fi
+                  exit 0
+
+            # Enable rc.local compatibility
+            bootcmd:
+              - systemctl enable rc-local || true
+
+            # Run commands
+            runcmd:
+              - chmod +x /etc/rc.local
+              - /etc/rc.local

@@ -1,0 +1,24 @@
+# Ubuntu 24.04 Golden Image DataVolume
+# This downloads the official Ubuntu 24.04 cloud image once
+# All VMs will clone from this golden image
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-24-04-golden
+  namespace: default
+  labels:
+    os: ubuntu
+    version: "24.04"
+    type: golden-image
+spec:
+  source:
+    http:
+      # Official Ubuntu 24.04 cloud image from Canonical
+      url: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 30Gi  # Extra space for the golden image
+    storageClassName: longhorn-fixed

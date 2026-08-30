@@ -1,0 +1,71 @@
+{
+  "cluster_name": "k8s-production",
+  "deployment_date": "2025-08-23",
+  "nodes": {
+    "master1": {
+      "hostname": "master1",
+      "ip": "192.168.0.100",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-71-generic",
+      "cpu_cores": 2,
+      "memory_gb": 3.8,
+      "disk_gb": 22,
+      "disk_used_percent": 11,
+      "cgroup_version": "v2"
+    },
+    "master2": {
+      "hostname": "master2",
+      "ip": "192.168.0.101",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-71-generic",
+      "cpu_cores": 2,
+      "memory_gb": 3.8,
+      "disk_gb": 22,
+      "disk_used_percent": 11,
+      "cgroup_version": "v2"
+    },
+    "master3": {
+      "hostname": "master3",
+      "ip": "192.168.0.102",
+      "role": "control-plane",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-71-generic",
+      "cpu_cores": 2,
+      "memory_gb": 3.8,
+      "disk_gb": 22,
+      "disk_used_percent": 11,
+      "cgroup_version": "v2"
+    },
+    "worker1": {
+      "hostname": "worker1",
+      "ip": "192.168.0.103",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-71-generic",
+      "cpu_cores": 2,
+      "memory_gb": 3.8,
+      "disk_gb": 17,
+      "disk_used_percent": 13,
+      "cgroup_version": "v2"
+    },
+    "worker2": {
+      "hostname": "worker2",
+      "ip": "192.168.0.104",
+      "role": "worker",
+      "os": "Ubuntu 24.04.3 LTS",
+      "kernel": "6.8.0-71-generic",
+      "cpu_cores": 2,
+      "memory_gb": 3.8,
+      "disk_gb": 17,
+      "disk_used_percent": 13,
+      "cgroup_version": "v2"
+    }
+  },
+  "network": {
+    "vip": "192.168.0.199",
+    "pod_cidr": "10.244.0.0/16",
+    "service_cidr": "10.96.0.0/12"
+  }
+}

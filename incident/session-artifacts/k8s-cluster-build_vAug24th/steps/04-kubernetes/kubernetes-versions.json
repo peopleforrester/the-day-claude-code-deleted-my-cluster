@@ -1,0 +1,53 @@
+{
+  "kubernetes_version": "v1.33.4",
+  "components": {
+    "kubeadm": {
+      "version": "v1.33.4",
+      "package": "kubeadm=1.33.4-1.1",
+      "binary": "/usr/bin/kubeadm"
+    },
+    "kubelet": {
+      "version": "v1.33.4",
+      "package": "kubelet=1.33.4-1.1",
+      "binary": "/usr/bin/kubelet",
+      "config": "/var/lib/kubelet/config.yaml",
+      "cgroup_driver": "systemd",
+      "container_runtime_endpoint": "unix:///run/containerd/containerd.sock"
+    },
+    "kubectl": {
+      "version": "v1.33.4",
+      "package": "kubectl=1.33.4-1.1",
+      "binary": "/usr/bin/kubectl",
+      "completion": "/etc/bash_completion.d/kubectl"
+    },
+    "cri-tools": {
+      "version": "v1.33.0",
+      "package": "cri-tools=1.33.0-1.1"
+    },
+    "kubernetes-cni": {
+      "version": "v1.6.0",
+      "package": "kubernetes-cni=1.6.0-1.1"
+    }
+  },
+  "repository": {
+    "url": "https://pkgs.k8s.io/core:/stable:/v1.33/deb/",
+    "keyring": "/etc/apt/keyrings/kubernetes-apt-keyring.gpg",
+    "sources_list": "/etc/apt/sources.list.d/kubernetes.list"
+  },
+  "package_hold": {
+    "status": "held",
+    "packages": ["kubeadm", "kubelet", "kubectl"],
+    "reason": "Prevent automatic updates to maintain version consistency"
+  },
+  "verification": {
+    "all_nodes_version_match": true,
+    "exact_version": "v1.33.4",
+    "nodes_verified": [
+      "192.168.0.100",
+      "192.168.0.101",
+      "192.168.0.102",
+      "192.168.0.103",
+      "192.168.0.104"
+    ]
+  }
+}

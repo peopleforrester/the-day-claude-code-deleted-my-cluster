@@ -1,0 +1,57 @@
+{
+  "kubernetes_version": "v1.31.11",
+  "packages": {
+    "kubeadm": {
+      "version": "1.31.11-1.1",
+      "status": "installed and held"
+    },
+    "kubelet": {
+      "version": "1.31.11-1.1",
+      "status": "installed and held"
+    },
+    "kubectl": {
+      "version": "1.31.11-1.1",
+      "status": "installed and held"
+    },
+    "kubernetes-cni": {
+      "version": "1.5.1-1.1",
+      "status": "installed"
+    },
+    "cri-tools": {
+      "version": "1.31.1-1.1",
+      "status": "installed"
+    }
+  },
+  "repository": {
+    "url": "https://pkgs.k8s.io/core:/stable:/v1.31/deb/",
+    "key": "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+  },
+  "nodes_configured": [
+    {
+      "hostname": "master1",
+      "ip": "192.168.0.100",
+      "packages_installed": true
+    },
+    {
+      "hostname": "master2",
+      "ip": "192.168.0.101",
+      "packages_installed": true
+    },
+    {
+      "hostname": "master3",
+      "ip": "192.168.0.102",
+      "packages_installed": true
+    },
+    {
+      "hostname": "worker1",
+      "ip": "192.168.0.103",
+      "packages_installed": true
+    },
+    {
+      "hostname": "worker2",
+      "ip": "192.168.0.104",
+      "packages_installed": true
+    }
+  ],
+  "installation_date": "2025-08-04T13:10:00Z"
+}

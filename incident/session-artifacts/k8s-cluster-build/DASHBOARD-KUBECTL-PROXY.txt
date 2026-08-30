@@ -1,0 +1,49 @@
+KUBERNETES DASHBOARD ACCESS - KUBECTL PROXY METHOD
+==================================================
+
+This is the OFFICIAL and MOST RELIABLE way to access the Kubernetes Dashboard.
+
+STEP 1: Set up kubectl on your local machine
+---------------------------------------------
+# Copy the kubeconfig from master to your local machine:
+scp root@192.168.0.100:/etc/kubernetes/admin.conf ~/.kube/config
+
+# Or if you already have a kubeconfig, merge it:
+scp root@192.168.0.100:/etc/kubernetes/admin.conf ~/k8s-cluster-config
+export KUBECONFIG=~/.kube/config:~/k8s-cluster-config
+
+STEP 2: Start kubectl proxy
+---------------------------
+kubectl proxy
+
+# This starts a proxy on http://localhost:8001
+
+STEP 3: Access the Dashboard
+----------------------------
+Open your browser and go to:
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard-web:/proxy/
+
+STEP 4: Login with Token
+-------------------------
+Select "Token" and paste this token:
+
+<REDACTED-K8S-SERVICEACCOUNT-JWT>
+
+WHY THIS WORKS:
+---------------
+- kubectl proxy creates a secure tunnel between your local machine and the API server
+- No need to worry about certificates, ingress, or NodePorts
+- This is the method recommended in the official Kubernetes documentation
+- Works reliably regardless of cluster network configuration
+
+ALTERNATIVE: SSH Tunnel Method
+------------------------------
+If you can't install kubectl locally, use SSH tunneling:
+
+ssh -L 8001:localhost:8001 root@192.168.0.100 'kubectl proxy'
+
+Then access the same URL in your browser.
+
+TOKEN VALIDITY:
+---------------
+The token is valid until: 2026-08-04 (1 year)

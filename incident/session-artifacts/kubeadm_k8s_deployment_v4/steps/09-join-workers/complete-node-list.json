@@ -1,0 +1,54 @@
+{
+  "cluster_name": "k8s-ha-cluster",
+  "total_nodes": 5,
+  "control_plane_nodes": 3,
+  "worker_nodes": 2,
+  "nodes": [
+    {
+      "hostname": "master1",
+      "ip": "192.168.0.100",
+      "role": "control-plane",
+      "status": "Ready",
+      "version": "v1.31.11",
+      "container_runtime": "containerd://1.7.27"
+    },
+    {
+      "hostname": "master2",
+      "ip": "192.168.0.101",
+      "role": "control-plane",
+      "status": "Ready",
+      "version": "v1.31.11",
+      "container_runtime": "containerd://1.7.27"
+    },
+    {
+      "hostname": "master3",
+      "ip": "192.168.0.102",
+      "role": "control-plane",
+      "status": "Ready",
+      "version": "v1.31.11",
+      "container_runtime": "containerd://1.7.27"
+    },
+    {
+      "hostname": "worker1",
+      "ip": "192.168.0.103",
+      "role": "worker",
+      "status": "Ready",
+      "version": "v1.31.11",
+      "container_runtime": "containerd://1.7.27"
+    },
+    {
+      "hostname": "worker2",
+      "ip": "192.168.0.104",
+      "role": "worker",
+      "status": "Ready",
+      "version": "v1.31.11",
+      "container_runtime": "containerd://1.7.27"
+    }
+  ],
+  "networking": {
+    "cni": "calico",
+    "pod_network": "10.244.0.0/16",
+    "service_network": "10.96.0.0/12"
+  },
+  "cluster_status": "fully_operational"
+}

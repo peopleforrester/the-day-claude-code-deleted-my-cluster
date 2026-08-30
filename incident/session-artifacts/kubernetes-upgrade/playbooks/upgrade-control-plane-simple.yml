@@ -1,0 +1,104 @@
+---
+# Simple Control Plane Upgrade Playbook
+# Upgrades control plane nodes one at a time to Kubernetes 1.32.8
+
+- name: Upgrade Kubernetes Control Plane
+  hosts: control_plane
+  serial: 1
+  gather_facts: yes
+  
+  vars:
+    kubernetes_version_target: "1.32.8"
+    
+  tasks:
+    - name: Add Kubernetes 1.32 repository
+      copy:
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /
+        dest: /etc/apt/sources.list.d/kubernetes-v1.32.list
+        mode: '0644'
+        
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        
+    - name: Check current node status
+      command: kubectl get node {{ ansible_hostname }}
+      register: node_status
+      changed_when: false
+      
+    - name: Display node status
+      debug:
+        var: node_status.stdout_lines
+        
+    - name: Upgrade kubeadm
+      apt:
+        name: "kubeadm={{ kubernetes_version_target }}-*"
+        state: present
+        allow_change_held_packages: yes
+        
+    - name: Check kubeadm version
+      command: kubeadm version
+      register: kubeadm_version
+      changed_when: false
+      
+    - name: Display kubeadm version
+      debug:
+        var: kubeadm_version.stdout
+        
+    - name: Run kubeadm upgrade plan
+      command: kubeadm upgrade plan
+      register: upgrade_plan
+      changed_when: false
+      
+    - name: Display upgrade plan (first 30 lines)
+      debug:
+        msg: "{{ upgrade_plan.stdout_lines[:30] }}"
+        
+    - name: Drain the node
+      command: kubectl drain {{ ansible_hostname }} --ignore-daemonsets --delete-emptydir-data
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      when: ansible_hostname != groups['control_plane'][0]
+      
+    - name: Upgrade first control plane node
+      command: kubeadm upgrade apply v{{ kubernetes_version_target }} --yes
+      when: ansible_hostname == groups['control_plane'][0]
+      
+    - name: Upgrade additional control plane nodes
+      command: kubeadm upgrade node
+      when: ansible_hostname != groups['control_plane'][0]
+      
+    - name: Upgrade kubelet and kubectl
+      apt:
+        name:
+          - "kubelet={{ kubernetes_version_target }}-*"
+          - "kubectl={{ kubernetes_version_target }}-*"
+        state: present
+        allow_change_held_packages: yes
+        
+    - name: Restart kubelet
+      systemd:
+        name: kubelet
+        state: restarted
+        daemon_reload: yes
+        
+    - name: Wait for node to be ready
+      pause:
+        seconds: 30
+        
+    - name: Uncordon the node
+      command: kubectl uncordon {{ ansible_hostname }}
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      when: ansible_hostname != groups['control_plane'][0]
+      
+    - name: Verify node is ready
+      command: kubectl get node {{ ansible_hostname }}
+      register: final_status
+      changed_when: false
+      retries: 5
+      delay: 10
+      until: "'Ready' in final_status.stdout"
+      
+    - name: Display final node status
+      debug:
+        var: final_status.stdout_lines

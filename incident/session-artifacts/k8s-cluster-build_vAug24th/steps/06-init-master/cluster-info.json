@@ -1,0 +1,30 @@
+{
+  "kubernetes_version": "v1.33.4",
+  "control_plane_endpoint": "192.168.0.100:6443",
+  "pod_cidr": "10.244.0.0/16",
+  "service_cidr": "10.96.0.0/12",
+  "cluster_dns": "10.96.0.10",
+  "master_node": {
+    "hostname": "master1",
+    "ip": "192.168.0.100",
+    "status": "NotReady (waiting for CNI)",
+    "roles": "control-plane"
+  },
+  "join_token": "<REDACTED-KUBEADM-TOKEN>",
+  "ca_cert_hash": "sha256:7539ce73805bdbd6ba72efdc42a43a3d5c48ab9e4ebdc0c20c47cd40adaeac5c",
+  "join_command": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:7539ce73805bdbd6ba72efdc42a43a3d5c48ab9e4ebdc0c20c47cd40adaeac5c",
+  "components": {
+    "etcd": "Running",
+    "kube-apiserver": "Running",
+    "kube-controller-manager": "Running",
+    "kube-scheduler": "Running",
+    "kube-proxy": "Running",
+    "coredns": "Pending (waiting for CNI)"
+  },
+  "notes": [
+    "Cluster initialized successfully with Kubernetes v1.33.4",
+    "Node is NotReady pending CNI installation",
+    "CoreDNS pods pending network plugin",
+    "Ready for additional control plane nodes to join"
+  ]
+}

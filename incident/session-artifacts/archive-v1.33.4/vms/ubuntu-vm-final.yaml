@@ -1,0 +1,145 @@
+# Ubuntu VM at 192.168.0.100 with root SSH access
+# Password: <REDACTED-PASSWORD>
+# Single bridge interface only
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ubuntu-vm-disk
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-fixed
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          # CRITICAL: Disable pod network auto-attachment
+          autoattachPodInterface: false
+
+          disks:
+          - disk:
+              bus: virtio
+            name: containerdisk
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+
+          interfaces:
+          # Only bridge interface - no pod network
+          - name: bridge-net
+            bridge: {}
+
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+
+      networks:
+      # Only bridge network
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+
+      volumes:
+      - name: containerdisk
+        containerDisk:
+          # Using working Ubuntu 22.04 image
+          image: tedezed/ubuntu-container-disk:22.0
+
+      - name: rootdisk
+        persistentVolumeClaim:
+          claimName: ubuntu-vm-disk
+
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+
+          userData: |
+            #cloud-config
+            hostname: ubuntu-vm
+            fqdn: ubuntu-vm.local
+            manage_etc_hosts: true
+
+            # Create users and set passwords
+            users:
+              - default
+              - name: root
+                lock_passwd: false
+
+            # Set passwords
+            chpasswd:
+              list: |
+                root:demo123
+                ubuntu:demo123
+              expire: false
+
+            # SSH configuration
+            ssh_pwauth: true
+            disable_root: false
+
+            # Package installation
+            package_update: true
+            package_upgrade: false
+            packages:
+              - openssh-server
+              - qemu-guest-agent
+              - net-tools
+              - vim
+              - curl
+
+            # Commands to run
+            runcmd:
+              # Reset machine ID
+              - rm -f /etc/machine-id /var/lib/dbus/machine-id
+              - systemd-machine-id-setup
+
+              # Configure SSH for root login
+              - sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+              - sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+              - sed -i 's/^#*PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+              - systemctl restart ssh
+              - systemctl enable ssh
+
+              # Enable and start guest agent
+              - systemctl enable qemu-guest-agent
+              - systemctl start qemu-guest-agent
+
+              # Set MOTD
+              - echo "Ubuntu VM - IP: 192.168.0.100" > /etc/motd
+              - echo "SSH: root password is demo123" >> /etc/motd
+
+              # Show network config
+              - ip addr show

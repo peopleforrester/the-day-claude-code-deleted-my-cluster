@@ -1,0 +1,41 @@
+KUBERNETES CLUSTER ACCESS INFORMATION
+=====================================
+
+Dashboard Access:
+-----------------
+URL: https://<any-node-ip>:30443
+Available Node IPs:
+- https://192.168.0.100:30443
+- https://192.168.0.101:30443
+- https://192.168.0.102:30443
+- https://192.168.0.103:30443
+- https://192.168.0.104:30443
+
+Dashboard Token:
+<REDACTED-TOKEN> steps/11-dashboard/access-token.txt
+
+kubectl Configuration:
+----------------------
+1. Copy admin kubeconfig:
+   scp root@192.168.0.100:/etc/kubernetes/admin.conf ~/.kube/config
+
+2. Or set KUBECONFIG:
+   export KUBECONFIG=configs/admin.conf
+
+Ingress Controller:
+-------------------
+HTTP: http://<any-node-ip>:31077
+HTTPS: https://<any-node-ip>:30836
+
+API Server:
+-----------
+Endpoint: https://192.168.0.100:6443
+
+Cluster Summary:
+----------------
+- 5 nodes (3 masters, 2 workers)
+- Kubernetes v1.31.11
+- Calico CNI with eBPF
+- Metrics Server enabled
+- NGINX Ingress Controller
+- Dashboard with admin access

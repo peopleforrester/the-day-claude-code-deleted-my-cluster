@@ -1,0 +1,100 @@
+name: security-scan
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+  push:
+    branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  checkov:
+    name: checkov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: kubernetes,terraform,helm,dockerfile,github_actions
+          quiet: true
+          output_format: sarif
+          output_file_path: checkov.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov.sarif
+          category: checkov
+
+  trivy-fs:
+    name: trivy-fs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-fs.sarif
+          exit-code: "1"
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  kube-linter:
+    name: kube-linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: stackrox/kube-linter-action@v1.0.7
+        with:
+          directory: k8s
+          format: sarif
+          output-file: kube-linter.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: kube-linter.sarif
+          category: kube-linter
+
+  kubesec:
+    name: kubesec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: scan
+        run: |
+          set -euo pipefail
+          V=2.14.2
+          curl -sSL "https://github.com/controlplaneio/kubesec/releases/download/v${V}/kubesec_linux_amd64.tar.gz" | sudo tar -xz -C /usr/local/bin kubesec
+          fail=0
+          while IFS= read -r -d '' f; do
+              score=$(kubesec scan "$f" | jq -r '.[0].score // 0')
+              echo "$f : $score"
+              [ "$score" -lt 0 ] && fail=1
+          done < <(find k8s manifests charts -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 2>/dev/null)
+          exit $fail

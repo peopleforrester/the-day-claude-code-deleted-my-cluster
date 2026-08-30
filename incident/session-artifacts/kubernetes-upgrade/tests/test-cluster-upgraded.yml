@@ -1,0 +1,45 @@
+---
+# Test that entire cluster is upgraded to v1.32.8
+
+- name: Test Cluster Upgrade Complete
+  hosts: k8s01
+  gather_facts: no
+  
+  tasks:
+    - name: TEST | Get all node versions
+      command: kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.nodeInfo.kubeletVersion}{"\n"}{end}'
+      register: node_versions
+      changed_when: false
+      
+    - name: TEST | Display all node versions
+      debug:
+        var: node_versions.stdout_lines
+        
+    - name: TEST | Verify all nodes are on v1.32.8
+      assert:
+        that:
+          - "'v1.31' not in node_versions.stdout"
+          - "'v1.32.8' in item"
+        fail_msg: "Node upgrade incomplete - found nodes not on v1.32.8"
+        success_msg: "All nodes successfully upgraded to v1.32.8"
+      loop: "{{ node_versions.stdout_lines }}"
+      
+    - name: TEST | Check cluster health
+      command: kubectl get cs
+      register: component_status
+      changed_when: false
+      failed_when: false  # deprecated in newer versions
+      
+    - name: TEST | Check all pods are running
+      shell: kubectl get pods -A --no-headers | grep -v Running | grep -v Completed || true
+      register: problem_pods
+      changed_when: false
+      
+    - name: TEST | Display any problem pods
+      debug:
+        msg: "Problem pods found: {{ problem_pods.stdout }}"
+      when: problem_pods.stdout | length > 0
+      
+    - name: TEST | Final success message
+      debug:
+        msg: "✅ Kubernetes cluster successfully upgraded from v1.31.10 to v1.32.8!"

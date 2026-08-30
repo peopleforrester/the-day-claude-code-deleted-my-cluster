@@ -1,0 +1,101 @@
+# Ubuntu 24.04 VM using DataVolume with direct download
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-24-vm-dv
+  namespace: default
+spec:
+  source:
+    http:
+      # Official Ubuntu 24.04 cloud image that has cloud-init
+      url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 20Gi
+    storageClassName: longhorn-fixed
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-24-vm
+  namespace: default
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: ubuntu-24-vm
+    spec:
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          autoattachPodInterface: false  # Single NIC as requested
+          disks:
+          - disk:
+              bus: virtio
+            name: datavolumedisk
+          - disk:
+              bus: virtio
+            name: cloudinit
+          interfaces:
+          - name: bridge-net
+            bridge: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 4Gi
+            cpu: 2
+          limits:
+            memory: 4Gi
+            cpu: 2
+      networks:
+      - name: bridge-net
+        multus:
+          networkName: bridge-network-simple
+      volumes:
+      - name: datavolumedisk
+        dataVolume:
+          name: ubuntu-24-vm-dv
+      - name: cloudinit
+        cloudInitNoCloud:
+          networkData: |
+            version: 2
+            ethernets:
+              enp1s0:
+                dhcp4: false
+                addresses:
+                  - 192.168.0.100/24
+                gateway4: 192.168.0.1
+                nameservers:
+                  addresses:
+                    - 8.8.8.8
+                    - 8.8.4.4
+          userData: |
+            #cloud-config
+            hostname: ubuntu-24
+            ssh_pwauth: true
+            disable_root: false
+
+            # Set root password
+            chpasswd:
+              list: |
+                root:demo123
+              expire: false
+
+            # Ensure SSH is configured for root login
+            write_files:
+              - path: /etc/ssh/sshd_config.d/99-allow-root.conf
+                content: |
+                  PermitRootLogin yes
+                  PasswordAuthentication yes
+                permissions: '0644'
+
+            # Make sure SSH starts
+            runcmd:
+              - systemctl restart ssh || systemctl restart sshd
+              - systemctl enable ssh || systemctl enable sshd

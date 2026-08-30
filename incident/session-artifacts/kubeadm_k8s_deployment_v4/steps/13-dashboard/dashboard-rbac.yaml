@@ -1,0 +1,29 @@
+---
+# Kubernetes Dashboard RBAC Configuration
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+# Dashboard Access Information
+#
+# Access Methods:
+# 1. Via Ingress: https://dashboard.k8s.local (configure DNS or /etc/hosts)
+# 2. Via NodePort: https://<any-node-ip>:32676
+# 3. Via Port Forward: kubectl port-forward -n kubernetes-dashboard svc/kubernetes-dashboard 8443:443
+#
+# Login: Use the token from access-token.txt file

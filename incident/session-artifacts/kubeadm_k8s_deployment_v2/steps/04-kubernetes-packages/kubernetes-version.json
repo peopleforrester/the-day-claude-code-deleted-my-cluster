@@ -1,0 +1,14 @@
+{
+  "kubernetes_version": "1.31.11",
+  "packages": {
+    "kubeadm": "1.31.11-1.1",
+    "kubectl": "1.31.11-1.1",
+    "kubelet": "1.31.11-1.1"
+  },
+  "repository": "https://pkgs.k8s.io/core:/stable:/v1.31/deb/",
+  "packages_held": true,
+  "kubelet_service": "enabled",
+  "installation_date": "2025-08-03T15:32:00Z",
+  "disk_cleanup_performed": true,
+  "validation_passed": true
+}

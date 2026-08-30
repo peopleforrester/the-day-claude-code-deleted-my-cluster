@@ -1,0 +1,42 @@
+---
+# Test Upgrade Process
+# Validates that the upgrade can be performed successfully
+
+- name: Test Kubernetes Upgrade Process
+  hosts: k8s01
+  gather_facts: no
+  
+  tasks:
+    - name: TEST | Verify kubeadm is upgraded
+      command: kubeadm version
+      register: kubeadm_ver
+      failed_when: "'v1.32.8' not in kubeadm_ver.stdout"
+      
+    - name: TEST | Verify API server is accessible
+      uri:
+        url: "https://192.168.0.50:6443/healthz"
+        validate_certs: no
+        status_code: 200
+      retries: 5
+      delay: 10
+      
+    - name: TEST | Verify kubelet is running
+      systemd:
+        name: kubelet
+        state: started
+      check_mode: yes
+      register: kubelet_status
+      failed_when: kubelet_status.changed
+      
+    - name: TEST | Verify upgrade can be performed
+      command: kubeadm upgrade plan
+      register: plan_output
+      failed_when: 
+        - plan_output.rc != 0
+        - "'v1.32.8' not in plan_output.stdout"
+        
+    - name: TEST | Verify all control plane components are running
+      shell: |
+        crictl ps | grep -E "kube-apiserver|kube-controller|kube-scheduler|etcd" | wc -l
+      register: component_count
+      failed_when: component_count.stdout | int < 4

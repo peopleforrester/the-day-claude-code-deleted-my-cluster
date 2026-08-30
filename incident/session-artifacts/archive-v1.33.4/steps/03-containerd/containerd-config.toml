@@ -1,0 +1,16 @@
+# Containerd Configuration for Kubernetes
+# Version: 2.1.4
+# Deployed to: /etc/containerd/config.toml
+
+# This is a reference of the configuration deployed to all nodes
+# The actual config is generated via: containerd config default
+# With modifications for:
+# - SystemdCgroup = true (for cgroup v2 compatibility)
+# - Sandbox image = registry.k8s.io/pause:3.10
+# - Metrics endpoint = 127.0.0.1:1338
+
+# Key configuration points:
+# 1. CRI socket: /run/containerd/containerd.sock
+# 2. CNI config path: /etc/cni/net.d
+# 3. CNI bin dir: /opt/cni/bin
+# 4. Runtime: runc with systemd cgroup driver

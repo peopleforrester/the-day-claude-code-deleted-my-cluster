@@ -1,0 +1,13 @@
+{
+  "initialized": "2025-08-04T12:49:00Z",
+  "master_node": "192.168.0.100",
+  "kubernetes_version": "v1.31.11",
+  "api_endpoint": "192.168.0.100:6443",
+  "pod_subnet": "10.244.0.0/16",
+  "service_subnet": "10.96.0.0/12",
+  "token": "<REDACTED-KUBEADM-TOKEN>",
+  "discovery_token_ca_cert_hash": "sha256:bb936d10d240fed8cd866ce6aee9c1a051fbe86cb2fec1edd45574600a3c7e73",
+  "certificate_key": "0dfe493610a4fa0a98324400435144fb56fad64337e9150b5fccd33e0cb8ac74",
+  "control_plane_join_command": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:bb936d10d240fed8cd866ce6aee9c1a051fbe86cb2fec1edd45574600a3c7e73 --control-plane --certificate-key 0dfe493610a4fa0a98324400435144fb56fad64337e9150b5fccd33e0cb8ac74",
+  "worker_join_command": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:bb936d10d240fed8cd866ce6aee9c1a051fbe86cb2fec1edd45574600a3c7e73"
+}

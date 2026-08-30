@@ -1,0 +1,31 @@
+{
+  "containerd": {
+    "version": "2.1.4",
+    "commit": "75cb2b7193e4e490e9fbdc236c0e811ccaba3376",
+    "source": "github.com/containerd/containerd",
+    "binary_location": "/usr/local/bin/containerd",
+    "service_file": "/etc/systemd/system/containerd.service",
+    "config_file": "/etc/containerd/config.toml",
+    "socket": "/run/containerd/containerd.sock"
+  },
+  "runc": {
+    "version": "1.2.3",
+    "binary_location": "/usr/local/sbin/runc"
+  },
+  "cni_plugins": {
+    "version": "1.6.1",
+    "location": "/opt/cni/bin"
+  },
+  "crictl": {
+    "version": "1.31.1",
+    "binary_location": "/usr/local/bin/crictl",
+    "config_file": "/etc/crictl.yaml"
+  },
+  "configuration": {
+    "cgroup_driver": "systemd",
+    "sandbox_image": "registry.k8s.io/pause:3.10",
+    "metrics_endpoint": "127.0.0.1:1338",
+    "cni_conf_dir": "/etc/cni/net.d",
+    "cni_bin_dir": "/opt/cni/bin"
+  }
+}

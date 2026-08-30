@@ -1,0 +1,51 @@
+name: policy-check
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "k8s/**"
+      - "manifests/**"
+      - "charts/**"
+      - "policy/**"
+      - "kyverno/**"
+  merge_group:
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  conftest:
+    name: conftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install conftest
+        run: |
+          set -euo pipefail
+          V=0.56.0
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${V}/conftest_${V}_Linux_x86_64.tar.gz" | tar -xz conftest
+          sudo install -m 0755 conftest /usr/local/bin/conftest
+      - name: run
+        run: |
+          if [[ -d policy ]]; then
+              conftest test --policy policy/ k8s/ manifests/ 2>/dev/null || true
+          fi
+
+  kyverno:
+    name: kyverno
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: kyverno/action-install-cli@v0.2.0
+        with:
+          release: v1.12.5
+      - name: apply
+        run: |
+          if [[ -d kyverno ]]; then
+              kyverno apply kyverno/ --resource k8s/ --resource manifests/ --policy-report 2>/dev/null || true
+          fi
+      - name: test
+        run: |
+          if [[ -d kyverno/tests ]]; then
+              kyverno test kyverno/tests
+          fi

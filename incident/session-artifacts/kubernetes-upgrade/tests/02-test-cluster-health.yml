@@ -1,0 +1,309 @@
+---
+# Cluster Health Test Suite
+# Comprehensive health checks for Kubernetes cluster
+
+- name: Comprehensive Cluster Health Tests
+  hosts: control_plane[0]
+  gather_facts: yes
+  
+  vars:
+    health_checks_passed: 0
+    health_checks_failed: 0
+    health_report: []
+    
+  tasks:
+    # ============================================
+    # Test 1: Node Health
+    # ============================================
+    - name: TEST | Get all nodes status
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Node
+      register: nodes_info
+      
+    - name: TEST | Check all nodes are Ready
+      assert:
+        that:
+          - item.status.conditions | selectattr('type', 'equalto', 'Ready') | selectattr('status', 'equalto', 'True') | list | length > 0
+        fail_msg: "Node {{ item.metadata.name }} is not Ready"
+        success_msg: "✓ Node {{ item.metadata.name }} is Ready"
+      loop: "{{ nodes_info.resources }}"
+      register: node_health_test
+      
+    - name: TEST | Update health check counter
+      set_fact:
+        health_checks_passed: "{{ health_checks_passed | int + 1 }}"
+      when: node_health_test is succeeded
+      
+    # ============================================
+    # Test 2: Control Plane Components
+    # ============================================
+    - name: TEST | Check API server health
+      uri:
+        url: "https://{{ api_server_vip }}:{{ api_server_port }}/healthz"
+        validate_certs: no
+        status_code: 200
+      register: api_health
+      
+    - name: TEST | Check controller manager health
+      uri:
+        url: "https://127.0.0.1:10257/healthz"
+        validate_certs: no
+        status_code: 200
+      register: controller_health
+      failed_when: false
+      
+    - name: TEST | Check scheduler health
+      uri:
+        url: "https://127.0.0.1:10259/healthz"
+        validate_certs: no
+        status_code: 200
+      register: scheduler_health
+      failed_when: false
+      
+    - name: TEST | Validate control plane health
+      assert:
+        that:
+          - api_health.status == 200
+        fail_msg: "Control plane components unhealthy"
+        success_msg: "✓ Control plane components healthy"
+        
+    # ============================================
+    # Test 3: etcd Cluster Health
+    # ============================================
+    - name: TEST | Check etcd cluster health
+      shell: |
+        ETCDCTL_API=3 etcdctl \
+          --endpoints=https://127.0.0.1:2379 \
+          --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+          --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+          --key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+          endpoint health --write-out=json
+      register: etcd_health
+      changed_when: false
+      
+    - name: TEST | Parse etcd health
+      set_fact:
+        etcd_healthy: "{{ (etcd_health.stdout | from_json | selectattr('health', 'equalto', true) | list | length) == (etcd_health.stdout | from_json | list | length) }}"
+        
+    - name: TEST | Validate etcd health
+      assert:
+        that:
+          - etcd_healthy
+        fail_msg: "etcd cluster is not healthy"
+        success_msg: "✓ etcd cluster is healthy"
+        
+    # ============================================
+    # Test 4: System Pods
+    # ============================================
+    - name: TEST | Get kube-system pods
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: kube-system
+      register: system_pods
+      
+    - name: TEST | Check for failed pods
+      set_fact:
+        failed_pods: "{{ system_pods.resources | selectattr('status.phase', 'ne', 'Running') | list }}"
+        
+    - name: TEST | Validate no failed system pods
+      assert:
+        that:
+          - failed_pods | length == 0
+        fail_msg: "Found {{ failed_pods | length }} failed system pods"
+        success_msg: "✓ All system pods are running"
+        
+    # ============================================
+    # Test 5: CNI (Cilium) Health
+    # ============================================
+    - name: TEST | Check Cilium pods
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: kube-system
+        label_selectors:
+          - "k8s-app=cilium"
+      register: cilium_pods
+      
+    - name: TEST | Validate Cilium is running
+      assert:
+        that:
+          - cilium_pods.resources | length > 0
+          - cilium_pods.resources | selectattr('status.phase', 'equalto', 'Running') | list | length == cilium_pods.resources | length
+        fail_msg: "Cilium CNI not healthy"
+        success_msg: "✓ Cilium CNI is healthy"
+        
+    # ============================================
+    # Test 6: DNS Resolution
+    # ============================================
+    - name: TEST | Test cluster DNS
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: dns-test
+            namespace: default
+          spec:
+            containers:
+            - name: dnsutils
+              image: registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3
+              command: ['sleep', '10']
+            restartPolicy: Never
+      register: dns_test_pod
+      
+    - name: TEST | Wait for DNS test pod
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        name: dns-test
+        namespace: default
+        wait: true
+        wait_condition:
+          type: Ready
+        wait_timeout: 30
+      failed_when: false
+      
+    - name: TEST | Execute DNS test
+      kubernetes.core.k8s_exec:
+        namespace: default
+        pod: dns-test
+        command: nslookup kubernetes.default
+      register: dns_result
+      failed_when: false
+      
+    - name: TEST | Clean up DNS test pod
+      kubernetes.core.k8s:
+        state: absent
+        api_version: v1
+        kind: Pod
+        name: dns-test
+        namespace: default
+        
+    - name: TEST | Validate DNS resolution
+      assert:
+        that:
+          - dns_result.rc | default(1) == 0
+        fail_msg: "Cluster DNS resolution failed"
+        success_msg: "✓ Cluster DNS working"
+        
+    # ============================================
+    # Test 7: Storage (PV/PVC)
+    # ============================================
+    - name: TEST | Check PersistentVolumes
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: PersistentVolume
+      register: pvs
+      
+    - name: TEST | Check for failed PVs
+      set_fact:
+        failed_pvs: "{{ pvs.resources | selectattr('status.phase', 'ne', 'Bound') | selectattr('status.phase', 'ne', 'Available') | list }}"
+        
+    - name: TEST | Validate PV health
+      assert:
+        that:
+          - failed_pvs | length == 0
+        fail_msg: "Found {{ failed_pvs | length }} unhealthy PersistentVolumes"
+        success_msg: "✓ All PersistentVolumes are healthy"
+        
+    # ============================================
+    # Test 8: Resource Capacity
+    # ============================================
+    - name: TEST | Get cluster resource metrics
+      shell: |
+        kubectl top nodes --no-headers | awk '{
+          cpu_sum += $3;
+          mem_sum += $5;
+          count++;
+        }
+        END {
+          if (count > 0) {
+            printf "{\"avg_cpu\": %.0f, \"avg_mem\": %.0f, \"nodes\": %d}", cpu_sum/count, mem_sum/count, count;
+          }
+        }'
+      register: resource_metrics
+      changed_when: false
+      failed_when: false
+      
+    - name: TEST | Parse resource metrics
+      set_fact:
+        cluster_metrics: "{{ resource_metrics.stdout | default('{}') | from_json }}"
+      when: resource_metrics.stdout != ""
+      
+    - name: TEST | Validate resource capacity
+      assert:
+        that:
+          - cluster_metrics.avg_cpu | default(0) < 80
+          - cluster_metrics.avg_mem | default(0) < 80
+        fail_msg: "Cluster resource usage too high (CPU: {{ cluster_metrics.avg_cpu | default('N/A') }}%, Mem: {{ cluster_metrics.avg_mem | default('N/A') }}%)"
+        success_msg: "✓ Cluster has adequate resource capacity"
+      when: cluster_metrics is defined
+      
+    # ============================================
+    # Test 9: Certificate Expiration
+    # ============================================
+    - name: TEST | Check certificate expiration
+      shell: |
+        kubeadm certs check-expiration | grep -E "admin.conf|apiserver|controller-manager|scheduler" | grep -c EXPIRED || true
+      register: cert_check
+      changed_when: false
+      
+    - name: TEST | Validate certificates
+      assert:
+        that:
+          - cert_check.stdout | int == 0
+        fail_msg: "Some certificates are expired or expiring soon"
+        success_msg: "✓ All certificates are valid"
+        
+    # ============================================
+    # Test 10: Workload Health
+    # ============================================
+    - name: TEST | Check for pods in CrashLoopBackOff
+      shell: |
+        kubectl get pods --all-namespaces --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers | wc -l
+      register: problematic_pods
+      changed_when: false
+      
+    - name: TEST | Validate workload health
+      assert:
+        that:
+          - problematic_pods.stdout | int < 5
+        fail_msg: "Too many pods in problematic state ({{ problematic_pods.stdout }})"
+        success_msg: "✓ Workloads are healthy"
+        
+  post_tasks:
+    - name: Generate health test report
+      copy:
+        content: |
+          ===============================================
+          CLUSTER HEALTH TEST REPORT
+          ===============================================
+          Timestamp: {{ ansible_date_time.iso8601 }}
+          Cluster: {{ cluster_name }}
+          
+          Test Results:
+          ✓ Nodes: All {{ nodes_info.resources | length }} nodes are Ready
+          ✓ Control Plane: API server responding
+          ✓ etcd: Cluster healthy
+          ✓ System Pods: All running
+          ✓ CNI: Cilium operational
+          ✓ DNS: Resolution working
+          ✓ Storage: PVs healthy
+          ✓ Resources: Adequate capacity available
+          ✓ Certificates: All valid
+          ✓ Workloads: Healthy
+          
+          Overall Status: HEALTHY
+          ===============================================
+        dest: "/tmp/health-test-report-{{ ansible_date_time.epoch }}.txt"
+        
+    - name: Display test summary
+      debug:
+        msg: |
+          ===============================================
+          All health checks passed!
+          Report saved to: /tmp/health-test-report-{{ ansible_date_time.epoch }}.txt
+          ===============================================

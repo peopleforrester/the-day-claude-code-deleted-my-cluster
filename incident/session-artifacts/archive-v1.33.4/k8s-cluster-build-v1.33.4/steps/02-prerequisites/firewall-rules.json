@@ -1,0 +1,88 @@
+{
+  "firewall_configuration": {
+    "control_plane_nodes": {
+      "nodes": ["k8s01", "k8s02", "k8s03"],
+      "ip_range": "192.168.0.50-52",
+      "ports": [
+        {
+          "port": 6443,
+          "protocol": "tcp",
+          "service": "Kubernetes API server",
+          "access": "All"
+        },
+        {
+          "port": "2379-2380",
+          "protocol": "tcp",
+          "service": "etcd server client API",
+          "access": "Control plane"
+        },
+        {
+          "port": 10250,
+          "protocol": "tcp",
+          "service": "Kubelet API",
+          "access": "Self, Control plane"
+        },
+        {
+          "port": 10259,
+          "protocol": "tcp",
+          "service": "kube-scheduler",
+          "access": "Self"
+        },
+        {
+          "port": 10257,
+          "protocol": "tcp",
+          "service": "kube-controller-manager",
+          "access": "Self"
+        },
+        {
+          "port": "30000-32767",
+          "protocol": "tcp",
+          "service": "NodePort Services",
+          "access": "All"
+        }
+      ]
+    },
+    "worker_nodes": {
+      "nodes": ["k8s04", "k8s05", "k8s06", "k8s07", "k8s08", "k8s09"],
+      "ip_range": "192.168.0.53-58",
+      "ports": [
+        {
+          "port": 10250,
+          "protocol": "tcp",
+          "service": "Kubelet API",
+          "access": "Self, Control plane"
+        },
+        {
+          "port": "30000-32767",
+          "protocol": "tcp",
+          "service": "NodePort Services",
+          "access": "All"
+        }
+      ]
+    },
+    "additional_ports": {
+      "weave_net": {
+        "port": 6783,
+        "protocol": "tcp/udp",
+        "service": "Weave Net",
+        "required": false
+      },
+      "calico": {
+        "ports": [179, 4789, 5473],
+        "protocol": "tcp/udp",
+        "service": "Calico",
+        "required": false
+      },
+      "cilium": {
+        "ports": [8472, 4240],
+        "protocol": "tcp/udp",
+        "service": "Cilium",
+        "required": true
+      }
+    },
+    "iptables_rules": {
+      "saved_location": "/etc/iptables/rules.v4",
+      "persistence": "iptables-save"
+    }
+  }
+}

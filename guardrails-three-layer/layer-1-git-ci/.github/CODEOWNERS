@@ -1,0 +1,11 @@
+# Example CODEOWNERS - edit team names to match your org.
+# Required-review wiring depends on the branch-protection ruleset.
+
+*                                   @your-org/platform
+/k8s/                               @your-org/sre @your-org/platform
+/.github/workflows/                 @your-org/security
+/.githooks/                         @your-org/security
+/kyverno/                           @your-org/security
+/terraform/                         @your-org/platform @your-org/security
+CLAUDE.md                           @your-org/security @your-org/platform
+.cursorrules                        @your-org/security

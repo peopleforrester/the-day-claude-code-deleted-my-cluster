@@ -1,0 +1,57 @@
+{
+    "cluster_name": "k8s-ha-cluster",
+    "api_endpoint": "192.168.0.180:6443",
+    "nodes": [
+        {
+            "hostname": "master1",
+            "ip": "192.168.0.183",
+            "role": "control-plane",
+            "os": "Ubuntu 24.04.2 LTS",
+            "kernel": "6.8.0-64-generic",
+            "cpu_cores": 2,
+            "memory_gb": 3,
+            "status": "reachable"
+        },
+        {
+            "hostname": "master2",
+            "ip": "192.168.0.194",
+            "role": "control-plane",
+            "os": "Ubuntu 24.04.2 LTS",
+            "kernel": "6.8.0-64-generic",
+            "cpu_cores": 2,
+            "memory_gb": 3,
+            "status": "reachable"
+        },
+        {
+            "hostname": "master3",
+            "ip": "192.168.0.196",
+            "role": "control-plane",
+            "os": "Ubuntu 24.04.2 LTS",
+            "kernel": "6.8.0-64-generic",
+            "cpu_cores": 2,
+            "memory_gb": 3,
+            "status": "reachable"
+        },
+        {
+            "hostname": "worker1",
+            "ip": "192.168.0.197",
+            "role": "worker",
+            "os": "Ubuntu 24.04.2 LTS",
+            "kernel": "6.8.0-64-generic",
+            "cpu_cores": 2,
+            "memory_gb": 3,
+            "status": "reachable"
+        },
+        {
+            "hostname": "worker2",
+            "ip": "192.168.0.198",
+            "role": "worker",
+            "os": "Ubuntu 24.04.2 LTS",
+            "kernel": "6.8.0-64-generic",
+            "cpu_cores": 2,
+            "memory_gb": 3,
+            "status": "reachable"
+        }
+    ],
+    "timestamp": "2025-08-03T15:21:25Z"
+}

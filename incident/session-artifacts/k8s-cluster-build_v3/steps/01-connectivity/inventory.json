@@ -1,0 +1,61 @@
+{
+  "cluster_name": "k8s-production",
+  "api_endpoint": "192.168.0.180",
+  "nodes": {
+    "masters": [
+      {
+        "hostname": "master1",
+        "ip": "192.168.0.100",
+        "role": "control-plane",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "memory": "3.8Gi",
+        "disk": "22G"
+      },
+      {
+        "hostname": "master2",
+        "ip": "192.168.0.101",
+        "role": "control-plane",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "memory": "3.8Gi",
+        "disk": "22G"
+      },
+      {
+        "hostname": "master3",
+        "ip": "192.168.0.102",
+        "role": "control-plane",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "memory": "3.8Gi",
+        "disk": "22G"
+      }
+    ],
+    "workers": [
+      {
+        "hostname": "worker1",
+        "ip": "192.168.0.103",
+        "role": "worker",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "memory": "3.8Gi",
+        "disk": "17G"
+      },
+      {
+        "hostname": "worker2",
+        "ip": "192.168.0.104",
+        "role": "worker",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "memory": "3.8Gi",
+        "disk": "17G"
+      }
+    ]
+  },
+  "verification": {
+    "timestamp": "2025-08-03",
+    "all_nodes_accessible": true,
+    "os_consistent": true,
+    "minimum_requirements_met": true
+  }
+}

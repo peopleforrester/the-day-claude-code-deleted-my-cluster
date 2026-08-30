@@ -1,0 +1,33 @@
+{
+  "cluster_initialization": {
+    "status": "success",
+    "master_node": "master1",
+    "api_endpoint": "192.168.0.100:6443",
+    "kubernetes_version": "v1.31.11",
+    "initialized_at": "2025-08-04T17:25:30Z"
+  },
+  "tokens": {
+    "bootstrap_token": "<REDACTED-KUBEADM-TOKEN>",
+    "discovery_token_ca_cert_hash": "sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201",
+    "certificate_key": "236f00aec52e421293b62e25bc2e353a23b057b44deae0d8e5d538788446e67b",
+    "certificate_key_expiry": "2 hours from initialization"
+  },
+  "join_commands": {
+    "control_plane": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201 --control-plane --certificate-key 236f00aec52e421293b62e25bc2e353a23b057b44deae0d8e5d538788446e67b",
+    "worker": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201"
+  },
+  "components": {
+    "etcd": "internal, single instance",
+    "api_server": "running on 192.168.0.100:6443",
+    "controller_manager": "configured with bind-address 0.0.0.0",
+    "scheduler": "configured with bind-address 0.0.0.0",
+    "coredns": "deployed",
+    "kube_proxy": "deployed, mode: ipvs"
+  },
+  "networking": {
+    "pod_subnet": "10.244.0.0/16",
+    "service_subnet": "10.96.0.0/12",
+    "dns_domain": "cluster.local",
+    "cni": "not yet installed"
+  }
+}

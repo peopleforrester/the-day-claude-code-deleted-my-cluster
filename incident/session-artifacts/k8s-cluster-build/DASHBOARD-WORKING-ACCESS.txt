@@ -1,0 +1,24 @@
+KUBERNETES DASHBOARD - ACTUALLY WORKING ACCESS
+==============================================
+
+Dashboard v2 is now installed and accessible via NodePort.
+
+ACCESS URL:
+-----------
+https://192.168.0.100:32459
+(or any node IP with port 32459)
+
+ADMIN TOKEN:
+<REDACTED-TOKEN>
+<REDACTED-K8S-SERVICEACCOUNT-JWT>
+
+HOW TO ACCESS:
+--------------
+1. Open browser to https://192.168.0.100:32459
+2. Accept the certificate warning
+3. Choose "Token" authentication
+4. Paste the admin token above
+5. Click "Sign in"
+
+This is Dashboard v2.7.0 (stable) with direct NodePort access.
+No proxies, no port forwarding, just direct access.

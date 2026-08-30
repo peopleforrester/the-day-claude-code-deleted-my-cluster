@@ -1,0 +1,27 @@
+---
+# Metrics Server Configuration
+component: metrics-server
+version: latest
+namespace: kube-system
+
+configuration:
+  kubelet_insecure_tls: true  # Added for internal cluster
+
+deployment:
+  replicas: 1
+  service_name: metrics-server
+
+api_service:
+  group: metrics.k8s.io
+  version: v1beta1
+
+capabilities:
+  - kubectl top nodes
+  - kubectl top pods
+  - HPA (Horizontal Pod Autoscaler) support
+  - VPA (Vertical Pod Autoscaler) support
+
+verified_functionality:
+  node_metrics: working
+  pod_metrics: working
+  all_nodes_reporting: true

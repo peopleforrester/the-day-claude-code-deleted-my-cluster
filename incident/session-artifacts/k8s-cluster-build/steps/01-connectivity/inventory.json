@@ -1,0 +1,62 @@
+{
+  "cluster_name": "k8s-ha-cluster",
+  "nodes": {
+    "control_plane": [
+      {
+        "hostname": "master1",
+        "ip": "192.168.0.100",
+        "role": "control-plane,etcd",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "arch": "x86_64",
+        "status": "accessible"
+      },
+      {
+        "hostname": "master2",
+        "ip": "192.168.0.101",
+        "role": "control-plane,etcd",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "arch": "x86_64",
+        "status": "accessible"
+      },
+      {
+        "hostname": "master3",
+        "ip": "192.168.0.102",
+        "role": "control-plane,etcd",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "arch": "x86_64",
+        "status": "accessible"
+      }
+    ],
+    "workers": [
+      {
+        "hostname": "worker1",
+        "ip": "192.168.0.103",
+        "role": "worker",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "arch": "x86_64",
+        "status": "accessible"
+      },
+      {
+        "hostname": "worker2",
+        "ip": "192.168.0.104",
+        "role": "worker",
+        "os": "Ubuntu 24.04.2 LTS",
+        "kernel": "6.8.0-71-generic",
+        "arch": "x86_64",
+        "status": "accessible"
+      }
+    ]
+  },
+  "summary": {
+    "total_nodes": 5,
+    "control_plane_nodes": 3,
+    "worker_nodes": 2,
+    "all_nodes_accessible": true,
+    "os_consistency": true,
+    "verified_at": "2025-08-04T13:05:00Z"
+  }
+}

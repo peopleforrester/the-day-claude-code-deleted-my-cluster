@@ -1,0 +1,39 @@
+# Sensitive files
+*.key
+*.crt
+*.pem
+admin.conf
+join-tokens.encrypted
+*-token.txt
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*.swp
+
+# Log files that might contain sensitive data
+*-sensitive.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Terraform (if used)
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Ansible (if used)
+*.retry
+ansible.log
