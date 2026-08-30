@@ -1,79 +1,73 @@
-# PROJECT_STATE.md — SREday Texas 2026
+# Project State: the-day-claude-code-deleted-my-cluster
 
-Durable project state. Read this first at the start of any session.
-Reconcile against `git log`, `git status`, and `gh repo view` before
-trusting it — this file is updated by hand and can drift.
+Phase: 3.3 Promote
+Approved: pending
 
-## Current plan
+Canonical repo: `peopleforrester/the-day-claude-code-deleted-my-cluster` (private).
+Durable project state. Read this first at the start of any session, then reconcile
+against `git log`, `git status`, and the test suite.
 
-Initialize a venue-specific talk repo for SREday Austin / Texas 2026.
-Mirror the lightweight structure used for other venue-specific repos
-(DevOpsDays-Atlanta-2026, LLMday-Texas-2026) and keep the analytical
-substance in `claude-deleted-my-cluster-2026`.
+## Lifecycle
+- [x] 1.1 Research
+- [x] 1.2 Plan
+- [ ] 1.3 Approve
+- [x] 2.1 Test
+- [x] 2.2 Implement
+- [x] 2.3 Verify
+- [x] 3.1 Stage
+- [ ] 3.2 Confirm CI
+- [x] 3.3 Promote
 
-## Task checklist
+## Contracts
+None sealed. The consolidation was carried out under an explicit instruction on
+2026-08-30 rather than a written plan.
 
-- [x] Create `staging` branch from `main`
-- [x] Write README.md with talk metadata, abstract, and pointers to
-      source-of-truth repos
-- [x] Write CLAUDE.md with project-specific instructions
-- [x] Write MEMORY.md and PROJECT_STATE.md (state persistence)
-- [x] Write .gitignore
-- [x] Commit scaffold to `staging`
-- [x] Create public GitHub repo `peopleforrester/SREday-Texas-2026`
-- [x] Push `staging`, then fast-forward `main` and push
-- [x] Apply senior-review fixes (TDD remediation series)
-- [x] Populate `abstract/` with as-submitted SREday abstract and bio
-      (organizers-only speaker notes captured locally, gitignored)
-- [x] Verify event date / venue / timebox and lift TBD from README
-      (May 11, 2026 at The Sunset Room, single track, 30-minute slot)
-- [x] Confirm session time (12:30 on May 11) and revise bio for the
-      talk page
-- [x] Polish the public-facing repo: visitor-focused README,
-      GitHub description / topics / homepage URL, asset policy
-      relocated to CLAUDE.md
-- [ ] Draft SREday-tuned outline in `outline/` (emphasis: blast-radius,
-      reversibility, operational controls)
-- [x] Adapt deck into `presentations/` (PPTX in place)
-- [ ] Write speaker notes in `speaker-notes/`
-- [ ] Rehearse and capture timing notes
+## What this repo is
 
-## Last completed step
+The canonical home for the talk, named for the talk rather than any one
+conference, because it has been delivered three times under three formats. Event
+repos point here; the material lives here.
 
-Pre-show cleanup: removed internal-process files (MEMORY.md,
-historical TDD plan) from git tracking so the published repo reads
-cleanly for students arriving from slide 20. Email contact updated
-from the prior `performantpro.com` address to the gmail and Accenture
-addresses. Pytest suite green (32 tests).
+Seeded from the SREday Austin history, which carried the Eight Guardrails
+Framework, the hook implementations, the CI workflows, and the only editable deck
+source. The incident forensics and the runnable three-layer install came from the
+DevOpsDays Atlanta ignite repo.
+
+## Delivery record
+
+| Event | Date | Format | Status |
+|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite | Delivered |
+| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered |
+| DevOpsDays Portland 2026 | 2026-09-10 13:50 | 5-minute Ignite | Upcoming |
 
 ## Next step
 
-After the talk, capture in `post-event/`:
-- Recording link once SREday publishes
-- Slides-as-delivered PDF if shared with attendees
-- Audience reaction notes, Q&A surprises, anything worth folding
-  back into the analysis repo
+Portland is the live work, and it is tracked as issues on
+`peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite` because they
+were filed before this repo existed. Move or re-file them here.
 
-## Branch and test status
+In priority order:
 
-- Branches: `main`, `staging` — `staging` is ahead pending the FF
-  merge in the senior-review-fix series.
-- Tests: pytest consistency suite under `tests/`. Run with
-  `uv sync && uv run pytest`. The suite asserts that durable state
-  files match the actual repo and remote — exactly the class of bug
-  the senior review surfaced.
+1. **Settle the incident account.** The long form describes a networking task and a
+   forty-minute damage window; the Portland abstract describes full pipeline access
+   and stepping away for thirty seconds. Both are probably true of the same event.
+   Five minutes has no room to be vague. Check the deck against
+   `incident/ANALYSIS.md`.
+2. **Resolve what the 2026 escalation actually is.** The submitted Portland abstract
+   says 250 clusters were deleted. Michael's account on 2026-08-27 is that the agent
+   reported provisioning a 250-cluster set it had not provisioned. Those are
+   different stories and the abstract is public.
+3. **Build the Portland deck.** Five minutes, twenty slides, auto-advancing. The
+   SREday PPTX is the editable base; the Atlanta PDF is the previous Ignite cut.
+4. **Consider the redaction beat for the close.** See `incident/REDACTIONS.md`.
 
-## Verification method used
+## Branch & Tests
+- Branch: main. Content repo, no staging gate.
+- Working tree: reconcile with `git status`.
+- Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
+  contents, not application behaviour.
+- CI: none configured.
 
-- **Automated:** pytest consistency suite (`tests/`) — covers GitHub
-  owner, "Next step" framing, `.gitignore` coverage, README layout
-  vs. on-disk dirs, and LICENSE presence.
-- **Shell verification:** `git log`, `git branch -vv`, `gh repo view`
-  used to confirm commit and remote state. No browser, no external
-  APIs.
-
-## Known unverified items
-
-_None at the moment._ All external blockers (abstract, schedule,
-session time, bio) are now closed. Remaining work is content
-authoring: outline, deck, speaker notes, rehearsal.
+## Phase history
+- 2026-08-30 repo established from the SREday and Atlanta material, pushed private

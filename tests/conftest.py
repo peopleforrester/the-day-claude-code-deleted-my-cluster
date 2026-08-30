@@ -1,4 +1,4 @@
-# ABOUTME: Shared pytest fixtures for the SREday Texas 2026 consistency suite.
+# ABOUTME: Shared pytest fixtures for this repo's self-consistency suite.
 # ABOUTME: Exposes repo root, file-content readers, and the live git remote URL.
 
 from __future__ import annotations

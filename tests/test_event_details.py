@@ -1,60 +1,56 @@
-# ABOUTME: Asserts README "Event Details" reflects the verified SREday Austin Q2 2026 schedule.
-# ABOUTME: Source of truth: https://sreday.com/2026-austin-q2/ (verified 2026-04-28).
-
+# ABOUTME: Asserts the README "Given at" table matches the verified delivery record.
+# ABOUTME: This repo is multi-event, so the check is per-delivery rather than per-venue.
 from __future__ import annotations
 
-import re
-
-
-# Verified facts pulled from the official event page on 2026-04-28.
-# If the schedule moves, update this list and the README together.
-VERIFIED_FACTS: list[tuple[str, str]] = [
-    ("date", "May 11, 2026"),
-    ("venue", "The Sunset Room"),
-    ("address", "310 E 3rd St"),
-    ("city/state/zip", "Austin, TX 78701"),
-    ("timebox", "30 minutes"),
-    ("format", "single track"),
-    ("session time", "12:30"),
+# One row per delivery. Each fact must appear somewhere in the README.
+# Sources: SREday Austin Q2 page (verified 2026-04-28); the DevOpsDays Atlanta
+# repo's own commit history, all dated 2026-04-19 to 04-21; the DevOpsDays
+# Portland pretalx schedule export (verified 2026-08-26).
+#
+# If a delivery moves or a new one is added, update this list and the README
+# together. Talk metadata is exactly the kind of thing that drifts when copied
+# between repos, which is what this suite exists to catch.
+DELIVERIES: list[tuple[str, list[str]]] = [
+    ("DevOpsDays Atlanta 2026", ["2026-04-21", "Ignite"]),
+    ("SREday Austin Q2 2026", ["2026-05-11", "30 minutes"]),
+    ("DevOpsDays Portland 2026", ["2026-09-10", "Ignite"]),
 ]
 
 
-def test_readme_has_verified_event_details(readme: str) -> None:
-    """Every verified fact must appear somewhere in the README.
-
-    The check is case-insensitive on the fact strings to allow stylistic
-    flexibility (e.g. 'Single track' vs 'single track').
-    """
+def test_readme_lists_every_delivery(readme: str) -> None:
+    """Every delivery, and its verified date and format, must appear in the README."""
     lower = readme.lower()
     missing: list[str] = []
-    for label, fact in VERIFIED_FACTS:
-        if fact.lower() not in lower:
-            missing.append(f"{label}={fact!r}")
+    for event, facts in DELIVERIES:
+        if event.lower() not in lower:
+            missing.append(f"event={event!r}")
+        for fact in facts:
+            if fact.lower() not in lower:
+                missing.append(f"{event}: {fact!r}")
     assert not missing, (
-        "README is missing verified event facts: "
-        + ", ".join(missing)
-        + ". Source: https://sreday.com/2026-austin-q2/"
+        "README is missing verified delivery facts: " + ", ".join(missing)
     )
 
 
-def test_readme_does_not_advertise_tbd_event_details(readme: str) -> None:
-    """No TBD marker on the date/timebox/room line — the schedule is known."""
-    pattern = re.compile(r"date,?\s*timebox,?\s*and\s*room.*tbd", re.IGNORECASE | re.DOTALL)
-    assert not pattern.search(readme), (
-        "README still says 'Date, timebox, and room: TBD'. The SREday "
-        "Austin Q2 2026 schedule is verified — fill it in."
+def test_readme_has_given_at_section(readme: str) -> None:
+    """The deliveries live under an explicit heading, not scattered in prose."""
+    assert "## Given at" in readme, (
+        "README is missing the '## Given at' section. This repo is named for the "
+        "talk rather than an event, so the delivery record is how a reader tells "
+        "which version they are looking at."
     )
 
 
-def test_readme_links_to_event_page(readme: str) -> None:
-    """README must link to the official SREday event page.
+def test_no_single_event_framing(readme: str) -> None:
+    """Guard against the repo drifting back into being one event's repo.
 
-    Visitors arriving at the GitHub repo should be able to jump
-    straight to the conference page in one click. Source of truth
-    for date / venue / schedule lives there, not here.
+    It was seeded from the SREday repo, whose README opened by naming that one
+    conference. If a future edit reintroduces that framing, the multi-event
+    premise is broken and the Given at table becomes decoration.
     """
-    assert "sreday.com/2026-austin-q2" in readme, (
-        "README does not link to the SREday event page "
-        "(https://sreday.com/2026-austin-q2/). A visitor-facing talk "
-        "repo should make the conference one click away."
-    )
+    first_paragraph = readme.split("## ", 1)[0].lower()
+    for venue in ("sreday austin", "devopsdays atlanta", "devopsdays portland"):
+        assert venue not in first_paragraph, (
+            f"README opens by naming {venue!r}. This repo is canonical across "
+            "deliveries; individual events belong in the 'Given at' table."
+        )

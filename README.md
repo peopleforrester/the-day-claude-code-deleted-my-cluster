@@ -32,18 +32,26 @@ from git history in `mforrester-home-lab` and cited back to specific commits. Se
 [`incident/INDEX.md`](incident/INDEX.md) for the provenance and
 [`incident/ANALYSIS.md`](incident/ANALYSIS.md) for the timeline and root causes.
 
-## What is here
+## What's in this repo
 
-| Path | What |
-|---|---|
-| [`incident/`](incident/) | The forensics. Session artifacts, the prompts that ran, recovered scripts, commit diffs, and the analysis with citations |
-| [`docs/the-framework.md`](docs/the-framework.md) | The **Eight Guardrails Framework**, with the bypass column filled in for every enforcement artifact |
-| [`hooks/`](hooks/) | The enforcement artifacts themselves: eight agent lifecycle hooks and two git hooks, copy-paste ready |
-| [`workflows/`](workflows/) | CI and end-to-end workflows as the defence-in-depth backstop |
-| [`guardrails-three-layer/`](guardrails-three-layer/) | The Ignite-length condensation: three layers, an install script each, and a Monday-morning rollout with a clock on it |
-| [`abstract/`](abstract/) | As-submitted abstracts and speaker bio |
-| [`presentations/`](presentations/) | Decks. The SREday PPTX is the editable source; the Atlanta PDF is the Ignite cut |
-| [`tests/`](tests/) | Consistency checks over the repo's own claims |
+- [**`incident/`**](incident/) — the forensics. Session artifacts, the prompts that
+  ran, recovered scripts, commit diffs, and the analysis with citations. Credential
+  values are redacted; see [`incident/REDACTIONS.md`](incident/REDACTIONS.md).
+- [**`docs/`**](docs/) — the **Eight Guardrails Framework**
+  ([`the-framework.md`](docs/the-framework.md)), with the bypass column filled in for
+  every enforcement artifact.
+- [**`hooks/`**](hooks/) — the enforcement artifacts themselves: eight agent
+  lifecycle hooks and two git hooks, copy-paste ready.
+- [**`workflows/`**](workflows/) — CI and end-to-end workflows, the defence-in-depth
+  backstop.
+- [**`guardrails-three-layer/`**](guardrails-three-layer/) — the Ignite-length
+  condensation: three layers, an install script each, and a Monday-morning rollout
+  with a clock on it.
+- [**`abstract/`**](abstract/) — as-submitted abstracts and speaker bio. The
+  canonical text is [`abstract/abstract.md`](abstract/abstract.md).
+- [**`presentations/`**](presentations/) — decks. The SREday PPTX is the editable
+  source; the Atlanta PDF is the Ignite cut.
+- [**`tests/`**](tests/) — consistency checks over the repo's own claims.
 
 ## Just saw the talk
 
@@ -72,3 +80,8 @@ pipeline access and stepping away for thirty seconds. Both are probably true of 
 same event, the first being the damage window and the second the moment of handing
 over. A five-minute talk has no room to be vague about which, so the deck should
 commit to one telling and check it against `incident/ANALYSIS.md`.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE). The incident artifacts are included as evidence for
+the talk; reuse them freely.
