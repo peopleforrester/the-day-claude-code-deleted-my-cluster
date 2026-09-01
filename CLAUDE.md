@@ -1,104 +1,98 @@
-# CLAUDE.md — SREday Texas 2026
+# CLAUDE.md — The Day Claude Code Deleted My Cluster
 
 Project-specific instructions for Claude Code sessions in this repo.
-Global rules in `~/.claude/CLAUDE.md` still apply — this file only adds
-context that is specific to this talk and venue.
+Global rules in `~/.claude/CLAUDE.md` still apply; this file only adds
+context specific to this talk.
 
 ## What this repo is
 
-This is a **venue-specific** repo for the SREday Austin talk
-"The Day an AI Agent Deleted My Cluster". It holds only the
-SREday-specific deliverables (abstract as submitted, final deck for this
-event, speaker notes tuned to this audience and timebox, post-event
-artifacts). It does **not** own the underlying talk content.
+This is the **canonical, event-neutral home** for the talk. It is named for
+the talk rather than for any conference, because the talk has been delivered
+more than once and will be again. **This repo owns the material.** Event repos
+point here.
+
+It is **public**.
 
 ## Source of truth
 
-The analytical substance — session JSONL, parsed timeline, forensic
-evidence, the Eight Guardrails Framework, and the shared core deck —
-lives in `~/repos/events/claude-deleted-my-cluster-2026/`. Before
-editing deck or outline content here, check there first. If the two
-diverge, the analysis repo is authoritative.
+This repo is the source of truth. Two repos that used to hold pieces of it are
+now records of their own delivery only, and both link back here:
 
-Sibling venues that share the same substance:
+- `peopleforrester/SREday-Texas-2026` (public)
+- `peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite` (public)
 
-- `~/repos/events/DevOpsDays-Atlanta-2026` — Ignite (5-minute) cut
-- `~/repos/events/LLMday-Texas-2026` — different audience angle
-- `~/repos/events/kubeauto-ai-day` — extended Kubernetes automation content
+`~/repos/_archive/events/claude-deleted-my-cluster-2026/` is an **archived**
+predecessor. Do not treat it as authoritative; its forensics were folded into
+`incident/` during the 2026-08-30 consolidation.
 
-When you make a change here that would also apply to those venues
-(e.g., a factual correction from the forensic data), flag it so the
-change can be propagated — don't silently fork the story.
+## Delivery record
 
-## Framework evolution — `agentic-covenants`
+| Event | Date | Format | Status |
+|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | Delivered |
+| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered |
+| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Upcoming |
 
-The next evolution of the framework — beyond the Eight Guardrails —
-lives in `~/repos/events/agentic-covenants` (private:
-<https://github.com/peopleforrester/agentic-covenants>). It already
-has substance: `MATRIX.md`, `matrix.yaml`, `BYPASSES.md`,
-`CITATIONS.md`, and `docs/`.
+## The two incidents
 
-**Contract for this repo and this talk.** The submitted-and-accepted
-SREday abstract names "Eight Guardrails Framework" explicitly, so
-the main-stage framework on May 11 is the eight guardrails — full
-stop. Renaming, renumbering, or replacing them would be a
-bait-and-switch on attendees who came for what the abstract
-promised.
+Keep them distinct. They are different failures and the talk needs both.
 
-**Where the covenants material can show up.** The submitted
-structure ends with "5 minutes on what I still don't have a good
-answer for." That closing is the right place to gesture at the
-covenants direction as the next evolution — at that level of
-fidelity (a pointer, not a parallel framework). Anything heavier
-goes in a follow-on talk or a venue whose abstract was scoped to
-the evolution, not this one.
+**2025, home lab.** An agent with cluster access initialised a new etcd cluster
+over the existing one and modified netplan across the Linux nodes. Documented
+in [`incident/ANALYSIS.md`](incident/ANALYSIS.md), recovered from git history in
+`mforrester-home-lab`.
+
+**2026, AI Engineer World's Fair.** An agent reported a 250-cluster workshop
+fleet as provisioning when **zero clusters existed**, and held that report
+through to showtime in front of roughly 250 people. Documented in
+[`incident/2026-FLEET-INCIDENT.md`](incident/2026-FLEET-INCIDENT.md), quoted
+with timestamps from the `Unleash an Agent, Watch It Burn` session transcript.
+
+**The 250 were never created. They were not deleted.** Any phrasing that says
+250 clusters were destroyed is wrong and must not reach a slide. The number 250
+is correct as the fleet that was requested, promised and falsely reported.
+
+## Deck sources
+
+The decks are **native Google Slides**, not files in this repo. The editable
+source for the Ignite line is `devopsdays-atlanta-ignite-arcade-v5-with-notes`
+(`1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`) in Michael's personal Drive.
+Use `gog -a michaelrishiforrester@gmail.com` to reach it. The twenty-slide
+scripts live beside them as `devopsdays-atlanta-ignite-outline-*.md`.
 
 ## Workflow in this repo
 
-- Branch rule: work on `staging`, merge to `main` after verification.
-  This is a brand-new repo; protections are not yet configured on the
-  remote, but the staging-first workflow still applies.
-- Commits: professional tone, no AI/Claude attribution in commit
-  messages (per global rule).
-- Public repo: this repository is public on GitHub. Do not commit
-  anything that is not safe to publish — session transcripts with real
-  credentials, unredacted customer data, or private financial info go
-  in the analysis repo (which is private), not here.
+- `main` is the working branch. `staging` exists and is kept fast-forwarded to
+  `main`; it carries no independent work.
+- Commits: professional tone, no AI or Claude attribution.
+- Public repo. Nothing lands here that is not safe to publish. Session
+  transcripts with credentials, attendee emails, AWS account identifiers, and
+  unredacted customer data stay out; cite them by path instead.
 
 ## Asset policy
 
-What goes in the repo and what does not — relocated here from the
-visitor-facing README during the polish pass.
+- **Presentation source is committed; PDF exports are not.** `.gitignore`
+  ignores `presentations/*.pdf` and `outline/*.pdf`.
+- **Publishable PDFs** (a slides-as-delivered handout) belong in `post-event/`.
+- **Rehearsal recordings** (`*.wav`, `*.m4a`) are gitignored.
 
-- **Presentation source is committed; PDF exports are derived and
-  not committed.** Exports are regenerated from source on every build,
-  so they only pollute diffs. `.gitignore` ignores `presentations/*.pdf`
-  and `outline/*.pdf`. PPTX, Keynote, and Markdown deck source all
-  live in `presentations/`.
-- **Publishable PDFs** (e.g. a slides-as-delivered handout) belong
-  in `post-event/`, which is not blanket-ignored.
-- **Rehearsal recordings** (`*.wav`, `*.m4a`, etc.) are gitignored —
-  they are local-only artifacts and not appropriate for a public repo.
-- **Session transcripts with real credentials, unredacted customer
-  data, or private financial info** belong in the private analysis
-  repo (`events/claude-deleted-my-cluster-2026`), never here. (Same
-  rule as "Public repo" above; restated here next to the other asset
-  decisions so it stays one mental category.)
+## When working on deck / outline / speaker notes
 
-## When working on deck / outline / speaker-notes
+- The Eight Guardrails Framework is the load-bearing structure. Do not rename,
+  renumber, or reorder the guardrails; they are referenced externally.
+- Quotes and command lines pulled from either incident must match the session
+  record exactly. Never paraphrase a destructive command, or a false status
+  report, for slide polish. If it reads awkwardly, annotate it; do not rewrite.
+- Ignite is 5 minutes and 20 auto-advancing slides. Script and slide count are
+  locked together, so a revision is a rewrite, not a find-and-replace.
 
-- The SREday audience is SRE-leaning. Tune emphasis toward
-  blast-radius, reversibility, rollback, and operational controls —
-  not toward the AI-agent novelty angle (that is the LLMday framing).
-- The Eight Guardrails Framework is the load-bearing structure. Do not
-  rename, renumber, or reorder the guardrails without checking the
-  analysis repo — they are referenced externally.
-- Quotes and command lines pulled from the incident must match the
-  session JSONL exactly. Never paraphrase a destructive command for
-  slide polish; if it reads awkwardly, use an annotation, not a rewrite.
+## Framework evolution: `agentic-covenants`
+
+The next evolution beyond the Eight Guardrails lives in
+`~/repos/events/agentic-covenants` (<https://github.com/peopleforrester/agentic-covenants>).
+It may be gestured at as a direction in a closing beat. It does not replace the
+eight guardrails in any talk whose abstract promised them.
 
 ## State persistence
 
-Per `~/.claude/rules/state-persistence.md`, keep `PROJECT_STATE.md`
-current at every transition, and update `MEMORY.md` with how work was
-done, not just that it was done. `/continue` reads from these files.
+Keep `PROJECT_STATE.md` current at every transition. `/continue` reads it.

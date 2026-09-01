@@ -3,7 +3,7 @@
 Phase: 3.3 Promote
 Approved: pending
 
-Canonical repo: `peopleforrester/the-day-claude-code-deleted-my-cluster` (private).
+Canonical repo: `peopleforrester/the-day-claude-code-deleted-my-cluster` (public).
 Durable project state. Read this first at the start of any session, then reconcile
 against `git log`, `git status`, and the test suite.
 
@@ -43,27 +43,36 @@ DevOpsDays Atlanta ignite repo.
 
 ## Next step
 
-Portland is the live work, and it is tracked as issues on
-`peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite` because they
-were filed before this repo existed. Move or re-file them here.
+Portland is the live work, 2026-09-10. Issues are filed on this repo.
 
-In priority order:
+Settled on 2026-09-01:
 
-1. **Settle the incident account.** The long form describes a networking task and a
-   forty-minute damage window; the Portland abstract describes full pipeline access
-   and stepping away for thirty seconds. Both are probably true of the same event.
-   Five minutes has no room to be vague. Check the deck against
-   `incident/ANALYSIS.md`.
-2. **Resolve what the 2026 escalation actually is.** The submitted Portland abstract
-   says 250 clusters were deleted. Michael's account on 2026-08-27 is that the agent
-   reported provisioning a 250-cluster set it had not provisioned. Those are
-   different stories and the abstract is public.
-3. **Build the Portland deck.** Five minutes, twenty slides, auto-advancing. The
-   SREday PPTX is the editable base; the Atlanta PDF is the previous Ignite cut.
+- **The 2026 incident account.** The 250-cluster fleet was never created; the
+  agent reported it as provisioning while the count was zero. Written up in
+  `incident/2026-FLEET-INCIDENT.md` from the session transcript with timestamps.
+  The abstract's "it was 250, gone" is wrong and needs one word changed. (#1)
+- **This repo is public**, and both event repos now point here. (#2, #4)
+- **The deck source was never missing.** It is a native Google Slides file,
+  `devopsdays-atlanta-ignite-arcade-v5-with-notes`
+  (`1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`), plus the twenty-slide
+  outline markdown beside it in Drive.
+
+Remaining:
+
+1. **Build the Portland deck as v6** from the Drive source. Five minutes, twenty
+   slides, auto-advancing. The 2026 incident is the escalation and has to earn
+   its slides without pushing out the guardrails payoff. (#3)
+2. **Decide the outline-as-source question.** Committing the twenty-slide
+   outline markdown makes v7 start from text rather than a PDF; the deck stays
+   a rendering of it. (#3)
+3. **Decide whether the framework needs a ninth guardrail** for
+   verification-of-claims, or whether that folds into an existing one. The 2026
+   incident is not covered by the eight as written.
 4. **Consider the redaction beat for the close.** See `incident/REDACTIONS.md`.
 
 ## Branch & Tests
-- Branch: main. Content repo, no staging gate.
+- Branch: main. `staging` is kept fast-forwarded to main and carries no
+  independent work.
 - Working tree: reconcile with `git status`.
 - Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
   contents, not application behaviour.
@@ -71,3 +80,6 @@ In priority order:
 
 ## Phase history
 - 2026-08-30 repo established from the SREday and Atlanta material, pushed private
+- 2026-09-01 2026 fleet incident documented from the session transcript (#1); repo
+  made public; both event repos pointed here (#4); CLAUDE.md corrected from its
+  stale venue-specific description
