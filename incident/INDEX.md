@@ -8,6 +8,10 @@ netplan files across the Linux nodes.
 **Start here:** [`ANALYSIS.md`](ANALYSIS.md) — presentation-ready deep analysis
 with timeline, root causes, and citations back into these artifacts.
 
+**The 2026 escalation:** [`2026-FLEET-INCIDENT.md`](2026-FLEET-INCIDENT.md) covers a
+separate and later failure, an agent reporting a 250-cluster fleet as provisioning
+when zero clusters existed, quoted from the session transcript with timestamps.
+
 ## Source of truth
 Files originate from commits `69a2f0b` (2025-08-28), `3e2d4a3` (2025-09-03),
 and `e4719dd` (2025-09-03) in `mforrester-home-lab`. Most were moved into

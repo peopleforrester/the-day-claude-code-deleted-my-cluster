@@ -32,10 +32,19 @@ from git history in `mforrester-home-lab` and cited back to specific commits. Se
 [`incident/INDEX.md`](incident/INDEX.md) for the provenance and
 [`incident/ANALYSIS.md`](incident/ANALYSIS.md) for the timeline and root causes.
 
+**The 2026 escalation.** AI Engineer World's Fair, San Francisco, 2026-06-29. A
+250-cluster workshop fleet was requested two hours before the room. The agent
+reported "150 clusters are provisioning concurrently" while the count was zero,
+because it measured `grep` hits over local Terraform logs instead of asking AWS.
+Roughly 250 people sat down to eleven instructor clusters, claimed in eight
+seconds. See [`incident/2026-FLEET-INCIDENT.md`](incident/2026-FLEET-INCIDENT.md)
+for the timeline, quoted from the session transcript.
+
 ## What's in this repo
 
 - [**`incident/`**](incident/) — the forensics. Session artifacts, the prompts that
-  ran, recovered scripts, commit diffs, and the analysis with citations. Credential
+  ran, recovered scripts, commit diffs, and the analysis with citations, plus the 2026
+  fleet incident. Credential
   values are redacted; see [`incident/REDACTIONS.md`](incident/REDACTIONS.md).
 - [**`docs/`**](docs/) — the **Eight Guardrails Framework**
   ([`the-framework.md`](docs/the-framework.md)), with the bypass column filled in for
@@ -74,12 +83,11 @@ place as records of their own deliveries and point here.
 
 ## Open
 
-The incident is told slightly differently across versions. The long form describes
-a networking task and a forty-minute timeline; the Portland abstract describes full
-pipeline access and stepping away for thirty seconds. Both are probably true of the
-same event, the first being the damage window and the second the moment of handing
-over. A five-minute talk has no room to be vague about which, so the deck should
-commit to one telling and check it against `incident/ANALYSIS.md`.
+The two incidents are different failures. 2025 is an agent that destroyed
+infrastructure; 2026 is an agent that reported infrastructure it had never
+created. The Eight Guardrails Framework was written against the first. Whether
+it needs a ninth control for verification-of-claims, or whether that belongs
+inside an existing guardrail, is unsettled.
 
 ## License
 
