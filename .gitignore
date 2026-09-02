@@ -76,3 +76,4 @@ build/
 # blanket-ignored.
 presentations/*.pdf
 outline/*.pdf
+recordings/
