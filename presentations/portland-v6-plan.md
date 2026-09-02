@@ -204,3 +204,53 @@ Notes:
 
 Between slides 13 and 14, at the pivot into the guardrails. Two existing beats
 pay for them: fold slide 9 into slide 12, and cut slide 2.
+
+## Timed run, 2026-09-02
+
+Measured from the notes on the live deck, counting spoken words only (director
+cues between `***` and the `[15 SEC]` marker excluded).
+
+| Pace | Runtime | Headroom against 5:00 |
+|---|---|---|
+| 150 wpm | 4:49.6 | +10s |
+| 165 wpm | 4:23.3 | +37s |
+| 180 wpm | 4:01.3 | +59s |
+
+724 spoken words across 20 slides.
+
+**Ignite has no banking.** Slides auto-advance at exactly 15 seconds, so the
+slack from a short slide cannot pay for a long one. Total runtime is the
+reassuring number and the misleading one; the number that matters is per-slide.
+A 15-second slide holds about 37 words at 150 wpm, 41 at 165.
+
+Two slides were cut after the first measurement, both of them regressions this
+rebuild introduced:
+
+- **Slide 10, THE ESCALATION.** 64 words, the longest note in the deck, because
+  the absorbed compaction punchline was added on top of the existing hour-by-hour
+  script. Cut to 47 by dropping the console-restore detail.
+- **Slide 12, the reveal.** 56 words *and* a call for silence, which do not both
+  fit in 15 seconds; the silence would have landed on the following slide. Cut to
+  21 words, about 9 seconds spoken and 6 of silence, which is the point of the
+  slide. The mechanism it used to state (it counted its own log files instead of
+  asking AWS) is already carried by the three-layers slide and the close, so
+  nothing was lost.
+
+The densest slides now are all ones delivered unchanged at Atlanta (#2 and #8 at
+57 words, #19 at 51, #9 at 50). They are above the nominal budget, and they were
+also performed successfully twice, which means the real delivery pace is faster
+than 150 wpm or those beats get trimmed live. Left alone deliberately: measuring
+a script is not the same as having delivered it.
+
+## PDF export
+
+`presentations/portland-ignite-v6.pdf`, 20 pages, slides only. Regenerate with:
+
+```bash
+gog -a michaelrishiforrester@gmail.com slides export \
+    1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54 \
+    --format pdf --out presentations/portland-ignite-v6.pdf
+```
+
+Gitignored per the asset policy: exports are derived, and a publishable
+slides-as-delivered handout belongs in `post-event/` after the talk.
