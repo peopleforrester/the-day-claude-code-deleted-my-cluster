@@ -114,10 +114,52 @@ Pre-edit backup: `BACKUP v5-notes pre-v6-edit 2026-09-02`,
 Slide 20's note carries a conditional: the phrase "and one fleet that never
 existed" only works once the two 2026 slides are in. Until then, cut it.
 
-## Notes for the two new slides, ready to paste
+## v6 built, 2026-09-02
 
-Neither slide exists yet, because each needs an arcade-theme image and
-`add-slide` takes an image. The notes are written and waiting.
+Done on the live deck `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`. File id and
+link unchanged. Twenty slides, all counters verified against position.
+
+**Added**, both built by duplicating an existing slide so the theme is native
+text rather than a pasted image:
+
+| # | Object | Built from | What it does |
+|---|---|---|---|
+| 11 | `wib2026a` | slide 7's terminal frame | PHASE 3: THE 2026 EDITION. The agent's three status lines, quoted exactly from the transcript |
+| 12 | `wib2026b` | slide 4's big-number layout | A single red **0**, CLUSTERS, "IT REPORTED 250. THERE WERE NONE." |
+
+Both sit at the end of Level 3, immediately before the post-mortem, and carry
+the Level 3 amber bar.
+
+**Removed**, paying for the two additions:
+
+- Old slide 2, PLAYER 1. Its job moved into slide 1's notes as one clause.
+- Old slide 9, the compaction punchline. Folded into slide 10's notes, where
+  the HOUR 2.5 line already carried the same beat.
+
+**Renumbered:** the `NN/20` counters on the nine shifted slides.
+
+**Notes rewritten:** slides 1, 10, 11, 12, and the earlier pass on 4, 13, 14, 20.
+
+Two things worth recording because they will bite the next edit:
+
+1. `deleteText` + `insertText` **drops character styling**. Every replaced run
+   came back in the default proportional black face and had to be restyled from
+   an untouched sibling element. Always pair a text replacement with
+   `updateTextStyle`.
+2. The level bar is not one shape. It is a dark backing rectangle plus three
+   thin coloured rectangles, and the label's colour is separate again. A
+   duplicated slide inherits its source's level colour, so all five have to be
+   set when a slide moves between levels.
+
+Pre-edit backup: `BACKUP v5-notes pre-v6-edit 2026-09-02`,
+`1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`. Slides version history on the
+live file is the other rollback.
+
+## Reference: the notes as written
+
+
+
+Both slides now exist. This is what they say.
 
 ### New slide A: THE 2026 EDITION
 
