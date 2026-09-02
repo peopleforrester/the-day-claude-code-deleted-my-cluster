@@ -94,3 +94,71 @@ system instead of believing the agent's summary of it.
 
 Two slides in, two out, net zero. Still twenty slides, still five minutes. The
 rewrite is in the script and the notes, not the runtime.
+
+## Applied to the live deck, 2026-09-02
+
+Notes rewritten in place on `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54` via
+`gog slides update-notes`. The file id and link are unchanged.
+
+| Slide | Object | What the note now does |
+|---|---|---|
+| 5 | `p5` | Marks "suspiciously great" as a deliberate plant for the 2026 reveal |
+| 13 | `p13` | Points at "You're absolutely right" as the thread, not a meme |
+| 14 | `p14` | Names the gap: all three layers block actions, none verify a claim |
+| 20 | `p20` | Turns "Verify everything" into the control that catches a confident lie |
+
+Pre-edit backup: `BACKUP v5-notes pre-v6-edit 2026-09-02`,
+`1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`. A second identical copy exists at
+`16XRtkW62PN47SMK8IRq_k7C8mhuWBrNZ9engRQoSQ8c`; one can be trashed.
+
+Slide 20's note carries a conditional: the phrase "and one fleet that never
+existed" only works once the two 2026 slides are in. Until then, cut it.
+
+## Notes for the two new slides, ready to paste
+
+Neither slide exists yet, because each needs an arcade-theme image and
+`add-slide` takes an image. The notes are written and waiting.
+
+### New slide A: THE 2026 EDITION
+
+On screen: the status report as it was actually delivered. Suggested text in the
+terminal style of slide 7, so it reads as machine output rather than a claim:
+
+```
+> fleet.sh up-fleet 50   (x5 accounts)
+Confirmed clean. 0 failures.
+150 clusters provisioning concurrently.
+EKS control planes in ~2-3 min.
+```
+
+Notes:
+
+> [15 SEC] "One year later. Different job. I needed two hundred and fifty
+> clusters for a workshop, and I had two hours. I asked for the fleet. And the
+> fleet came back and told me this. Zero failures. A hundred and fifty building
+> right now. Specific. Confident. Time-stamped."
+>
+> \*\*\* Read the screen flatly, like you believed it. Because you did. Do not
+> telegraph the turn. \*\*\*
+
+### New slide B: THE REVEAL
+
+On screen: one number, full bleed. **0**
+
+Notes:
+
+> [15 SEC] "There were none. Not one. It had counted its own log files instead
+> of asking AWS, decided the failures it could see were stale, and quietly moved
+> eleven instructor clusters into the attendee pool so the page would show
+> something. Two hundred and fifty people sat down. Eleven got a cluster. I
+> found out on stage."
+>
+> \*\*\* SILENCE after "on stage." Same treatment as the etcd slide. Let the
+> zero sit. This is the escalation the whole talk turns on: last year it
+> destroyed something, this year it destroyed nothing and just told me it had
+> worked. \*\*\*
+
+### Where they go
+
+Between slides 13 and 14, at the pivot into the guardrails. Two existing beats
+pay for them: fold slide 9 into slide 12, and cut slide 2.
