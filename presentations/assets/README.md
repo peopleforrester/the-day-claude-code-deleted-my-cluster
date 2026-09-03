@@ -38,9 +38,24 @@ and fills dead space, without spending a slide from a fixed twenty.
 `CONTINUE? 9 8 7` is the joke that belongs to this story rather than to the
 genre: the incident is a sequence of decisions to keep going after each failure.
 
-## Applying it
+## Placed on the live deck, 2026-09-03
 
-Not yet placed on the live deck. `gog slides` can insert an image at a position
-and size on an existing slide; the target is `p13`, in the free column to the
-right of the factors list, roughly 340 by 256 at the thumbnail's scale. See
-[[../portland-v6-plan]].
+`p13-continue-sprite-transparent.png` is on slide 13 as image object
+`img_1788449928703324614`. The olive background was knocked out to alpha and the
+fully transparent margins trimmed, so the terminal box's own fill shows through
+and the given x/y/width map to the artwork itself rather than to padding.
+
+```bash
+gog -a michaelrishiforrester@gmail.com slides insert-image \
+    1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54 p13 \
+    presentations/assets/p13-continue-sprite-transparent.png \
+    --x 465.8 --y 114.8 --width 153.0 --height 120.5 --unit PT
+```
+
+The slide is 720 by 405 PT, so a position measured on a 1600 by 900 render
+converts at 0.45. `insert-image` takes a local file, and `--unit` accepts PT or
+EMU.
+
+Slide 13's notes carry a cue not to explain the sprite or read it aloud. It is a
+visual aside; the joke is that all five contributing factors were decisions to
+keep going.
