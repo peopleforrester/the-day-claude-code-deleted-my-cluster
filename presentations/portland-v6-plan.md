@@ -6,7 +6,7 @@
 ## Where the deck actually is
 
 The editable source is Google Slides, not a file in this repo:
-**`devopsdays-atlanta-ignite-arcade-v5-with-notes`**,
+**`devopsdays-portland-ignite-arcade-v6-with-notes`**,
 `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`.
 
 Twenty slides, twenty notes pages, fifteen seconds each, arcade theme, five
@@ -107,9 +107,8 @@ Notes rewritten in place on `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54` via
 | 14 | `p14` | Names the gap: all three layers block actions, none verify a claim |
 | 20 | `p20` | Turns "Verify everything" into the control that catches a confident lie |
 
-Pre-edit backup: `BACKUP v5-notes pre-v6-edit 2026-09-02`,
-`1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`. A second identical copy exists at
-`16XRtkW62PN47SMK8IRq_k7C8mhuWBrNZ9engRQoSQ8c`; one can be trashed.
+The pre-rebuild v5 survives as `devopsdays-atlanta-ignite-arcade-v5-with-notes`,
+`1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`.
 
 Slide 20's note carries a conditional: the phrase "and one fleet that never
 existed" only works once the two 2026 slides are in. Until then, cut it.
@@ -151,7 +150,7 @@ Two things worth recording because they will bite the next edit:
    duplicated slide inherits its source's level colour, so all five have to be
    set when a slide moves between levels.
 
-Pre-edit backup: `BACKUP v5-notes pre-v6-edit 2026-09-02`,
+The pre-rebuild v5 survives as `devopsdays-atlanta-ignite-arcade-v5-with-notes`,
 `1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`. Slides version history on the
 live file is the other rollback.
 
@@ -254,3 +253,20 @@ gog -a michaelrishiforrester@gmail.com slides export \
 
 Gitignored per the asset policy: exports are derived, and a publishable
 slides-as-delivered handout belongs in `post-event/` after the talk.
+
+## Versioning: rename when you edit in place
+
+Editing a Slides deck in place keeps the file id, which is the right mechanism.
+It is not a reason to keep the old name. This deck was rebuilt from v5 to v6
+in place and left titled `...-v5-with-notes` for a day, which broke the lineage:
+the name said v5 while the content was v6, and the real v5 survived only under a
+file called `BACKUP ...`.
+
+Corrected 2026-09-03. The live file is now
+`devopsdays-portland-ignite-arcade-v6-with-notes` and the previous cut is
+`devopsdays-atlanta-ignite-arcade-v5-with-notes`. Renaming does not change the
+id, so in-place editing and forward versioning are not in tension; do both.
+
+The justification originally given for editing in place, that a re-upload would
+break published links, was never checked. Nothing linked to the deck at the time.
+Verify the constraint before letting it override a documented convention.

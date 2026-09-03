@@ -53,7 +53,7 @@ Settled on 2026-09-01:
   The abstract's "it was 250, gone" is wrong and needs one word changed. (#1)
 - **This repo is public**, and both event repos now point here. (#2, #4)
 - **The deck source was never missing.** It is a native Google Slides file,
-  `devopsdays-atlanta-ignite-arcade-v5-with-notes`
+  `devopsdays-portland-ignite-arcade-v6-with-notes`
   (`1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`), plus the twenty-slide
   outline markdown beside it in Drive.
 

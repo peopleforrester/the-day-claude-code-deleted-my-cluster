@@ -55,7 +55,7 @@ is correct as the fleet that was requested, promised and falsely reported.
 ## Deck sources
 
 The decks are **native Google Slides**, not files in this repo. The editable
-source for the Ignite line is `devopsdays-atlanta-ignite-arcade-v5-with-notes`
+source for the Ignite line is `devopsdays-portland-ignite-arcade-v6-with-notes`
 (`1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`) in Michael's personal Drive.
 Use `gog -a michaelrishiforrester@gmail.com` to reach it. The twenty-slide
 scripts live beside them as `devopsdays-atlanta-ignite-outline-*.md`.
