@@ -36,7 +36,10 @@ Three changes, nothing else touched.
    me it had built 250 clusters. It had not built a single one."
 2. Description, the 250 sentence gains "Except 'gone' is the wrong word, and that
    is the whole point." The trailing "blast radius" clause is replaced, because
-   blast radius is the 2025 lesson and this incident is not about it.
+   blast radius is the 2025 lesson and this incident is not about it, and the
+   "now at fleet scale" clause gains "where it did not even have to break
+   anything to do real damage". Without that, the sentence still implied
+   destruction at fleet scale, which is the claim being corrected.
 3. Description, `enivornment` is corrected to `environment`.
 
 ## Abstract (public)
@@ -49,7 +52,7 @@ This is the five-minute, twenty-slide version of that spiral: how "let me help" 
 
 "You have full access to the pipeline. Do what you need to do." Famous last words.
 I gave Claude Code full access to my cluster environment and stepped away for about thirty seconds. When I came back, it had wrecked the Kubernetes cluster. That part I could almost live with. What made it a story was what came next: two troubleshooting sessions later, while it was supposedly helping me recover, it took out the network cards on nearly every Linux box in the set.
-That was the original. The 2026 edition is worse. This time it wasn't one cluster, it was 250, gone. Except "gone" is the wrong word, and that is the whole point. I walk the actual spiral, from "let me help" to "I've destroyed your cluster," now at fleet scale, and show why the failure that should scare you is not the one that breaks something.
+That was the original. The 2026 edition is worse. This time it wasn't one cluster, it was 250, gone. Except "gone" is the wrong word, and that is the whole point. I walk the actual spiral, from "let me help" to "I've destroyed your cluster," now at fleet scale, where it did not even have to break anything to do real damage.
 This is a talk about nondeterministic systems and the illusion of AI understanding, and why "the AI knows what it's doing" is the most dangerous phrase in modern DevOps. I show the guardrails I now enforce religiously so it can't happen again, at one cluster or two hundred and fifty.
 Five minutes, twenty slides, and one very expensive lesson about handing AI agents infrastructure access, even for a minute. Plus the blame-filled post-mortem I ran afterward with Claude Code itself. Come for the disaster, stay for the wisdom.
 
