@@ -3,6 +3,13 @@
 
 # Portland 2026: Abstract Correction
 
+**Not sent. Dropped on 2026-09-05 by Michael's decision; the draft was deleted.**
+Portland goes out with the submitted description unchanged, which says the 2026
+edition was "250, gone". Do not re-raise it for Portland.
+
+The text below is kept because the talk is delivered repeatedly and this abstract
+is the base for the next submission. Use it there.
+
 The submitted text is recorded verbatim in
 `peopleforrester/2026-portland-devopsdays`, `abstracts/ignite-deleted-my-cluster.md`.
 That file is the contract and stays unedited. This is the replacement text.
