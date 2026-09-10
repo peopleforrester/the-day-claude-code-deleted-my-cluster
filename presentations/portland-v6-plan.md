@@ -270,3 +270,33 @@ id, so in-place editing and forward versioning are not in tension; do both.
 The justification originally given for editing in place, that a re-upload would
 break published links, was never checked. Nothing linked to the deck at the time.
 Verify the constraint before letting it override a documented convention.
+
+## v7, 2026-09-10
+
+Same file id; the deck was renamed forward because a corrected copy had already
+gone to the organisers and a second thing called v6 would have been
+unresolvable for them. See the versioning rule in
+`conference-management/speaking/devopsdays-portland/README.md`.
+
+**Changes from v6 as sent on 2026-09-08:**
+
+| Slide | Change | Whose |
+|---|---|---|
+| 20 | GitHub handle corrected from `@peopleforester` to `@peopleforrester` | repo maintenance |
+| 20 | Repo URL added below the byline, bright enough to read from the back | repo maintenance |
+| 20 | Closing line changed from `TRUST AI. VERIFY EVERYTHING.` to `DON'T TRUST AI. VERIFY EVERYTHING.` | Michael, 16:17 UTC |
+| 20 | `DONT` corrected to `DON'T`; every other contraction in the deck carries its apostrophe | repo maintenance |
+| 9 | `YOU'RE THE ADULT. ACT LIKE IT.` removed | Michael, 16:17 UTC |
+
+**The closing line is a thesis change, not a wording tweak.** "Trust AI, verify
+everything" makes verification the polite second half of trusting. "Don't trust
+AI, verify everything" makes verification the thing that replaces trust. The
+second is what the 2026 incident actually argues for: the fleet report was
+confident, specific, and false, and no amount of trust would have caught it.
+
+The run-through of 2026-09-10 was delivered against the old line ("Trust AI to
+do its job. But verify everything it does."). Slide 20's speaker notes now carry
+a cue that the line changed, because a practised close is exactly the thing that
+comes out on autopilot.
+
+Export: `presentations/portland-ignite-v7.pdf`, twenty pages, gitignored.
