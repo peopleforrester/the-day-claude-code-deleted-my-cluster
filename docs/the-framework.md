@@ -58,14 +58,15 @@ Wired in the agent's `settings.json` under the `"hooks"` key. Scripts live in
 This is the single most important correction to the earlier version of this
 document, and it cuts to the middle of the talk's argument.
 
-`type` now takes four values, and only one of them is deterministic:
+`type` now takes five values, and only one of them is deterministic:
 
 | `type` | What makes the decision | Deterministic? |
 |---|---|---|
 | `command` | your shell script | **yes**, the harness enforces the verdict and the agent never gets a vote |
+| `http` | a remote endpoint | only as much as that endpoint is |
+| `mcp_tool` | an MCP tool call | depends on the tool |
 | `prompt` | a model, Haiku by default | **no** |
 | `agent` | a subagent | **no** |
-| HTTP | a remote endpoint | only as much as the endpoint is |
 
 Every hook in this repo is `type: command`, deliberately.
 
@@ -101,7 +102,7 @@ this document:
 
 | Event | Closes |
 |---|---|
-| `ConfigChange` | **Blocks a configuration change mid-session.** Several bypasses above are "the agent edits the hook or the deny-list". This is the control for that. |
+| `ConfigChange` | **Blocks a configuration change mid-session.** Several bypasses above are "the agent edits the hook or the deny-list", and this is the control for that. Its own bypass: it cannot block `policy_settings`. |
 | `PermissionRequest` | Lets a policy layer answer a permission decision directly. Note it does not honour exit code 2; it requires a JSON decision. |
 | `PermissionDenied` | Records what the agent tried and was refused, which is the audit trail this stack otherwise lacks. |
 | `PreModelSwitch` | Blocks a model switch mid-session. |

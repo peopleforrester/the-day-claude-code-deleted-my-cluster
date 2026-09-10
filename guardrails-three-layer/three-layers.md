@@ -297,8 +297,8 @@ agent itself. The current Anthropic docs list **25 hook events** (the
 original "~19" figure is outdated; the feature expanded rapidly through
 2025–2026). Hooks fire at defined lifecycle points, receive a JSON event
 on stdin, and influence behavior via exit codes or `hookSpecificOutput`
-JSON on stdout. Four handler types exist, `command`, `http`, `prompt` and `agent`,
-mixable within a single matcher.
+JSON on stdout. Five handler types exist: `command`, `http`, `mcp_tool`, `prompt` and
+`agent`, mixable within a single matcher.
 
 ### The event set (highlights)
 
@@ -365,7 +365,7 @@ it's treated as an exact string). Built-in tool names: `Bash`, `Edit`,
 `mcp__<server>__<tool>`. The newer `if:` filter narrows further using
 permission-rule syntax, `if: "Bash(git push *)"` or `if: "Edit(*.ts)"`.
 
-### The four handler types
+### The five handler types
 
 - **`command`**: a shell script that reads JSON on stdin and signals
   decisions via exit code or stdout JSON. The workhorse for 90% of
@@ -375,9 +375,15 @@ permission-rule syntax, `if: "Bash(git push *)"` or `if: "Edit(*.ts)"`.
   OPA/Kyverno policy service.
 - **`prompt`**: sends a single-turn LLM evaluation (Haiku by default) with
   `$ARGUMENTS` replaced by the event JSON. Perfect for semantic judgment.
+- **`mcp_tool`**: delegates the decision to an MCP tool call. As
+  deterministic as whatever tool you point it at.
 - **`agent`**: spawns a subagent with `Read`/`Grep`/`Glob` tools (up to 50
   turns) and lets it inspect the codebase before deciding. Use for
   verification that needs actual file reads, not vibes.
+
+Only `command` is deterministic end to end. `prompt` and `agent` put a model
+in the enforcement path by design, which is worth choosing deliberately in a
+stack whose whole premise is deterministic controls.
 
 ### Combining hooks with CLAUDE.md
 

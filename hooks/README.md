@@ -35,7 +35,7 @@ knowing about for enforcement work, which did not exist in the earlier material:
 |---|---|
 | `PermissionRequest` | Fires when a call needs a permission decision, so a policy layer can answer it. Note it does **not** honour exit code 2; it needs a JSON decision. |
 | `PermissionDenied` | Fires when auto mode denies a call. Good audit surface for what the agent tried. |
-| `ConfigChange` | **Blocks a configuration change mid-session.** This is the one that closes the "agent edits its own guardrails" hole. |
+| `ConfigChange` | **Blocks a configuration change mid-session**, which closes the "agent edits its own guardrails" hole. Note the exception: it cannot block `policy_settings`. |
 | `PreModelSwitch` | Blocks a model switch. |
 | `SubagentStart` | Spawn-time control, not only stop-time. |
 | `PostToolUseFailure`, `PostToolBatch` | Separate the failure path and the parallel-batch path from the success path. |
@@ -49,9 +49,10 @@ knowing about for enforcement work, which did not exist in the earlier material:
 | `type` | What decides | Deterministic? |
 |---|---|---|
 | `command` | your shell script | **yes**, the harness enforces the verdict |
-| `prompt` | a Claude model, Haiku by default | **no** |
+| `http` | a remote endpoint | only as much as that endpoint is |
+| `mcp_tool` | an MCP tool call | depends on the tool |
+| `prompt` | a model, Haiku by default | **no** |
 | `agent` | a subagent | **no** |
-| HTTP | a remote endpoint | depends on the endpoint |
 
 Every script here is `type: command`, deliberately. If you are building
 guardrails, know that choosing `prompt` or `agent` puts a probabilistic judgment
