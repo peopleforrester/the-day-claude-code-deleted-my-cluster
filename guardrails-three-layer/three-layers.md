@@ -297,8 +297,8 @@ agent itself. The current Anthropic docs list **25 hook events** (the
 original "~19" figure is outdated; the feature expanded rapidly through
 2025–2026). Hooks fire at defined lifecycle points, receive a JSON event
 on stdin, and influence behavior via exit codes or `hookSpecificOutput`
-JSON on stdout. Four handler types exist — `command`, `http`, `prompt`,
-`agent` — mixable within a single matcher.
+JSON on stdout. Four handler types exist, `command`, `http`, `prompt` and `agent`,
+mixable within a single matcher.
 
 ### The event set (highlights)
 
@@ -313,17 +313,17 @@ JSON on stdout. Four handler types exist — `command`, `http`, `prompt`,
 | `Stop`             | Main agent finishes turn         | Yes       | **Run tests, force continue if fails**        |
 | `PreCompact`       | Context compaction imminent      | Yes       | Snapshot critical state                       |
 
-### Settings.json — the full example
+### Settings.json: the full example
 
 See [`../layer-3-claude-hooks/.claude/settings.json`](../layer-3-claude-hooks/.claude/settings.json).
 Place in:
 
 - `.claude/settings.json` (project, committed)
 - `~/.claude/settings.json` (user)
-- Enterprise managed policy settings — override everything and cannot be
+- Enterprise managed policy settings, which override everything and cannot be
   bypassed by `disableAllHooks` at user/project scope.
 
-### Exit codes, JSON output, and decision precedence
+### Exit codes and JSON output
 
 **Exit 0** is success; stdout is parsed as JSON if structured, or injected
 as context for `UserPromptSubmit`/`SessionStart`. **Exit 2** is a blocking
@@ -345,13 +345,13 @@ For `PreToolUse`, the canonical decision shape is:
 }
 ```
 
-`permissionDecision` is one of `allow` | `deny` | `ask` | `defer`. When
-multiple PreToolUse hooks fire in parallel, the precedence is
-**deny > defer > ask > allow**; `deny` is enforceable even under
-`--dangerously-skip-permissions`, which is why hook-based denies are
-actually stronger than CLI permission flags. `updatedInput` is
-last-writer-wins across parallel hooks, so never have two hooks mutating
-the same field.
+`permissionDecision` is documented as `allow` or `deny`. An earlier version
+of this page also listed `ask` and `defer`, with a precedence of
+`deny > defer > ask > allow` across parallel hooks. **Neither the extra
+values nor the precedence rule appear in the published hook reference as of
+2026-09-10**, so treat them as unverified and do not build on them. What the
+reference does say is that all matching hooks run in parallel, and that the
+same handler defined in more than one settings file runs once.
 
 ### Matcher patterns
 
