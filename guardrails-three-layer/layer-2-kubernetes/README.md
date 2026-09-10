@@ -1,4 +1,4 @@
-# Layer 2 — Kubernetes admission + runtime
+# Layer 2: Kubernetes admission + runtime
 
 **Build second. Requires cluster infrastructure. Catches destructive actions
 at the cluster boundary even when the commit bypassed review.**
@@ -120,7 +120,7 @@ kubeadm reset  # DO NOT actually confirm 'y' on a real cluster
 
 ---
 
-## Kyverno vs Gatekeeper — pick one
+## Kyverno vs Gatekeeper: pick one
 
 | Dimension                   | Kyverno                 | OPA/Gatekeeper         |
 |-----------------------------|-------------------------|------------------------|
@@ -148,7 +148,7 @@ separate validating webhooks.
 - **`failurePolicy: Ignore`** on the webhook. Run three replicas, set
   `failurePolicy: Fail`, narrow the exclusions.
 
-See: [../docs/three-layers.md](../docs/three-layers.md#layer-2-kubernetes-admission-control-and-runtime-detection)
+See: [../three-layers.md](../three-layers.md#layer-2-kubernetes-admission-control-and-runtime-detection)
 
 ---
 

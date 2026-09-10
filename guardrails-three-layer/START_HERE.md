@@ -16,7 +16,7 @@ Clock time: ~30 minutes for the minimum posture.
 
 ---
 
-## Minute 0–5 — Assess
+## Minute 0–5: Assess
 
 ```bash
 cd <your-repo>
@@ -28,7 +28,7 @@ Write down your score. You will run this again at the end.
 
 ---
 
-## Minute 5–20 — Layer 1: git hooks + pre-commit
+## Minute 5–20, Layer 1: git hooks + pre-commit
 
 Copy the client-side hooks into your repo and activate them:
 
@@ -61,11 +61,11 @@ Layer 1 local is green.
 
 ---
 
-## Minute 20–25 — Layer 1 server-side (GitHub branch protection)
+## Minute 20–25: Layer 1 server-side (GitHub branch protection)
 
 Pick **one** path.
 
-**Path A — gh CLI (no IaC):**
+**Path A, gh CLI (no IaC):**
 
 ```bash
 # Requires admin on the repo
@@ -84,7 +84,7 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
   -F required_conversation_resolution=true
 ```
 
-**Path B — Terraform:**
+**Path B, Terraform:**
 
 ```bash
 cp /tmp/three-layers/layer-1-git-ci/terraform/branch-protection.tf ./terraform/
@@ -107,7 +107,7 @@ Layer 1 is done.
 
 ---
 
-## Minute 25–30 — Layer 3: Claude Code hooks
+## Minute 25–30, Layer 3: Claude Code hooks
 
 The fast win for anyone using Claude Code locally:
 
@@ -132,11 +132,11 @@ git commit -m "security: add Layer 3 Claude Code hooks (three-layers)"
 git push
 ```
 
-Done. Re-run `evaluate.sh` — score should have jumped.
+Done. Re-run `evaluate.sh`, score should have jumped.
 
 ---
 
-## Later this week — Layer 2
+## Later this week: Layer 2
 
 Layer 2 requires cluster infrastructure (Kyverno controller, Falco DaemonSet,
 ~1–2 GiB RAM per replica, three replicas for HA). Plan it on Friday, deploy

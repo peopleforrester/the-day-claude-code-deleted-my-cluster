@@ -1,10 +1,10 @@
-# Three Layers of Guardrails for AI Coding Agents — Canonical Reference
+# Three Layers of Guardrails for AI Coding Agents: Canonical Reference
 
 This is the long-form reference. For the actionable rollout, start with the
-repo root [README](../README.md) and [START_HERE.md](../START_HERE.md).
+repo root [README](../README.md) and [START_HERE.md](./START_HERE.md).
 
 **Deterministic gates for probabilistic agents.** An AI coding agent is a
-stochastic actor with a shell. It will occasionally — predictably — do the
+stochastic actor with a shell. It will occasionally (predictably) do the
 wrong thing, and if that thing is `kubeadm reset` on a production control
 plane, apologies after the fact won't restore your etcd quorum. The answer
 is not to trust the model more; it is to wrap it in three layers of
@@ -15,9 +15,9 @@ failure, and together they turn a dangerous autonomous agent into a
 productive, bounded collaborator.
 
 Every snippet in this doc is copy-paste-ready and mirrors files checked in
-under [`../layer-1-git-ci/`](../layer-1-git-ci/),
-[`../layer-2-kubernetes/`](../layer-2-kubernetes/), and
-[`../layer-3-claude-hooks/`](../layer-3-claude-hooks/). The structure is
+under [`./layer-1-git-ci/`](./layer-1-git-ci/),
+[`./layer-2-kubernetes/`](./layer-2-kubernetes/), and
+[`./layer-3-claude-hooks/`](./layer-3-claude-hooks/). The structure is
 intentional: a DevOps engineer clones the repo Monday morning, reads this
 doc, and has the first layer green by lunch.
 
@@ -25,20 +25,20 @@ doc, and has the first layer green by lunch.
 
 ## The threat model and why three layers
 
-The 2025–2026 wave of "cluster destruction" incidents — Claude Code
+The 2025–2026 wave of "cluster destruction" incidents: Claude Code
 invoking `kubeadm reset`, Cursor agents running
-`etcdctl --force-new-cluster`, Aider running `rm -rf /var/lib/etcd` —
+`etcdctl --force-new-cluster`, Aider running `rm -rf /var/lib/etcd`,
 share a signature. The agent has legitimate shell and `kubectl` access, a
 task description that sounds recoverable ("fix the broken node"), and a
 context window too small to hold the cluster's state. When the model
 improvises, it improvises at root.
 
 Each layer addresses a distinct failure mode. **Layer 1 (Git + GitHub)**
-catches destructive *intentions* at commit time — before any
+catches destructive *intentions* at commit time, before any
 infrastructure touches the change. **Layer 2 (Kubernetes admission +
-runtime)** catches destructive *actions* at the cluster boundary — even if
+runtime)** catches destructive *actions* at the cluster boundary, even if
 the commit bypassed review. **Layer 3 (Claude Code hooks)** catches
-destructive *tool calls* at the agent boundary — before the command ever
+destructive *tool calls* at the agent boundary, before the command ever
 leaves the laptop. `--no-verify` skips Layer 1 client-side, but GitHub's
 server-side rulesets and required status checks cannot be bypassed.
 Kyverno can be bypassed by running `etcdctl` over SSH on a node, but
@@ -53,7 +53,7 @@ sidecars). Start free, add infra as scale demands.
 
 ---
 
-## Layer 1 — Git hooks and GitHub CI/CD
+## Layer 1: Git hooks and GitHub CI/CD
 
 Layer 1 has two halves: **fast client-side hooks that give developers
 instant feedback**, and **authoritative server-side gates that cannot be
@@ -68,16 +68,16 @@ job is to save developers (and agents) a round-trip to CI. Scope every
 check to `git diff --cached --name-only --diff-filter=ACMR` so scans only
 see staged files. Skip binaries. Parallelize. Cache.
 
-The full scripts live in [`../layer-1-git-ci/.githooks/`](../layer-1-git-ci/.githooks/).
+The full scripts live in [`./layer-1-git-ci/.githooks/`](./layer-1-git-ci/.githooks/).
 Highlights:
 
-- `pre-commit` — blocks `rm -rf`, `kubeadm reset`,
+- `pre-commit`, blocks `rm -rf`, `kubeadm reset`,
   `etcd(ctl) --force-new-cluster`, AWS/GitHub/Slack keys, `mkfs`,
   `chmod -R 777 /`, and fork-bombs before the commit is recorded.
-- `commit-msg` — enforces Conventional Commits and requires a human
+- `commit-msg`: enforces Conventional Commits and requires a human
   `Signed-off-by` / `Reviewed-by` trailer when AI coauthor markers are
   present.
-- `pre-push` — last-chance defense: blocks direct pushes to protected
+- `pre-push`, last-chance defense: blocks direct pushes to protected
   branches, detects force-push on protected refs, and runs
   `gitleaks protect` on the push range.
 
@@ -96,11 +96,11 @@ branch protection rules execute before any merge.
 
 See:
 
-- [`../layer-1-git-ci/terraform/branch-protection.tf`](../layer-1-git-ci/terraform/branch-protection.tf)
+- [`./layer-1-git-ci/terraform/branch-protection.tf`](./layer-1-git-ci/terraform/branch-protection.tf)
   for the ruleset as code (preferred).
-- [`../START_HERE.md`](../START_HERE.md) minute 20–25 for the `gh api`
+- [`./START_HERE.md`](./START_HERE.md) minute 20–25 for the `gh api`
   equivalent if you don't want Terraform.
-- [`../layer-1-git-ci/.github/workflows/`](../layer-1-git-ci/.github/workflows/)
+- [`./layer-1-git-ci/.github/workflows/`](./layer-1-git-ci/.github/workflows/)
   for the required status checks: `security-scan.yml`, `policy-check.yml`,
   `pr-validation.yml`, `merge-queue.yml`.
 
@@ -115,7 +115,7 @@ against main and fails any PR that flips `"disableAllHooks": true`. That
 is the server-side backstop against a developer (or agent) silencing
 Layer 3.
 
-### Performance — keeping client hooks under ten seconds
+### Performance: keeping client hooks under ten seconds
 
 Developers disable slow hooks. The rule is a coffee-sip budget: under ten
 seconds or you've lost them.
@@ -133,35 +133,35 @@ bouncer at the door.**
 
 ---
 
-## Layer 2 — Kubernetes admission control and runtime detection
+## Layer 2: Kubernetes admission control and runtime detection
 
-Kyverno and OPA/Gatekeeper are admission controllers — they intercept
-writes at the API server boundary. Falco is the runtime detector — it sees
+Kyverno and OPA/Gatekeeper are admission controllers: they intercept
+writes at the API server boundary. Falco is the runtime detector: it sees
 what happens *after* admission, including host-level operations the API
 server never saw. You need both because the incident playbook has actions
 in both domains: `kubectl delete ns kube-system` is admission-time;
 `kubeadm reset` on a node is runtime.
 
-### Kyverno ClusterPolicies — admission-time blocks
+### Kyverno ClusterPolicies: admission-time blocks
 
-The full policies live in [`../layer-2-kubernetes/kyverno/`](../layer-2-kubernetes/kyverno/).
-All six follow the same shape — match, exclude, validate-deny.
+The full policies live in [`./layer-2-kubernetes/kyverno/`](./layer-2-kubernetes/kyverno/).
+All six follow the same shape, match, exclude, validate-deny.
 
-- **`01-protect-system-namespaces.yaml`** — blocks DELETE/UPDATE of
+- **`01-protect-system-namespaces.yaml`**: blocks DELETE/UPDATE of
   `kube-system`, `kube-public`, `default`, `kyverno`, `argocd`,
   `flux-system`, `cert-manager`, `ingress-nginx`, `monitoring`, `falco`,
   `gatekeeper-system`. This policy alone would have stopped the first
   `kubectl delete ns kube-system` of the incident.
-- **`02-disallow-sensitive-hostpaths.yaml`** — blocks pods mounting
+- **`02-disallow-sensitive-hostpaths.yaml`**: blocks pods mounting
   `/var/lib/etcd`, `/etc/netplan`, `/etc/kubernetes`, `/`, `/proc`,
   `/sys`, container-runtime sockets. Directly addresses the incident
   vector.
-- **`03-pss-baseline.yaml`** — privileged containers, host namespaces
+- **`03-pss-baseline.yaml`**: privileged containers, host namespaces
   (`hostNetwork`, `hostPID`, `hostIPC`), privilege escalation.
-- **`04-block-exec-kube-system.yaml`** — `kubectl exec` into protected
+- **`04-block-exec-kube-system.yaml`**: `kubectl exec` into protected
   namespaces is denied. Prevents the "get a shell in kube-apiserver and
   run etcdctl" escalation path.
-- **`05-restrict-clusteradmin-binding.yaml`** — no new bindings to
+- **`05-restrict-clusteradmin-binding.yaml`**: no new bindings to
   `cluster-admin`, `system:masters`, `system:node`,
   `system:kube-scheduler`, `system:kube-controller-manager`.
 
@@ -180,7 +180,7 @@ Kyverno is an **admission controller**, so everything it cannot see is a
 potential bypass:
 
 - **Host-level commands.** `kubeadm reset`, `etcdctl` on a local etcd
-  socket, `rm -rf /var/lib/etcd` from SSH — the API server never sees any
+  socket, `rm -rf /var/lib/etcd` from SSH: the API server never sees any
   of these. Mitigation: immutable OS (Talos, Bottlerocket), no SSH, sudo
   policies, and Falco at runtime.
 - **Kubelet bypass.** A worker node with
@@ -206,13 +206,13 @@ potential bypass:
 | Dimension                         | Kyverno                                | OPA/Gatekeeper                        |
 |-----------------------------------|----------------------------------------|---------------------------------------|
 | Language                          | YAML (K8s-native)                      | Rego DSL                              |
-| Learning curve                    | Low — resembles k8s manifests          | Steep                                 |
+| Learning curve                    | Low: resembles k8s manifests          | Steep                                 |
 | Mutation                          | First-class, strategic merge + JSON patch | Limited (`Assign`, observed-fields)  |
 | Generation (create new resources) | Yes, `generate:` with clone+sync        | No                                    |
 | Existing-resource enforcement     | `mutateExisting`, background scans     | Audit-only                            |
 | Image verification                | Cosign/sigstore first-class            | External tool needed                  |
 | Non-K8s use                       | K8s-only                               | General-purpose (Envoy, TF, CI/CD)    |
-| Managed offerings                 | —                                      | Azure Policy for AKS, GKE Policy Controller |
+| Managed offerings                 | none | Azure Policy for AKS, GKE Policy Controller |
 
 **Choose Kyverno** when your policy domain is K8s-only, you want YAML, and
 you need mutation/generation. **Choose Gatekeeper** when Rego is already
@@ -225,7 +225,7 @@ validating webhooks.
 The most common deployment mistake is giving the agent `cluster-admin` "so
 it doesn't get blocked." The correct posture is read-heavy, namespace-
 scoped writes, and explicit absence of `delete` / `exec` / `portforward`
-verbs. See [`../layer-2-kubernetes/rbac/ai-agent.yaml`](../layer-2-kubernetes/rbac/ai-agent.yaml).
+verbs. See [`./layer-2-kubernetes/rbac/ai-agent.yaml`](./layer-2-kubernetes/rbac/ai-agent.yaml).
 
 The contrast: the typical AI agent gets `cluster-admin` (every verb on
 every resource in every namespace). The correct AI agent gets read-only at
@@ -236,13 +236,13 @@ even sees it.
 
 ### Network policies to block control-plane paths
 
-See [`../layer-2-kubernetes/networkpolicies/ai-workspace.yaml`](../layer-2-kubernetes/networkpolicies/ai-workspace.yaml).
+See [`./layer-2-kubernetes/networkpolicies/ai-workspace.yaml`](./layer-2-kubernetes/networkpolicies/ai-workspace.yaml).
 
 A single policy blocks three entire incident vectors: cloud metadata IAM
 theft (`169.254.169.254`), direct kubelet API (`10250` on node IPs in
 `10.0.0.0/8`), and etcd ports (`2379`, `2380` on node IPs). **On GKE
 Dataplane V2, validate IMDS block with
-`curl -m 3 http://169.254.169.254/` from inside a pod** — there's
+`curl -m 3 http://169.254.169.254/` from inside a pod**: there's
 historical special-case handling.
 
 ### Pod Security Standards and ValidatingAdmissionPolicy
@@ -253,20 +253,20 @@ namespaces, `runAsNonRoot`, `allowPrivilegeEscalation=false`,
 `seccompProfile: RuntimeDefault`, and capability drop-all.
 
 `ValidatingAdmissionPolicy` (GA in K8s 1.30) runs inside `kube-apiserver`
-using CEL — no external controller. Use it as the last-resort backstop
+using CEL: no external controller. Use it as the last-resort backstop
 that stays running even when Kyverno is down. See
-[`../layer-2-kubernetes/vap/deny-privileged.yaml`](../layer-2-kubernetes/vap/deny-privileged.yaml).
+[`./layer-2-kubernetes/vap/deny-privileged.yaml`](./layer-2-kubernetes/vap/deny-privileged.yaml).
 
 ### Falco: catching what admission cannot see
 
 Kyverno sees API-server traffic. **Falco sees syscalls and audit events.**
 The incident's `kubeadm reset` on a node,
-`etcdctl --force-new-cluster`, `netplan apply`, `rm -rf /var/lib/etcd` —
+`etcdctl --force-new-cluster`, `netplan apply`, `rm -rf /var/lib/etcd`,
 none of these pass through the API server. Only Falco (via its eBPF driver
 on the node, plus the `k8saudit` plugin for API events) catches them.
 
 The full rule set is in
-[`../layer-2-kubernetes/falco/falco-rules-ai-agent.yaml`](../layer-2-kubernetes/falco/falco-rules-ai-agent.yaml).
+[`./layer-2-kubernetes/falco/falco-rules-ai-agent.yaml`](./layer-2-kubernetes/falco/falco-rules-ai-agent.yaml).
 Key rules:
 
 - `AI Agent Ran kubeadm reset` (EMERGENCY)
@@ -278,9 +278,9 @@ Key rules:
 - `Container Runtime Socket Accessed From Container` (CRITICAL)
 - `ServiceAccount Token Read By Unexpected Process` (CRITICAL)
 - `AI Agent Recursive Force Delete` (EMERGENCY)
-- `Pod Deleted In Kubernetes System Namespace` (CRITICAL) — audit source
-- `Exec Into Kubernetes System Pod` (CRITICAL) — audit source
-- `Privileged Pod Created At Runtime` (CRITICAL) — backstop for Kyverno bypass
+- `Pod Deleted In Kubernetes System Namespace` (CRITICAL): audit source
+- `Exec Into Kubernetes System Pod` (CRITICAL): audit source
+- `Privileged Pod Created At Runtime` (CRITICAL): backstop for Kyverno bypass
 
 Wire kube-apiserver's audit webhook to Falco's `:9765/k8s-audit` (the
 k8saudit plugin), and pair Falco with **Falco Talon** to auto-remediate:
@@ -289,10 +289,10 @@ That transforms detection into response inside seconds.
 
 ---
 
-## Layer 3 — Claude Code hooks
+## Layer 3: Claude Code hooks
 
 Claude Code's hook system is the final layer, and it lives on the
-developer's machine — the closest possible point of enforcement to the
+developer's machine: the closest possible point of enforcement to the
 agent itself. The current Anthropic docs list **25 hook events** (the
 original "~19" figure is outdated; the feature expanded rapidly through
 2025–2026). Hooks fire at defined lifecycle points, receive a JSON event
@@ -315,7 +315,7 @@ mixable within a single matcher.
 
 ### Settings.json: the full example
 
-See [`../layer-3-claude-hooks/.claude/settings.json`](../layer-3-claude-hooks/.claude/settings.json).
+See [`./layer-3-claude-hooks/.claude/settings.json`](./layer-3-claude-hooks/.claude/settings.json).
 Place in:
 
 - `.claude/settings.json` (project, committed)
@@ -329,7 +329,7 @@ Place in:
 as context for `UserPromptSubmit`/`SessionStart`. **Exit 2** is a blocking
 error; stderr is fed back to Claude. Other non-zero exits are non-blocking
 errors logged to debug. You choose one: either exit 2 with stderr, or exit
-0 with `hookSpecificOutput` JSON — never mix.
+0 with `hookSpecificOutput` JSON, never mix.
 
 For `PreToolUse`, the canonical decision shape is:
 
@@ -363,19 +363,19 @@ it's treated as an exact string). Built-in tool names: `Bash`, `Edit`,
 `Write`, `MultiEdit`, `Read`, `Glob`, `Grep`, `Agent`, `WebFetch`,
 `WebSearch`, `AskUserQuestion`, `ExitPlanMode`, plus any
 `mcp__<server>__<tool>`. The newer `if:` filter narrows further using
-permission-rule syntax — `if: "Bash(git push *)"` or `if: "Edit(*.ts)"`.
+permission-rule syntax, `if: "Bash(git push *)"` or `if: "Edit(*.ts)"`.
 
 ### The four handler types
 
-- **`command`** — a shell script that reads JSON on stdin and signals
+- **`command`**: a shell script that reads JSON on stdin and signals
   decisions via exit code or stdout JSON. The workhorse for 90% of
   enforcement.
-- **`http`** — POSTs the same JSON to a URL; 2xx-with-JSON is parsed as a
+- **`http`**: POSTs the same JSON to a URL; 2xx-with-JSON is parsed as a
   decision, non-2xx is non-blocking. Ideal for calling a central
   OPA/Kyverno policy service.
-- **`prompt`** — sends a single-turn LLM evaluation (Haiku by default) with
+- **`prompt`**: sends a single-turn LLM evaluation (Haiku by default) with
   `$ARGUMENTS` replaced by the event JSON. Perfect for semantic judgment.
-- **`agent`** — spawns a subagent with `Read`/`Grep`/`Glob` tools (up to 50
+- **`agent`**: spawns a subagent with `Read`/`Grep`/`Glob` tools (up to 50
   turns) and lets it inspect the codebase before deciding. Use for
   verification that needs actual file reads, not vibes.
 
@@ -385,7 +385,7 @@ permission-rule syntax — `if: "Bash(git push *)"` or `if: "Edit(*.ts)"`.
 reads CLAUDE.md and usually follows it, but a long session, context
 compaction, or a confusing task can drift the behavior. State the rule in
 both places. See
-[`../layer-3-claude-hooks/CLAUDE.md`](../layer-3-claude-hooks/CLAUDE.md)
+[`./layer-3-claude-hooks/CLAUDE.md`](./layer-3-claude-hooks/CLAUDE.md)
 for a drop-in example.
 
 When the model forgets the CLAUDE.md rule (and it will), the hook blocks
@@ -396,16 +396,16 @@ modes of the others.
 
 ### `disableAllHooks` and why it exists
 
-The setting lives at the top level of any settings file — user, project,
-local, or managed — and turns off every hook. It's useful for debugging,
+The setting lives at the top level of any settings file, user, project,
+local, or managed: and turns off every hook. It's useful for debugging,
 testing hooks in isolation, or as an emergency kill-switch when a broken
 hook is stopping work. **The key security property: managed policy
 settings (IT-controlled) cannot be disabled by user/project/local
 `disableAllHooks`.** So enterprise governance teams should ship the real
 enforcement hooks via managed settings and accept that developers can turn
 off their own hooks but not the mandatory ones. A belt-and-suspenders move
-is a CI check on the diff — the `tamper-check` job in
-`pr-validation.yml` — that fails any PR introducing
+is a CI check on the diff, the `tamper-check` job in
+`pr-validation.yml`, that fails any PR introducing
 `"disableAllHooks": true`.
 
 ---
@@ -420,7 +420,7 @@ safe operations pass through instantly and only the dangerous ones bear
 friction.
 
 **Least privilege for AI agents** inverts the default. Most teams give an
-agent the credentials of the developer running it — often `cluster-admin`
+agent the credentials of the developer running it, often `cluster-admin`
 or equivalent. The correct posture is a dedicated ServiceAccount with
 read-cluster-wide, write-narrow-namespace, never-delete-critical scope, no
 `pods/exec`, no `secrets`, no `rbac.authorization.k8s.io/*`, no
@@ -430,7 +430,7 @@ kube-system`, the RBAC layer rejects it before any policy engine sees it.
 **GitOps as structural Layer 1.** The cleanest architecture keeps the
 agent out of direct cluster access entirely: the agent writes YAML to a
 Git PR, Layer 1 validates it, a human approves, and ArgoCD (or Flux)
-applies the change. The agent literally has no `kubectl` credentials —
+applies the change. The agent literally has no `kubectl` credentials,
 there is no cluster-destruction primitive available. This is the
 highest-leverage control on the list; if your org can adopt it, Layers 2
 and 3 become belt-and-suspenders rather than primary defense.
@@ -438,7 +438,7 @@ and 3 become belt-and-suspenders rather than primary defense.
 **The cost gradient favors starting free.** Branch protection, GitHub
 Actions on public repos, pre-commit hooks, and Claude Code hooks cost
 nothing. Kyverno, Falco, OPA/Gatekeeper, and Falco Talon require
-controller pods and operational attention — budget 1–2 GiB RAM per
+controller pods and operational attention, budget 1–2 GiB RAM per
 controller replica, three replicas for HA, and tuning time measured in
 engineering weeks. Start with Layer 1 and Layer 3 (free, fast, covers the
 laptop and the push), add Kyverno when your cluster justifies it, add
@@ -459,7 +459,7 @@ after tuning. The full three-layer posture is a month of work; the 80%
 posture is an afternoon.
 
 **The key insight to carry out of the talk.** The incident that inspired
-this repo wasn't caused by a malicious agent — it was caused by a helpful
+this repo wasn't caused by a malicious agent: it was caused by a helpful
 agent with too much trust and too few guardrails. You cannot make the
 agent smarter, but you can make the environment around it dumber:
 deterministic, bounded, and unforgiving of mistakes. That is the whole

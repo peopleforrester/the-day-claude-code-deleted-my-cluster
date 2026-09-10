@@ -1,6 +1,6 @@
-# Workflows — GitHub Actions backstop
+# Workflows: GitHub Actions backstop
 
-Two workflows mirroring slide 11 of the deck — defense-in-depth for
+Two workflows mirroring slide 11 of the deck, defense-in-depth for
 anyone who pushes without the local `pre-commit` / `pre-push` hooks
 from `../hooks/git/` installed.
 
@@ -11,7 +11,7 @@ from `../hooks/git/` installed.
 
 `ci.yml` right now runs the consistency suite for this talk repo
 (uv + pytest). The deck slide describes a fuller form ("ruff/mypy/u")
-for production repos — when you adapt this to your own project, add
+for production repos: when you adapt this to your own project, add
 those steps before the test run.
 
 `e2e.yml` is a structural placeholder: it has the right shape and
@@ -36,5 +36,5 @@ These workflows are **client-side-equivalent** checks moved to the
 remote. They do not replace branch protection, CODEOWNERS, admission
 policies, or any other server-side enforcement on the target.
 See [`../docs/the-framework.md`](../docs/the-framework.md) section 2
-("Server side — Git, CI, systemd") for what a complete remote-side
+("Server side, Git, CI, systemd") for what a complete remote-side
 posture looks like.

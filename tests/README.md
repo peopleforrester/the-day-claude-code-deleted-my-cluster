@@ -1,4 +1,4 @@
-# Tests — Consistency Suite
+# Tests: Consistency Suite
 
 This is a documentation-only repo, so the test suite has a single
 purpose: assert that the durable state files (`PROJECT_STATE.md`,

@@ -1,11 +1,11 @@
-# Home Lab Incident Recovery — August/September 2025
+# Home Lab Incident Recovery: August/September 2025
 
 Artifacts recovered from git history (via `git show <commit>:<path>`) related to
 the August 2025 home lab cluster rebuild incident where a Claude Code session
 initialized a new etcd cluster (overwriting the existing one) and modified
 netplan files across the Linux nodes.
 
-**Start here:** [`ANALYSIS.md`](ANALYSIS.md) — presentation-ready deep analysis
+**Start here:** [`ANALYSIS.md`](ANALYSIS.md): presentation-ready deep analysis
 with timeline, root causes, and citations back into these artifacts.
 
 **The 2026 escalation:** [`2026-FLEET-INCIDENT.md`](2026-FLEET-INCIDENT.md) covers a
@@ -21,17 +21,17 @@ cleanup"). Recovered on 2026-04-19.
 ## Second recovery pass (2026-04-19)
 The initial recovery captured only the `archived-deployments/` tree. A second
 pass pulled the live-cluster scripts that actually caused the damage:
-- `session-artifacts/kubernetes-fresh-deploy-2025/` — the scripts that ran
+- `session-artifacts/kubernetes-fresh-deploy-2025/`, the scripts that ran
   against production nodes `192.168.0.50–58` on 2025-08-23
-- `session-artifacts/kubernetes-upgrade/` — the Ansible framework used earlier
+- `session-artifacts/kubernetes-upgrade/`, the Ansible framework used earlier
   (including the 20,128-line `ansible-upgrade.log` from 2025-08-19)
-- `session-artifacts/archive-v1.33.4/` — the full working tree from the
+- `session-artifacts/archive-v1.33.4/`: the full working tree from the
   post-incident rebuild, including `bridge-setup/`, `network/mac-fix-*.sh`,
   and `health-check/` reports that document the netplan/MAC fallout
 
 ## Note on raw session transcript
 The original Claude Code session `.jsonl` transcript no longer exists on this
-machine — `~/.claude/projects/` only retains sessions back to January 2026. The
+machine: `~/.claude/projects/` only retains sessions back to January 2026. The
 artifacts below are the next-best substitute: step-by-step logs, scripts, and
 state files the session produced as it ran.
 
@@ -47,30 +47,30 @@ state files the session produced as it ran.
   Originally committed 2025-09-03 in `e4719dd`.
 
 ### reports/
-- **cluster-health-report-2025-07-16.md** — Baseline pre-incident health (commit `d5cd5b3`)
-- **k8s01-crash-analysis.md** — k8s01 crash investigation from 2025-07-31 (commit `766754a`)
-- **kubernetes-cluster-architecture-summary.md** — Architecture as of July 2025 (commit `eb828d0`)
-- **cluster-health-report-2025-09-02.md** — Post-rebuild cluster state (commit `e4719dd`)
-- **metrics-flow-investigation-report.md** — Observability analysis post-rebuild
+- **cluster-health-report-2025-07-16.md**: Baseline pre-incident health (commit `d5cd5b3`)
+- **k8s01-crash-analysis.md**: k8s01 crash investigation from 2025-07-31 (commit `766754a`)
+- **kubernetes-cluster-architecture-summary.md**: Architecture as of July 2025 (commit `eb828d0`)
+- **cluster-health-report-2025-09-02.md**: Post-rebuild cluster state (commit `e4719dd`)
+- **metrics-flow-investigation-report.md**: Observability analysis post-rebuild
 
 ### commit-diffs/
 Commit metadata (file stats, not full diffs) for the three commits that
 captured the rebuild work:
-- **aug28-cluster-infrastructure-fixes.txt** — commit `69a2f0b`: 66 files, +49,795 lines
-- **sep03-k8s-deployment-scripts.txt** — commit `3e2d4a3`: 384 files, +51,173 lines
-- **sep03-documentation-update.txt** — commit `e4719dd`: the doc commit
+- **aug28-cluster-infrastructure-fixes.txt**, commit `69a2f0b`: 66 files, +49,795 lines
+- **sep03-k8s-deployment-scripts.txt**, commit `3e2d4a3`: 384 files, +51,173 lines
+- **sep03-documentation-update.txt**, commit `e4719dd`: the doc commit
 
 ### session-artifacts/
 Contents of the `library/kubernetes/deployments/archived-deployments/` tree
 from commit `3e2d4a3`. This is the closest thing to a session history we have.
 
 Key subdirectories:
-- **k8s-cluster-build/** — Main cluster build with 13 numbered step directories
+- **k8s-cluster-build/**: Main cluster build with 13 numbered step directories
   (01-connectivity through 13-final-validation). Each contains `status.json`,
   `*.log` files, and the scripts executed.
-- **k8s-cluster-build_vAug24th/** — Earlier attempt from Aug 24 with a slightly
+- **k8s-cluster-build_vAug24th/**: Earlier attempt from Aug 24 with a slightly
   different step breakdown (includes `05-ha-setup/etcd-encryption-config.yaml`)
-- **kubeadm_k8s_deployment_v2/** / **kubeadm_k8s_deployment_v4/** — Deployment
+- **kubeadm_k8s_deployment_v2/** / **kubeadm_k8s_deployment_v4/**: Deployment
   variants
 - Plus top-level scripts: `deploy_k8s_cluster.sh`, `init_master.sh`,
   `fix_dns_and_install.sh`, etc.

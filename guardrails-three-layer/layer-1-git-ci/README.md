@@ -1,4 +1,4 @@
-# Layer 1 — Git + CI
+# Layer 1: Git + CI
 
 **Build first. Free. Catches destructive intentions at commit time, before
 any infrastructure touches the change.**
@@ -6,7 +6,7 @@ any infrastructure touches the change.**
 Two halves:
 
 - **Client-side (fast, advisory).** Runs on the developer's machine. Keeps
-  feedback under 10 seconds. `--no-verify` can bypass it — that's fine.
+  feedback under 10 seconds. `--no-verify` can bypass it, that's fine.
 - **Server-side (authoritative).** Runs on GitHub's runners. Required status
   checks, branch protection, merge queue. `--no-verify` is irrelevant here.
 
@@ -46,7 +46,7 @@ chmod +x ../.githooks/* ../scripts/install-hooks.sh
 ```
 
 Then set branch protection on `main` (either via `gh api` or the
-`terraform/branch-protection.tf` in this directory — see the top-level
+`terraform/branch-protection.tf` in this directory, see the top-level
 [START_HERE.md](../START_HERE.md) minute 20-25).
 
 ## Verify
@@ -85,4 +85,4 @@ Developers disable slow hooks. **Target: under 10 seconds for pre-commit.**
 
 ## Canonical reference
 
-Full rationale, threat model, and edge cases: [../docs/three-layers.md](../docs/three-layers.md)
+Full rationale, threat model, and edge cases: [../three-layers.md](../three-layers.md)

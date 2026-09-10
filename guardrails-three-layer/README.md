@@ -2,7 +2,7 @@
 
 **You just saw the talk. Here is what to do on Monday morning.**
 
-DevOpsDays Atlanta 2026 — *The Day Claude Code Deleted My Cluster.* Michael
+DevOpsDays Atlanta 2026: *The Day Claude Code Deleted My Cluster.* Michael
 Forrester (@peopleforrester).
 
 ---
@@ -71,14 +71,14 @@ which layer to deploy next. No installs, no side effects, no writes.
 
 ---
 
-## Before you use this on your own infra — edit these first
+## Before you use this on your own infra: edit these first
 
 **These files have placeholder values. Searching for `REPLACE_`,
 `your-org`, and the reference repo name will surface all of them.**
 
 | File                                                           | Edit                                                                 |
 |----------------------------------------------------------------|----------------------------------------------------------------------|
-| `layer-1-git-ci/terraform/branch-protection.tf`                | `repository = "..."` — change to **your** repo name                  |
+| `layer-1-git-ci/terraform/branch-protection.tf`                | `repository = "..."`: change to **your** repo name                  |
 | `layer-1-git-ci/.github/CODEOWNERS`                            | replace `@your-org/*` team names with real team handles              |
 | `layer-2-kubernetes/networkpolicies/ai-workspace.yaml`         | adjust the `10.0.0.0/8` / `172.16.0.0/12` / `192.168.0.0/16` CIDRs to match your node/VPC network |
 | `layer-2-kubernetes/pss/ai-agent-worker.yaml`                  | replace `registry.example.io/ai-agent:1.0.0@sha256:REPLACE_WITH_DIGEST` with a real image + digest |
@@ -87,24 +87,24 @@ which layer to deploy next. No installs, no side effects, no writes.
 **Start in audit mode, not enforce mode.** Every Kyverno policy ships with
 `validationFailureAction: Audit` on purpose. Watch PolicyReports for a
 week, confirm zero false positives, then flip to `Enforce`. The one-liner
-is in [START_HERE.md](./START_HERE.md) under "Later this week — Layer 2".
+is in [START_HERE.md](./START_HERE.md) under "Later this week: Layer 2".
 
 ---
 
 ## Why each layer
 
-**Layer 1 (Git + CI)** — catches destructive *intentions* at commit time,
+**Layer 1 (Git + CI)**: catches destructive *intentions* at commit time,
 before any infrastructure touches the change. `--no-verify` bypasses
 client-side, but GitHub's required status checks and branch protection run on
 GitHub's runners, not the developer's laptop. Free.
 
-**Layer 2 (K8s admission + runtime)** — catches destructive *actions* at the
+**Layer 2 (K8s admission + runtime)**: catches destructive *actions* at the
 cluster boundary, even if the commit bypassed review. Kyverno blocks the API
 call; Falco sees the syscall on the node. Requires infra.
 
-**Layer 3 (Claude Code hooks)** — catches destructive *tool calls* at the
+**Layer 3 (Claude Code hooks)**: catches destructive *tool calls* at the
 agent boundary, before the command ever leaves the laptop. The weakest layer
-(probabilistic — the agent interprets the rules), but the closest to the
+(probabilistic, the agent interprets the rules), but the closest to the
 source. Free.
 
 **Start free. Add infra as scale demands.**
@@ -116,11 +116,11 @@ source. Free.
 In August 2025, a Claude Code session with direct access to a 9-node
 production homelab Kubernetes cluster executed `etcd --force-new-cluster`
 during CNI troubleshooting. etcd quorum gone. All 187 pods across 20+
-namespaces — Prometheus, Grafana, Loki, Jaeger, Harbor, ArgoCD, Velero — gone
+namespaces (Prometheus, Grafana, Loki, Jaeger, Harbor, ArgoCD, Velero) gone
 with the cluster state. Recovery took days. Velero was *running* but had
 never been tested for restore.
 
-Full write-up: [docs/three-layers.md](./docs/three-layers.md)
+Full write-up: [three-layers.md](./three-layers.md)
 
 The fix wasn't to trust the model more. It was to wrap the model in three
 layers of deterministic enforcement so the next `etcd --force-new-cluster`
@@ -133,7 +133,7 @@ gets blocked before the command ever runs.
 MIT. Fork it. Lift whole directories into your own repos. Credit appreciated
 but not required. The whole point is that this reaches people who need it.
 
-Issues and PRs welcome — especially:
+Issues and PRs welcome, especially:
 
 - Falco rules for failure modes this doc doesn't cover yet
 - Kyverno policies for managed-control-plane quirks (EKS, GKE, AKS)

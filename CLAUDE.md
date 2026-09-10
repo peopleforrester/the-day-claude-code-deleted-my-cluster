@@ -1,4 +1,4 @@
-# CLAUDE.md — The Day Claude Code Deleted My Cluster
+# CLAUDE.md: The Day Claude Code Deleted My Cluster
 
 Project-specific instructions for Claude Code sessions in this repo.
 Global rules in `~/.claude/CLAUDE.md` still apply; this file only adds

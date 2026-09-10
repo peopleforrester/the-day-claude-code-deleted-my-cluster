@@ -1,4 +1,4 @@
-# Speaker Bio — Michael Forrester
+# Speaker Bio: Michael Forrester
 
 Bio for the SREday Austin / Texas 2026 talk page. **Affiliation
 updated 2026-05-11:** since the CFP closed, Michael has moved from

@@ -1,6 +1,6 @@
-# Layer 3 — Claude Code hooks
+# Layer 3: Claude Code hooks
 
-**Build third. Deploy closest to the agent. Weakest layer (probabilistic —
+**Build third. Deploy closest to the agent. Weakest layer (probabilistic, 
 the agent interprets the rules), but the only layer that can block a tool
 call before the command ever leaves the laptop.**
 
@@ -15,7 +15,7 @@ Two things make it insufficient on its own:
 
 - Hooks can be disabled with `"disableAllHooks": true` at the
   user/project/local scope (managed enterprise scope cannot be disabled).
-- Matcher logic is parsed by the agent's settings layer — a creative prompt
+- Matcher logic is parsed by the agent's settings layer, a creative prompt
   can sometimes route around an imperfect matcher.
 
 **Never your only layer. Always your last layer.**
@@ -101,4 +101,4 @@ See `CLAUDE.md` in this directory for a drop-in example policy section.
 ## Canonical reference
 
 Full event list, matcher syntax, handler types, and edge cases:
-[../docs/three-layers.md](../docs/three-layers.md#layer-3-claude-code-hooks)
+[../three-layers.md](../three-layers.md#layer-3-claude-code-hooks)

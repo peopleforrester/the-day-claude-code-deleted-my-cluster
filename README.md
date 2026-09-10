@@ -42,25 +42,25 @@ for the timeline, quoted from the session transcript.
 
 ## What's in this repo
 
-- [**`incident/`**](incident/) — the forensics. Session artifacts, the prompts that
+- [**`incident/`**](incident/): the forensics. Session artifacts, the prompts that
   ran, recovered scripts, commit diffs, and the analysis with citations, plus the 2026
   fleet incident. Credential
   values are redacted; see [`incident/REDACTIONS.md`](incident/REDACTIONS.md).
-- [**`docs/`**](docs/) — the **Eight Guardrails Framework**
+- [**`docs/`**](docs/): the **Eight Guardrails Framework**
   ([`the-framework.md`](docs/the-framework.md)), with the bypass column filled in for
   every enforcement artifact.
-- [**`hooks/`**](hooks/) — the enforcement artifacts themselves: eight agent
+- [**`hooks/`**](hooks/), the enforcement artifacts themselves: eight agent
   lifecycle hooks and two git hooks, copy-paste ready.
-- [**`workflows/`**](workflows/) — CI and end-to-end workflows, the defence-in-depth
+- [**`workflows/`**](workflows/): CI and end-to-end workflows, the defence-in-depth
   backstop.
-- [**`guardrails-three-layer/`**](guardrails-three-layer/) — the Ignite-length
+- [**`guardrails-three-layer/`**](guardrails-three-layer/): the Ignite-length
   condensation: three layers, an install script each, and a Monday-morning rollout
   with a clock on it.
-- [**`abstract/`**](abstract/) — as-submitted abstracts and speaker bio. The
+- [**`abstract/`**](abstract/): as-submitted abstracts and speaker bio. The
   canonical text is [`abstract/abstract.md`](abstract/abstract.md).
-- [**`presentations/`**](presentations/) — decks. The SREday PPTX is the editable
+- [**`presentations/`**](presentations/): decks. The SREday PPTX is the editable
   source; the Atlanta PDF is the Ignite cut.
-- [**`tests/`**](tests/) — consistency checks over the repo's own claims.
+- [**`tests/`**](tests/): consistency checks over the repo's own claims.
 
 ## Just saw the talk
 

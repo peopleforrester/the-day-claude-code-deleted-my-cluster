@@ -1,7 +1,7 @@
 # The Day an AI Agent Deleted My Cluster (And the Guardrails That Would Have Stopped It)
 
 The as-submitted SREday Austin / Texas 2026 abstract. This is the
-canonical text — the README defers to this file rather than carrying
+canonical text: the README defers to this file rather than carrying
 its own paraphrase.
 
 ## Submission Fields
@@ -42,13 +42,13 @@ in production or in this talk.
 
 ## Track Themes
 
-- **Lessons learned** — Real incident, real commands, real recovery.
+- **Lessons learned**: Real incident, real commands, real recovery.
   Nothing theoretical.
-- **Deep dives** — Three-layer guardrail architecture: Git hooks
+- **Deep dives**, Three-layer guardrail architecture: Git hooks
   (deterministic, local), Claude Code hooks (pre-tool-use blocking),
   Kubernetes infrastructure (admission webhooks, RBAC, Falco
   runtime detection).
-- **Culture and ways of working** — Why "the AI knows what it's
+- **Culture and ways of working**: Why "the AI knows what it's
   doing" is the most dangerous assumption in modern SRE, and how to
   build operational habits that treat AI agents as nondeterministic
   systems.
