@@ -1,41 +1,131 @@
-# Hooks — install this on your own machine
+# Hooks: install this on your own machine
 
-Working artifacts from the SREday talk, as presented May 11, 2026.
-These are the actual scripts referenced in
-[`docs/the-framework.md`](../docs/the-framework.md) and on stage. The
-deck calls out eight Claude Code lifecycle hooks, two git hooks, one
-GitHub Actions workflow, and one systemd timer. The first three are
-in this directory and the next one over (`../workflows/`); the timer
-is documented in the framework doc.
+**Synced from a live working configuration on 2026-09-10, and verified against
+the agent's published hook reference the same day.** If you are reading this
+much later, check the dates below before trusting the event names: this surface
+moves fast, and the previous version of this file was four months stale and
+wrong about it.
 
-You already know CI. The "extra" for AI agents lives here.
+These are the actual scripts behind [`docs/the-framework.md`](../docs/the-framework.md)
+and the talk. Paths, hostnames and usernames are replaced with `$HOME`, `$USER`
+and neutral placeholders; read each script before running it.
+
+You already know CI. The extra for AI agents lives here.
 
 ## Layout
 
 ```
 hooks/
-├── claude-code/   8 lifecycle hooks (SessionStart → SessionEnd)
+├── claude-code/   agent lifecycle hooks
 └── git/           pre-commit + pre-push (tiered local enforcement)
-../workflows/      ci.yml (defense-in-depth for anyone without local hooks)
+../workflows/      ci.yml (defence in depth for anyone without local hooks)
 ```
 
-## 1. Claude Code lifecycle hooks → `~/.claude/hooks/`
+## Read this before copying anything
 
-These run inside the Claude Code agent session. They wire into the
-agent's lifecycle so the agent can be redirected, blocked, lint-
-checked, re-anchored, and journalled without prompting it to "be
-careful."
+Three things changed since the first version of this material, and all three
+matter more than the scripts themselves.
 
-| Script | Event | Purpose | Bypass |
+### 1. There are 33 lifecycle events, not 8
+
+The set below is what these scripts use. It is a small slice. The events worth
+knowing about for enforcement work, which did not exist in the earlier material:
+
+| Event | Why it matters |
+|---|---|
+| `PermissionRequest` | Fires when a call needs a permission decision, so a policy layer can answer it. Note it does **not** honour exit code 2; it needs a JSON decision. |
+| `PermissionDenied` | Fires when auto mode denies a call. Good audit surface for what the agent tried. |
+| `ConfigChange` | **Blocks a configuration change mid-session.** This is the one that closes the "agent edits its own guardrails" hole. |
+| `PreModelSwitch` | Blocks a model switch. |
+| `SubagentStart` | Spawn-time control, not only stop-time. |
+| `PostToolUseFailure`, `PostToolBatch` | Separate the failure path and the parallel-batch path from the success path. |
+| `InstructionsLoaded` | Fires when a CLAUDE.md or rules file loads. |
+| `WorktreeCreate` | Aborts on **any** non-zero exit, unlike every other event. |
+
+### 2. A hook is not necessarily a shell script any more
+
+`type` now takes:
+
+| `type` | What decides | Deterministic? |
+|---|---|---|
+| `command` | your shell script | **yes**, the harness enforces the verdict |
+| `prompt` | a Claude model, Haiku by default | **no** |
+| `agent` | a subagent | **no** |
+| HTTP | a remote endpoint | depends on the endpoint |
+
+Every script here is `type: command`, deliberately. If you are building
+guardrails, know that choosing `prompt` or `agent` puts a probabilistic judgment
+in the enforcement path, which is the exact thing this talk argues against. That
+is sometimes the right call. It should be a decision, not an accident.
+
+### 3. The output contract is structured JSON
+
+Exit codes still work (`0` fine, `2` blocks, anything else is a non-blocking
+error) and every script here uses them. The richer form is JSON on stdout:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "Command not allowed"
+  }
+}
+```
+
+`PreToolUse` also accepts **`updatedInput`**, which **rewrites the tool call**
+instead of only allowing or denying it. In Kubernetes terms the earlier material
+described a validating admission controller; a mutating one is now available too.
+
+Config also gained an `if` filter, so the script no longer has to re-parse the
+command to decide whether it cares:
+
+```json
+{ "type": "command", "if": "Bash(git *)", "command": "..." }
+```
+
+## 1. Agent lifecycle hooks, to `~/.claude/hooks/`
+
+| Script | Event | Purpose | How it is bypassed |
 |---|---|---|---|
-| `session-start.sh` | SessionStart | Detect pending work in `PROJECT_STATE.md` + uncommitted changes; output a directive to read state and reconcile before new edits | Advisory; model can ignore the directive |
-| `check-commit-message.sh` | PreToolUse (Bash) | Block `git commit` if message contains AI/Claude attribution (case-insensitive regex) | `--no-verify`; non-`git` shell out |
-| `block-sensitive-files.sh` | PreToolUse (Edit\|Write) | Exit 2 (BLOCK) on writes to `.env`, `*.pem`, `*.key`, `id_*`, `*credential*`, `*secret*`, etc. | Write via Bash redirect; pattern evasion |
-| `validate-file.sh` | PostToolUse (Edit\|Write) | Ruff (Python) and yamllint on every write | Post-hoc, catches not prevents; non-Py/YAML skipped |
-| `check-aboutme.sh` | PostToolUse (Edit\|Write) | Warn when a `.py` file is missing the `ABOUTME:` header | Warn-only; trivially ignored |
-| `auto-reanchor.sh` | PostCompact | Re-anchor context after compaction: re-read `CLAUDE.md`, `PROJECT_STATE.md`, git state, surface orientation block | Reorientation, not enforcement |
-| `auto-test-on-stop.sh` | Stop | Run project tests after Claude finishes a turn if a runner is detected (pytest / npm test / cargo test) | Non-blocking; failures do not roll back |
-| `harvest-journal.sh` | SessionEnd | Trigger an engineering-journal harvest in the background | Capture only; no enforcement. **Edit the `TASKS_SCRIPT` and `HARVESTER` paths at the top of the file before using** |
+| `session-start.sh` | SessionStart | Detect pending work in `PROJECT_STATE.md` plus uncommitted changes; emit a directive to reconcile before editing | Advisory. The model can ignore the directive |
+| `check-commit-message.sh` | PreToolUse (Bash) | Block a commit whose message carries AI attribution | `--no-verify`; `core.hooksPath=/dev/null`; committing without the CLI; **and see the heredoc defect below** |
+| `block-sensitive-files.sh` | PreToolUse (Edit\|Write) | Exit 2 on writes to `.env`, `*.pem`, `*.key`, `id_*`, `*credential*`, `*secret*` | A `Bash` redirect writes the same file without touching Edit or Write. Pattern evasion |
+| `enforce-prd-issue-first.sh` | PreToolUse (Edit\|Write) | Require a tracking issue before a spec file is created | Same Bash-redirect gap |
+| `validate-file.sh` | PostToolUse (Edit\|Write) | Ruff and yamllint on every write | Post hoc. The write already happened. Non-Python, non-YAML files skip |
+| `check-aboutme.sh` | PostToolUse (Edit\|Write) | Warn when a file is missing its `ABOUTME:` header | Warn only |
+| `check-rule-frontmatter.sh` | PostToolUse (Edit\|Write) | Validate frontmatter on rule files | Warn only |
+| `cascade-decision-check.sh` | PostToolUse (Edit\|Write) | Flag edits that should have been recorded as a decision | Warn only |
+| `auto-reanchor.sh` | PostCompact | Re-read context after compaction and surface an orientation block | Reorientation, not enforcement |
+| `auto-test-on-stop.sh` | Stop | Run the project's tests when a turn ends | Non-blocking. Failures do not roll anything back |
+
+### A defect worth studying, in `check-commit-message.sh`
+
+It is published **as it is**, defect included, because it is a better teaching
+artifact that way.
+
+The script tries to scan only the commit message rather than the whole command.
+It finds the heredoc delimiter with `head -1`, which takes the **first** heredoc
+in the command. A very common shape is a file write followed by a commit:
+
+```bash
+cat > notes.md <<'EOF'
+...file content...
+EOF
+git commit -m "$(cat <<'EOF'
+message
+EOF
+)"
+```
+
+Here the delimiter resolves against the **file-writing** heredoc, so the file
+body gets scanned and **the real commit message is never examined**. That is a
+bypass, and it is invisible: the hook reports success.
+
+The lesson generalises past this script. **A control that parses a command
+string is guessing.** The reliable version anchors on the invocation, or runs
+where the action actually happens, which is why Layer 1 and Layer 2 sit above
+this one.
 
 ### Install
 
@@ -45,31 +135,49 @@ cp hooks/claude-code/*.sh ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 ```
 
-Then add the hooks block to `~/.claude/settings.json`:
+Then wire them up in `~/.claude/settings.json`:
 
 ```json
 {
   "hooks": {
-    "SessionStart":  [{"hooks": [{"type": "command", "command": "~/.claude/hooks/session-start.sh"}]}],
-    "PreToolUse":  [
+    "SessionStart": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/session-start.sh"}]}],
+    "PreToolUse": [
       {"matcher": "Bash",       "hooks": [{"type": "command", "command": "~/.claude/hooks/check-commit-message.sh"}]},
-      {"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "~/.claude/hooks/block-sensitive-files.sh"}]}
+      {"matcher": "Edit|Write", "hooks": [
+        {"type": "command", "command": "~/.claude/hooks/block-sensitive-files.sh"},
+        {"type": "command", "command": "~/.claude/hooks/enforce-prd-issue-first.sh"}
+      ]}
     ],
     "PostToolUse": [
       {"matcher": "Edit|Write", "hooks": [
         {"type": "command", "command": "~/.claude/hooks/validate-file.sh"},
-        {"type": "command", "command": "~/.claude/hooks/check-aboutme.sh"}
+        {"type": "command", "command": "~/.claude/hooks/check-aboutme.sh"},
+        {"type": "command", "command": "~/.claude/hooks/check-rule-frontmatter.sh"},
+        {"type": "command", "command": "~/.claude/hooks/cascade-decision-check.sh"}
       ]}
     ],
     "PostCompact": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/auto-reanchor.sh"}]}],
-    "Stop":        [{"hooks": [{"type": "command", "command": "~/.claude/hooks/auto-test-on-stop.sh"}]}],
-    "SessionEnd":  [{"hooks": [{"type": "command", "command": "~/.claude/hooks/harvest-journal.sh"}]}]
+    "Stop":        [{"hooks": [{"type": "command", "command": "~/.claude/hooks/auto-test-on-stop.sh"}]}]
   }
 }
 ```
 
-Restart Claude Code. The next session will fire `session-start.sh`
-on entry and the rest will fire as their events occur.
+Restart the agent. `session-start.sh` fires on entry; the rest fire on their
+events.
+
+### Deliberately not published
+
+Three hooks from the working set are held back, so you know they exist rather
+than wondering what was cut:
+
+- `harvest-journal.sh` (SessionEnd) writes into a personal notes vault. Capture,
+  not enforcement.
+- `confirm-gitlab-push.sh` (PreToolUse) is bound to a corporate GitLab host.
+- `statusline.sh` is cosmetic.
+
+Client-side git hooks are a speed bump, not a wall: `--no-verify` defeats both.
+The wall is CI, in [`../workflows/`](../workflows/), because the agent cannot
+pass `--no-verify` to GitHub Actions.
 
 ## 2. Git hooks → `<repo>/.git/hooks/`
 
@@ -81,7 +189,7 @@ appropriate linters and tests.
 |---|---|---|---|
 | `pre-commit` | 1 | Fast lint + type check on **staged files only** (<5s target). Docs-only commits skip lint entirely. Per-repo opt-outs: `.skip-lint`, `.skip-typecheck` | `git commit --no-verify` |
 | `pre-push` (any branch) | 2 | Secret scan (AKIA, ghp_*, sk-*, BEGIN PRIVATE KEY) + unit tests. `.skip-unit-tests` opts out | `git push --no-verify` |
-| `pre-push` (main only) | 3 | e2e gate — Python `tests/e2e/`, Node `test:e2e` script, or `scripts/e2e-test.sh`. `.skip-e2e` opts out. `.direct-push-allowed` skips all pre-push checks | Admin force-push on a protected branch |
+| `pre-push` (main only) | 3 | e2e gate: Python `tests/e2e/`, Node `test:e2e` script, or `scripts/e2e-test.sh`. `.skip-e2e` opts out. `.direct-push-allowed` skips all pre-push checks | Admin force-push on a protected branch |
 
 ### Install (per repo)
 
@@ -97,7 +205,7 @@ directory if you want them versioned across the team.
 
 ## 3. GitHub Actions workflow → `<repo>/.github/workflows/`
 
-Defense-in-depth for anyone who pushes without the local hooks
+Defence in depth for anyone who pushes without the local hooks
 installed. See [`../workflows/ci.yml`](../workflows/ci.yml). Drop it
 into your repo's `.github/workflows/` and adapt the test command to
 your runner.
@@ -105,7 +213,7 @@ your runner.
 ## What gets past all of this
 
 Read [`../docs/the-framework.md`](../docs/the-framework.md) for the
-full bypass column per artifact. Stacking layers is the point —
+full bypass column per artifact. Stacking layers is the point:
 no single hook is unbypassable, but compromising the whole stack
 requires multiple distinct moves at once.
 

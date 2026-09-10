@@ -47,6 +47,12 @@ if [ ! -f "$FILE_PATH" ]; then
     exit 0
 fi
 
+# Skip courseware repos — lab .py is instructional, not project code, and
+# ABOUTME headers would clutter teaching material.
+case "$FILE_PATH" in
+    "$HOME"/repos/courses/*) exit 0 ;;
+esac
+
 # __init__.py files are often empty or contain only __all__ declarations.
 # Requiring ABOUTME headers in them would be noisy and unhelpful.
 BASENAME=$(basename "$FILE_PATH")

@@ -22,13 +22,28 @@ case "$LOWER_BASENAME" in
         ;;
 esac
 
-# Block files with sensitive keywords in the name
+# Source and doc files legitimately reference these words in their NAME
+# (tokens.py, credentials_manager.ts, password-reset.md). The keyword block
+# below targets secret-bearing DATA files, not source, so exempt clear
+# code/doc extensions from it. The exact-secret-file block above (.env, *.key,
+# *.pem, ...) still fires for those regardless of this exemption.
+SOURCE_EXT=0
 case "$LOWER_BASENAME" in
-    *credential*|*secret*|*password*|*token*|*apikey*|*api_key*|*private_key*)
-        echo "BLOCKED: Cannot write to file with sensitive name: $BASENAME" >&2
-        exit 2
+    *.py|*.js|*.ts|*.tsx|*.jsx|*.mjs|*.cjs|*.go|*.rs|*.rb|*.java|*.kt|*.c|*.cc \
+    |*.cpp|*.h|*.hpp|*.cs|*.php|*.lua|*.sh|*.bash|*.zsh|*.md|*.rst)
+        SOURCE_EXT=1
         ;;
 esac
+
+# Block files with sensitive keywords in the name (data files only)
+if [[ "$SOURCE_EXT" -eq 0 ]]; then
+    case "$LOWER_BASENAME" in
+        *credential*|*secret*|*password*|*token*|*apikey*|*api_key*|*private_key*)
+            echo "BLOCKED: Cannot write to file with sensitive name: $BASENAME" >&2
+            exit 2
+            ;;
+    esac
+fi
 
 # Block known sensitive config files
 case "$BASENAME" in

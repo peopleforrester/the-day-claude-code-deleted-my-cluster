@@ -22,6 +22,13 @@
 #   - "Generated with", "Co-Authored-By.*Claude", "AI assistant"
 #   - "LLM", "language model" in commit context
 #
+# PRODUCT-NAME ALLOWLIST:
+#   Some real product/project names contain otherwise-flagged tokens (e.g.
+#   "LLM Guard" by ProtectAI, the "llm-coding-workflow" repo). The hook
+#   pre-scrubs these from the message before pattern matching so they do not
+#   false-positive. Add to PRODUCT_ALLOWLIST below when a legitimate commit
+#   gets blocked on a product name.
+#
 # REGISTERED IN: ~/.claude/settings.json under hooks.PreToolUse
 # MATCHER: "Bash" (only runs for Bash tool calls)
 
@@ -48,14 +55,30 @@ fi
 # that would false-positive on pattern matching. Extract only the message.
 MSG=""
 
-# Heredoc style: git commit -m "$(cat <<'EOF' ... EOF)"
-if echo "$COMMAND" | grep -qE "<<'?\"?EOF"; then
-    MSG=$(echo "$COMMAND" | awk "/<<['\"]?EOF['\"]?/{found=1; next} /^[[:space:]]*EOF/{found=0} found{print}")
+# Heredoc style, any delimiter: git commit -F - <<'MSG' ... MSG
+#
+# This matched only the literal word EOF until 2026-08-16, so a commit written
+# with any other delimiter was never examined and the attribution rule below
+# silently did not apply to it. The delimiter is now read from the redirection
+# itself and the body is taken up to the line that closes it.
+DELIM=$(echo "$COMMAND" | grep -oP "<<-?\s*['\"]?\K[A-Za-z_][A-Za-z0-9_]*" | head -1)
+if [ -n "$DELIM" ]; then
+    MSG=$(echo "$COMMAND" | awk -v d="$DELIM" '
+        !found && $0 ~ ("<<-?[[:space:]]*[\"'\'']?" d "[\"'\'']?[[:space:]]*$") { found=1; next }
+        found && $0 ~ ("^[[:space:]]*" d "[[:space:]]*$") { found=0; next }
+        found { print }
+    ')
 fi
 
 # -m "message" or -m 'message' style (if heredoc extraction found nothing)
+#
+# -z plus (?s) so the match spans newlines. Without it, grep worked line by line
+# and `head -1` kept only the first line, so every line after the subject of a
+# multi-line -m message went unchecked.
 if [ -z "$MSG" ]; then
-    MSG=$(echo "$COMMAND" | grep -oP "git\s+commit\s+.*?-m\s+['\"]?\K[^'\"]*" | head -1)
+    MSG=$(printf '%s' "$COMMAND" \
+        | grep -ozP "(?s)git\s+commit\s+.*?-m\s+['\"]\K[^'\"]*" \
+        | tr -d '\0')
 fi
 
 # --message="message" style
@@ -68,33 +91,51 @@ if [ -z "$MSG" ]; then
     exit 0
 fi
 
-# --- Step 6: Check for AI/Claude references in the commit message ---
-# Case-insensitive patterns that indicate AI attribution
-AI_PATTERNS=(
-    'claude[[:space:]]*code'
-    '\bclaude\b'
-    '\banthropic\b'
-    'generated[[:space:]]+with'
-    'co-authored-by.*claude'
-    'co-authored-by.*anthropic'
-    '\bai[[:space:]]+assistant\b'
-    '\bai-generated\b'
-    '\bllm\b'
-    'language[[:space:]]+model'
-)
-
-for pattern in "${AI_PATTERNS[@]}"; do
-    if echo "$MSG" | grep -qiE "$pattern"; then
-        MATCHED=$(echo "$MSG" | grep -oiE "$pattern" | head -1)
-        echo "BLOCKED: Commit message contains AI/Claude reference: \"$MATCHED\"" >&2
-        echo "" >&2
-        echo "Rule: NEVER include references to Claude Code, Claude, or AI in commit messages." >&2
-        echo "Commit messages should be professional and describe the technical changes only." >&2
-        echo "" >&2
-        echo "Please rewrite the commit message without AI attribution." >&2
-        exit 2  # EXIT 2 = block the command
+# --- Steps 6-7: Product-name scrub + AI/Claude pattern check ---
+# Shared with the native git commit-msg hook (scripts/git-hooks/commit-msg) so
+# the two enforcement points can never drift onto different pattern lists.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB="${SCRIPT_DIR}/../../scripts/git-hooks/lib/check-ai-attribution.sh"
+if [ -f "$LIB" ]; then
+    # shellcheck source=/dev/null
+    source "$LIB"
+    if ! RESULT=$(check_ai_attribution "$MSG"); then
+        echo "$RESULT" >&2
+        exit 2
     fi
-done
+else
+    echo "check-commit-message.sh: cannot find $LIB — refusing to skip the AI-attribution check silently." >&2
+    exit 2
+fi
+
+# --- Step 8: Issue-link convention (PRD 39 M2) ---
+# Every non-trivial commit should name the milestone issue it moves, so
+# "which commits moved this spec forward" is a lookup rather than a guess.
+#
+# WARN ONLY for now, deliberately. A gate at full strength on day one teaches
+# the --no-verify reflex, and this repo has already reached for it under load.
+# The flip to blocking happens after the adoption rate is measured; see
+# scripts/commit-link-rate.sh. Set COMMIT_LINK_ENFORCE=1 to block early.
+#
+# Accepted forms:
+#   Issue #12          the milestone this commit moves
+#   Closes #12         same, and closes it
+#   Trivial: <reason>  the explicit hatch, for typos and comment tweaks
+if [ -n "$MSG" ]; then
+    if ! echo "$MSG" | grep -qiE '(^|[^a-z])(issue|closes|fixes|refs) +#[0-9]+'; then
+        if ! echo "$MSG" | grep -qE '^[[:space:]]*Trivial:[[:space:]]*\S'; then
+            echo "No issue link. Add a trailer naming the milestone this commit moves:" >&2
+            echo "" >&2
+            echo "    Issue #<n>          the milestone issue" >&2
+            echo "    Trivial: <reason>   for a typo, comment, or formatting change" >&2
+            echo "" >&2
+            echo "Warning only for now; this becomes a block once adoption is measured." >&2
+            if [ -n "${COMMIT_LINK_ENFORCE:-}" ]; then
+                exit 2
+            fi
+        fi
+    fi
+fi
 
 # Commit message is clean - allow it
 exit 0
