@@ -146,8 +146,8 @@ Two things worth recording because they will bite the next edit:
    an untouched sibling element. Always pair a text replacement with
    `updateTextStyle`.
 2. The level bar is not one shape. It is a dark backing rectangle plus three
-   thin coloured rectangles, and the label's colour is separate again. A
-   duplicated slide inherits its source's level colour, so all five have to be
+   thin coloured rectangles, and the label's color is separate again. A
+   duplicated slide inherits its source's level color, so all five have to be
    set when a slide moves between levels.
 
 The pre-rebuild v5 survives as `devopsdays-atlanta-ignite-arcade-v5-with-notes`,
@@ -296,7 +296,7 @@ confident, specific, and false, and no amount of trust would have caught it.
 
 The run-through of 2026-09-10 was delivered against the old line ("Trust AI to
 do its job. But verify everything it does."). Slide 20's speaker notes now carry
-a cue that the line changed, because a practised close is exactly the thing that
+a cue that the line changed, because a practiced close is exactly the thing that
 comes out on autopilot.
 
 Export: `presentations/portland-ignite-v7.pdf`, twenty pages, gitignored.

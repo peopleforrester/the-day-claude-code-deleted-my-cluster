@@ -18,7 +18,7 @@ You already know CI. The extra for AI agents lives here.
 hooks/
 ├── claude-code/   agent lifecycle hooks
 └── git/           pre-commit + pre-push (tiered local enforcement)
-../workflows/      ci.yml (defence in depth for anyone without local hooks)
+../workflows/      ci.yml (defense in depth for anyone without local hooks)
 ```
 
 ## Read this before copying anything
@@ -33,7 +33,7 @@ knowing about for enforcement work, which did not exist in the earlier material:
 
 | Event | Why it matters |
 |---|---|
-| `PermissionRequest` | Fires when a call needs a permission decision, so a policy layer can answer it. Note it does **not** honour exit code 2; it needs a JSON decision. |
+| `PermissionRequest` | Fires when a call needs a permission decision, so a policy layer can answer it. Note it does **not** honor exit code 2; it needs a JSON decision. |
 | `PermissionDenied` | Fires when auto mode denies a call. Good audit surface for what the agent tried. |
 | `ConfigChange` | **Blocks a configuration change mid-session**, which closes the "agent edits its own guardrails" hole. Note the exception: it cannot block `policy_settings`. |
 | `PreModelSwitch` | Blocks a model switch. |
@@ -206,7 +206,7 @@ directory if you want them versioned across the team.
 
 ## 3. GitHub Actions workflow → `<repo>/.github/workflows/`
 
-Defence in depth for anyone who pushes without the local hooks
+Defense in depth for anyone who pushes without the local hooks
 installed. See [`../workflows/ci.yml`](../workflows/ci.yml). Drop it
 into your repo's `.github/workflows/` and adapt the test command to
 your runner.

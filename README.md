@@ -51,7 +51,7 @@ for the timeline, quoted from the session transcript.
   every enforcement artifact.
 - [**`hooks/`**](hooks/), the enforcement artifacts themselves: eight agent
   lifecycle hooks and two git hooks, copy-paste ready.
-- [**`workflows/`**](workflows/): CI and end-to-end workflows, the defence-in-depth
+- [**`workflows/`**](workflows/): CI and end-to-end workflows, the defense-in-depth
   backstop.
 - [**`guardrails-three-layer/`**](guardrails-three-layer/): the Ignite-length
   condensation: three layers, an install script each, and a Monday-morning rollout

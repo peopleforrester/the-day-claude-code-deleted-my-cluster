@@ -103,7 +103,7 @@ this document:
 | Event | Closes |
 |---|---|
 | `ConfigChange` | **Blocks a configuration change mid-session.** Several bypasses above are "the agent edits the hook or the deny-list", and this is the control for that. Its own bypass: it cannot block `policy_settings`. |
-| `PermissionRequest` | Lets a policy layer answer a permission decision directly. Note it does not honour exit code 2; it requires a JSON decision. |
+| `PermissionRequest` | Lets a policy layer answer a permission decision directly. Note it does not honor exit code 2; it requires a JSON decision. |
 | `PermissionDenied` | Records what the agent tried and was refused, which is the audit trail this stack otherwise lacks. |
 | `PreModelSwitch` | Blocks a model switch mid-session. |
 
@@ -125,7 +125,7 @@ is now available and unused here.
 | `pre-push` | 2 (any branch) | Secret scan + unit tests | `git push --no-verify`; bypassing the local hook by pushing from a different clone or CI environment. |
 | `pre-push` | 3 (main only) | e2e gate | Same as Tier 2; also any operator with admin override on branch protection can force-push to `main` directly. |
 
-### GitHub Actions: defence in depth for anyone without local hooks
+### GitHub Actions: defense in depth for anyone without local hooks
 
 The remote checks are the backstop for two failure modes: contributors
 who never installed the local hooks, and agents that found a way
@@ -191,7 +191,7 @@ skills are the agent's hands.
 | Piece | Path |
 |---|---|
 | Markdown PRD files | `prds/<number>-<slug>.md` |
-| GitHub issues (one per PRD) | labelled `prd:draft`, `prd:active`, `prd:done` |
+| GitHub issues (one per PRD) | labeled `prd:draft`, `prd:active`, `prd:done` |
 | Skill that drives the lifecycle | `claude-config/skills/prd/SKILL.md` |
 | Backing script | `claude-config/skills/prd/scripts/prd.sh` |
 

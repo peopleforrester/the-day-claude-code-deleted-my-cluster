@@ -75,7 +75,7 @@ Remaining:
   independent work.
 - Working tree: reconcile with `git status`.
 - Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
-  contents, not application behaviour.
+  contents, not application behavior.
 - CI: none configured.
 
 ## Phase history
