@@ -17,7 +17,7 @@ They are. The cluster these belong to was destroyed in August 2025 and rebuilt
 that September, so every token here authenticates against something that no longer
 exists.
 
-The redaction is not risk management. It is the repo practising what the talk
+The redaction is not risk management. It is the repo practicing what the talk
 argues. A talk about deterministic controls that ships live-looking credentials in
 its own evidence undercuts itself, and the reader cannot tell a dead token from a
 live one by looking. Redacting is the cheap deterministic control, applied to the

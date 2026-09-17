@@ -8,11 +8,11 @@ here; the material lives here.
 
 ## Given at
 
-| Event | Date | Format | What that version emphasised |
+| Event | Date | Format | What that version emphasized |
 |---|---|---|---|
 | DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | The incident, closing on three deterministic layers |
 | SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework |
-| DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | In preparation |
+| DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | The 2026 fleet incident added; closes on verification, not blast radius |
 
 The Ignite came first and the long form followed. The three-layer model is the
 five-minute condensation; the Eight Guardrails Framework is the full articulation.

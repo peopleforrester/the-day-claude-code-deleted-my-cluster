@@ -1,4 +1,4 @@
-<!-- ABOUTME: The correction sent to the DevOpsDays Portland organisers for the
+<!-- ABOUTME: The correction sent to the DevOpsDays Portland organizers for the
      ABOUTME: Ignite abstract, with both fields in full and the reasoning. -->
 
 # Portland 2026: Abstract Correction
@@ -25,7 +25,7 @@ clause says the word is wrong.
 
 ## Two rules this rewrite follows
 
-**Send both fields whole.** An earlier draft asked the organiser to find a
+**Send both fields whole.** An earlier draft asked the organizer to find a
 paragraph, swap a sentence, and edit another field by hand. That is work handed
 to someone doing it for forty speakers. Paste-ready beats precise instructions.
 
@@ -63,8 +63,8 @@ That was the original. The 2026 edition is worse. This time it wasn't one cluste
 This is a talk about nondeterministic systems and the illusion of AI understanding, and why "the AI knows what it's doing" is the most dangerous phrase in modern DevOps. I show the guardrails I now enforce religiously so it can't happen again, at one cluster or two hundred and fifty.
 Five minutes, twenty slides, and one very expensive lesson about handing AI agents infrastructure access, even for a minute. Plus the blame-filled post-mortem I ran afterward with Claude Code itself. Come for the disaster, stay for the wisdom.
 
-## Framing for the organisers
+## Framing for the organizers
 
 A correction of fact, not a change of topic. Same title, format, room and payoff.
 Do not explain how the error was found; it invites questions about the rest of
-the abstract and costs the organiser time they do not have.
+the abstract and costs the organizer time they do not have.

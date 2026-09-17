@@ -31,7 +31,7 @@ predecessor. Do not treat it as authoritative; its forensics were folded into
 |---|---|---|---|
 | DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | Delivered |
 | SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered |
-| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Upcoming |
+| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Delivered |
 
 ## The two incidents
 

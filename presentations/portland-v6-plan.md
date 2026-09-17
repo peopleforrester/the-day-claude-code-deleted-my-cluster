@@ -146,7 +146,7 @@ Two things worth recording because they will bite the next edit:
    an untouched sibling element. Always pair a text replacement with
    `updateTextStyle`.
 2. The level bar is not one shape. It is a dark backing rectangle plus three
-   thin coloured rectangles, and the label's color is separate again. A
+   thin colored rectangles, and the label's color is separate again. A
    duplicated slide inherits its source's level color, so all five have to be
    set when a slide moves between levels.
 
@@ -274,7 +274,7 @@ Verify the constraint before letting it override a documented convention.
 ## v7, 2026-09-10
 
 Same file id; the deck was renamed forward because a corrected copy had already
-gone to the organisers and a second thing called v6 would have been
+gone to the organizers and a second thing called v6 would have been
 unresolvable for them. See the versioning rule in
 `conference-management/speaking/devopsdays-portland/README.md`.
 
