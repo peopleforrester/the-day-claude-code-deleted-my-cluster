@@ -8,12 +8,25 @@
 # only artifact that might still exist. This script exists so the window does not
 # close unnoticed.
 #
-# Checked 2026-09-18: the channel below carries playlists for 2016, 2017, 2018,
-# 2019 and 2021, and nothing since. The last DevOpsDays Portland video published
-# there is five years old. Treat "videos will be up in a couple of weeks" as a
-# stated intention with a poor base rate behind it, and do not read silence from
-# this channel as proof the recording does not exist. It may land somewhere else
-# entirely, or not at all.
+# Checked 2026-09-18. The channel carries playlists for 2016, 2017, 2018, 2019
+# and 2021, and nothing since, which looks like five years of dormancy until you
+# check whether the conference actually ran. It mostly did not:
+#
+#   year  event?  videos?
+#   2016  yes     yes        2021  yes     yes
+#   2017  yes     yes        2022  yes     NO
+#   2018  yes     yes        2023  no      n/a
+#   2019  yes     yes        2024  no      n/a
+#   2020  yes     NO         2025  no      n/a
+#                            2026  yes     pending
+#
+# So the gap is a three-year hiatus (2023 to 2025) plus two events that were held
+# and not published (2020, a COVID year, and 2022). Of seven completed events,
+# five published. That is a reasonable base rate, not a poor one, and 2026 is a
+# comeback year where the organizers explicitly said videos are coming.
+#
+# The one real precedent for "event happened, nothing published" is 2022. Worth
+# knowing, not worth treating as the expected outcome.
 #
 # NOTE ON MATCHING: --flat-playlist returns upload_date as NA, so the year filter
 # matches the year in the video TITLE. DevOpsDays titles have carried the year
