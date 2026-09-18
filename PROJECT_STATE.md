@@ -79,8 +79,10 @@ the only substantive item left.
 
 ### Carried forward
 
-- Issue #5, a pre-talk article on the 2026 incident, is now necessarily a
-  post-talk piece. Rescope or close.
+- Issue #5 is now a post-talk article: the guardrails presented in the talk do
+  not cover the failure that actually happened. It is the same open question as
+  above, written for publication rather than resolved. Publication is owned by
+  `mrf-engagement-orchestrator`.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.
