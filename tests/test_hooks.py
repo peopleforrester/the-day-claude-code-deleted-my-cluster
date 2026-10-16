@@ -328,6 +328,136 @@ def test_pre_push_allows_force_push_to_feature_branch(diverged) -> None:
     assert result.returncode == 0, result.stderr
 
 
+# ─── hooks/git (tiered local enforcement) ──────────────────────────────
+
+TIERED_PRE_COMMIT = REPO_ROOT / "hooks" / "git" / "pre-commit"
+TIERED_PRE_PUSH = REPO_ROOT / "hooks" / "git" / "pre-push"
+ZERO_SHA = "0" * 40
+
+
+def stub_tools(tmp_path: Path, tools: dict[str, str]) -> dict[str, str]:
+    """Stand-in linters and test runners on PATH, each running the given bash body."""
+    bindir = tmp_path / "stubs"
+    bindir.mkdir(exist_ok=True)
+    for name, body in tools.items():
+        stub = bindir / name
+        stub.write_text(f"#!/usr/bin/env bash\n{body}\n")
+        stub.chmod(0o755)
+    return {"PATH": f"{bindir}{os.pathsep}{os.environ['PATH']}"}
+
+
+def test_tiered_pre_commit_with_nothing_staged(git_repo: Path) -> None:
+    result = run_hook(TIERED_PRE_COMMIT, cwd=git_repo)
+    assert result.returncode == 0
+    assert result.stdout == ""
+
+
+def test_tiered_pre_commit_skips_docs_only(git_repo: Path, tmp_path: Path) -> None:
+    (git_repo / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+    stage(git_repo, "notes.md", "prose\n")
+    result = run_hook(TIERED_PRE_COMMIT, cwd=git_repo, env=stub_tools(tmp_path, {"ruff": "exit 1"}))
+    assert result.returncode == 0, result.stdout
+    assert "Docs-only commit" in result.stdout
+
+
+@pytest.mark.parametrize("ruff_exit, expected", [(0, 0), (1, 1)])
+def test_tiered_pre_commit_python_lint(
+    git_repo: Path, tmp_path: Path, ruff_exit: int, expected: int
+) -> None:
+    (git_repo / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+    stage(git_repo, "mod.py", "x = 1\n")
+    env = stub_tools(tmp_path, {"ruff": f"exit {ruff_exit}", "mypy": "exit 0"})
+    result = run_hook(TIERED_PRE_COMMIT, cwd=git_repo, env=env)
+    assert result.returncode == expected, result.stdout
+    assert ("BLOCKED" in result.stdout) == bool(expected)
+
+
+def test_tiered_pre_commit_honours_skip_lint(git_repo: Path, tmp_path: Path) -> None:
+    (git_repo / "pyproject.toml").write_text("[project]\nname = 'x'\n")
+    (git_repo / ".skip-lint").touch()
+    stage(git_repo, "mod.py", "x = 1\n")
+    env = stub_tools(tmp_path, {"ruff": "exit 1", "mypy": "exit 0"})
+    result = run_hook(TIERED_PRE_COMMIT, cwd=git_repo, env=env)
+    assert result.returncode == 0, result.stdout
+    assert "[skip] Python lint (.skip-lint)" in result.stdout
+
+
+def python_project(repo: Path) -> None:
+    commit_file(repo, "pyproject.toml", "[project]\nname = 'x'\n")
+
+
+def test_tiered_pre_push_without_a_test_runner(git_repo: Path) -> None:
+    commit_file(git_repo, "notes.txt", "prose\n")
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo)
+    assert result.returncode == 0, result.stdout
+    assert "No test runner detected" in result.stdout
+
+
+@pytest.mark.parametrize("uv_exit, expected", [(0, 0), (1, 1)])
+def test_tiered_pre_push_unit_tests(
+    git_repo: Path, tmp_path: Path, uv_exit: int, expected: int
+) -> None:
+    python_project(git_repo)
+    env = stub_tools(tmp_path, {"uv": f"exit {uv_exit}"})
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo, env=env)
+    assert result.returncode == expected, result.stdout
+    assert ("unit tests failed" in result.stdout) == bool(expected)
+
+
+@pytest.mark.parametrize("marker", [".direct-push-allowed", ".skip-unit-tests"])
+def test_tiered_pre_push_opt_outs(git_repo: Path, tmp_path: Path, marker: str) -> None:
+    python_project(git_repo)
+    (git_repo / marker).touch()
+    env = stub_tools(tmp_path, {"uv": "exit 1"})
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo, env=env)
+    assert result.returncode == 0, result.stdout
+
+
+def test_tiered_pre_push_to_main_without_e2e_warns(git_repo: Path, tmp_path: Path) -> None:
+    python_project(git_repo)
+    head = git(git_repo, "rev-parse", "HEAD")
+    env = stub_tools(tmp_path, {"uv": "exit 0"})
+    stdin = f"refs/heads/main {head} refs/heads/main {ZERO_SHA}\n"
+    result = run_hook(TIERED_PRE_PUSH, stdin=stdin, cwd=git_repo, env=env)
+    assert result.returncode == 0, result.stdout
+    assert "Tier 3" in result.stdout
+    assert "No e2e tests found" in result.stdout
+
+
+@pytest.mark.parametrize("remote_ref, expected", [("refs/heads/main", 1), ("refs/heads/feature", 0)])
+def test_tiered_pre_push_e2e_gate_only_on_main(
+    git_repo: Path, tmp_path: Path, remote_ref: str, expected: int
+) -> None:
+    python_project(git_repo)
+    (git_repo / "tests" / "e2e").mkdir(parents=True)
+    head = git(git_repo, "rev-parse", "HEAD")
+    # Unit tests pass; only the e2e invocation fails.
+    env = stub_tools(tmp_path, {"uv": 'case "$*" in *tests/e2e/*) exit 1 ;; esac\nexit 0'})
+    stdin = f"refs/heads/x {head} {remote_ref} {ZERO_SHA}\n"
+    result = run_hook(TIERED_PRE_PUSH, stdin=stdin, cwd=git_repo, env=env)
+    assert result.returncode == expected, result.stdout
+    assert ("e2e tests failed" in result.stdout) == bool(expected)
+
+
+def test_tiered_pre_push_blocks_tracked_env_file(git_repo: Path) -> None:
+    commit_file(git_repo, ".env", "DEBUG=1\n")
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo)
+    assert result.returncode == 1
+    assert ".env files are tracked" in result.stdout
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="hooks/git/pre-push calls `grep -EnP`, which GNU grep rejects as conflicting "
+    "matchers, so the content secret scan never matches. Remove this marker once fixed.",
+)
+def test_tiered_pre_push_blocks_committed_secret(git_repo: Path) -> None:
+    commit_file(git_repo, "config.txt", f"aws_access_key_id = {FAKE_AWS_KEY}\n")
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo)
+    assert result.returncode == 1
+    assert "potential secret in: config.txt" in result.stdout
+
+
 # ─── scripts/check-talk-video.sh ───────────────────────────────────────
 
 CHECK_VIDEO = REPO_ROOT / "scripts" / "check-talk-video.sh"
