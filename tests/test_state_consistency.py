@@ -3,11 +3,36 @@
 
 from __future__ import annotations
 
+import pytest
+
+from tests.conftest import CANONICAL_OWNER_REPO, parse_github_owner_repo
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "git@github.com:peopleforrester/the-day-claude-code-deleted-my-cluster.git",
+        "https://github.com/peopleforrester/the-day-claude-code-deleted-my-cluster.git",
+        "https://github.com/peopleforrester/the-day-claude-code-deleted-my-cluster",
+    ],
+)
+def test_github_remote_urls_parse_to_canonical(url: str) -> None:
+    """Every GitHub URL form the fixture cross-checks yields the pinned owner/repo."""
+    assert parse_github_owner_repo(url) == CANONICAL_OWNER_REPO
+
+
+def test_non_github_remote_is_not_parsed() -> None:
+    """A local mirror path names no owner, so the fixture relies on the pinned value."""
+    assert parse_github_owner_repo("/var/lib/mirrors/1351782208.git") is None
+
 
 def test_project_state_owner_matches_remote(
     project_state: str, github_owner_repo: tuple[str, str]
 ) -> None:
-    """The GitHub owner mentioned in PROJECT_STATE.md must match `git remote`.
+    """PROJECT_STATE.md must name the canonical owner/repo.
+
+    The fixture pins it and cross-checks it against `origin` whenever
+    origin is a GitHub URL.
 
     The senior review caught the owner drifted from `michaelrishiforrester`
     (a stale guess) to the real `peopleforrester`. This test prevents the
@@ -17,7 +42,7 @@ def test_project_state_owner_matches_remote(
     canonical = f"{owner}/{repo}"
     assert canonical in project_state, (
         f"PROJECT_STATE.md does not mention the canonical "
-        f"owner/repo '{canonical}' from `git remote get-url origin`."
+        f"owner/repo '{canonical}' pinned in tests/conftest.py."
     )
 
     # No incorrect owner should remain anywhere in the file.
