@@ -33,6 +33,8 @@ pytest
 | `test_gitignore_coverage.py` | .gitignore covers deck/talk asset patterns; PDF-export policy is documented in README |
 | `test_readme_layout.py` | Every directory listed in README "Repository Layout" exists on disk |
 | `test_license.py` | LICENSE file present at repo root |
+| `test_shell_lint.py` | Every published shell script under `hooks/`, `scripts/` and `guardrails-three-layer/` parses with `bash -n` and is clean at shellcheck error severity (skipped when shellcheck is absent) |
+| `test_hooks.py` | The enforcement hooks return their documented verdicts: sensitive-file and PRD-issue blocks, the ABOUTME warning, the Layer 1 commit-msg, pre-commit and pre-push gates, and `check-talk-video.sh` against a stubbed `yt-dlp` |
 
 ## Adding tests
 

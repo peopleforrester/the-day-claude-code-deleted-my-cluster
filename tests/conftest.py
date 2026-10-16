@@ -52,8 +52,11 @@ def github_owner_repo(git_remote_url: str) -> tuple[str, str]:
     url = git_remote_url
     if url.startswith("git@"):
         path = url.split(":", 1)[1]
-    else:
+    elif "github.com/" in url:
         path = url.split("github.com/", 1)[1]
+    else:
+        # A local mirror or other non-GitHub clone names no owner to compare.
+        pytest.skip(f"origin is not a GitHub URL: {url}")
     if path.endswith(".git"):
         path = path[: -len(".git")]
     owner, repo = path.split("/", 1)
