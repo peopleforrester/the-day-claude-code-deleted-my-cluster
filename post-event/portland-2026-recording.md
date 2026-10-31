@@ -34,6 +34,13 @@ in [`portland-2026-transcript.md`](portland-2026-transcript.md) (issue #25). It
 is raw diarization with approximate speaker labels, so it cross-checks the
 captions below rather than replacing the audio.
 
+**A run-through from the same day is collected too.** `My recording 212.mp3`,
+"run two", was routed to four repos (`Unleash_an_Agent_Watch_It_Burn` in full)
+and is not known to be committed in any. It is in
+[`portland-2026-run-two-transcript.md`](portland-2026-run-two-transcript.md)
+(issue #35): a false start, then a full restart of about 940 words. It carries
+no timestamps, and it is not established that it is the run-through cited below.
+
 ## The watch that found it, and the false report it made first
 
 The weekly check in `scripts/check-talk-video.sh` mailed "Portland Ignite video
@@ -107,7 +114,9 @@ All beats that were heard came in deck order.
 | 19 | Who's the problem | Yes: markers, puppy, "I am" | 4:23 |
 | 20 | Don't trust AI, verify everything | **Not heard**; the repo plug and a different close instead | 4:52 |
 
-The issue records the 2026-09-10 run-through as 20 of 20 beats in deck order.
+The issue records the 2026-09-10 run-through as 20 of 20 beats in deck order;
+which recording that came from is not recorded (see
+[`portland-2026-run-two-transcript.md`](portland-2026-run-two-transcript.md)).
 The room heard 16 of the 20, one of them (12) without its silence. Slide 7's
 silence was talked over, and 9, the three-layers frame on 14, and the closing
 line on 20 were lost.

@@ -258,3 +258,27 @@ The sample in the old `hooks/README.md` section was wrong as well: with both
 heredocs delimited by `EOF`, the old hook read both bodies and caught the
 message. The bypass needs the commit's heredoc under a different delimiter, so
 the sample and its test now use `MSG`.
+## 2026-10-31 · The run-two transcript is collected from the full copy (#35)
+
+`My recording 212.mp3`, a run-through on the day of the Portland Ignite,
+was routed by the transcription pipeline to four repos, each getting only the
+sections it matched, and a fifth holds a copy of one. None is known to be
+committed. `Unleash_an_Agent_Watch_It_Burn`, public, has the whole run and no
+trace of it on any branch or in any history on GitHub; `conference-management`
+and the archived KubeCon BurritoBot repo ignore `transcripts/`; the archived
+`walkthrough-agenticburn` (first section only) and the private Neo4j edition
+(a byte copy of the Watch It Burn file) cannot have their history read from
+here. The header lists all five. So it is collected as `post-event/portland-2026-run-two-transcript.md`, the
+way #25 collected the delivery: header above a marker, original below, size
+and sha256 pinned by the suite.
+
+The copy collected is the `Unleash_an_Agent_Watch_It_Burn` one, because it is
+the whole run, in a public repo, and every other copy's body is it or a part
+of it. Their sizes and hashes are recorded in the header, not their text,
+since they add nothing.
+
+The header does not claim this is the run-through issue #8 cited as 20 of 20
+beats at about 5:48. Its restart is about 940 words, about 6:17 at that rate,
+and a second run-through the same day, `My recording 211.mp3`, about 900 words
+and also uncommitted, is the closer match. That one is left for its own issue
+rather than collected here, since #35 asked about 212 only.

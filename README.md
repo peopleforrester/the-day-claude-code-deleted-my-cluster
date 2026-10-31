@@ -87,7 +87,9 @@ for the timeline, quoted from the session transcript.
   what the room actually got, set against the cue card
   ([`portland-2026-recording.md`](post-event/portland-2026-recording.md)), and
   the raw transcript of the Portland delivery from a recording made in the room
-  ([`portland-2026-transcript.md`](post-event/portland-2026-transcript.md)).
+  ([`portland-2026-transcript.md`](post-event/portland-2026-transcript.md)), and
+  of a run-through earlier that day
+  ([`portland-2026-run-two-transcript.md`](post-event/portland-2026-run-two-transcript.md)).
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
 - [**`e2e/`**](e2e/): the same claims checked against live services: the linked
   recordings and the video check, run against YouTube.
