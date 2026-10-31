@@ -170,10 +170,24 @@ was on screen.
 - `Commit:` `exact` or `approximate`, and why
 - `Evidence:` where the deck version and the commit come from
 
+Write the annotation to `delivery-tags/<event-id>.txt` and commit it, so the tag
+can be rebuilt from this repo if the clone that made it is lost before the
+push. Tag with a fixed tagger date and `--cleanup=verbatim`, so the tag object
+is the file byte for byte:
+
 ```bash
-git tag -a delivered/<event-id> <commit> -F <message-file>
+GIT_COMMITTER_DATE='<epoch> +0000' git tag -a --cleanup=verbatim \
+  delivered/<event-id> <commit> -F delivery-tags/<event-id>.txt
 git push origin delivered/<event-id>
 ```
+
+Without a clone that can push, the same object is made on GitHub with
+`gh api repos/peopleforrester/the-day-claude-code-deleted-my-cluster/git/tags`
+(fields `tag`, `object` as the full commit SHA, `type=commit`, `message` read
+with `-F message=@delivery-tags/<event-id>.txt`, and `tagger[name]`,
+`tagger[email]`, `tagger[date]` as the local tag has them), then `.../git/refs`
+with `ref=refs/tags/delivered/<event-id>` and `sha` as the tag object's SHA.
+GitHub refuses the ref if the object it made differs from the local one.
 
 Then open an issue on `peopleforrester/conference-knowledge` asking for the
 tag to be recorded as the event's `delivered_tag`, with this repo in the event's
@@ -192,7 +206,16 @@ long as its body or a comment names the tag and the event id.
 
 Atlanta and Portland were tagged retroactively on 2026-10-31 (issue #9), and
 SREday Austin the same day (issue #30). Each tag was made in a run's clone; none
-is on the GitHub remote yet, and the push is escalated from each issue. All
+is on the GitHub remote yet, and the push is escalated from each issue. #9's
+clone was lost before its push ran, so Atlanta and Portland were recreated
+under issue #44 from `delivery-tags/`, tagger `hecaton <hecaton@localhost>`
+at `2026-10-31T16:00:00Z` (`1793462400 +0000`). Their push is escalated from
+issue #44 as `gh api` calls, and the tag objects it must produce are:
+
+- `delivered/devopsdays-atlanta-2026`: tag object `578f7ab1e0f360501b72018fd7c1e0f093421253`
+- `delivered/devopsdays-portland-2026`: tag object `1ba778c6824f62cee8b5ef9fdf8fff3894c35401`
+
+SREday Austin's annotation is in #30's escalation, not in `delivery-tags/`. All
 three are reported on conference-knowledge#205: Atlanta and Portland in its
 body, SREday Austin in a comment added from #30, because no separate issue was
 filed for it. That issue waits on the push, since `check_registry.py` reports a

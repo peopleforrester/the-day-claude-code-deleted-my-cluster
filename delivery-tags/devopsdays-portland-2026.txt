@@ -1,0 +1,7 @@
+Delivered at DevOpsDays Portland 2026
+
+Event: DevOpsDays Portland 2026, registry id devopsdays-portland-2026
+Date: 2026-09-10, 13:50 PDT (UTC-7), Ballroom, Smith Memorial Student Union, Portland, Ignite, 5 minutes, 20 auto-advancing slides
+Deck: devopsdays-portland-ignite-arcade-v7-with-notes, Google Slides 1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54, last modified 2026-09-10T16:20:58Z
+Commit: exact. 3c3cb28 is the last commit before the 13:50 PDT slot, committed at 13:48 PDT; the next commit, 705f49b, is dated 2026-09-17.
+Evidence: The deck was renamed to v7 and re-sent to the organizers at 10:00 PDT on the day with PDF and PPTX attached, and they confirmed the update at 10:51 PDT. Drive shows the file's last edit at 16:20:58Z, before that email, and no change since. The slot and room are from conference-knowledge events/registry.yaml; commit times are from this repo's history. presentations/portland-v6-plan.md records what changed from v6. Tagged retroactively (#9), recreated after the first tag was lost unpushed (#44).

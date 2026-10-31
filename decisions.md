@@ -375,3 +375,33 @@ worked out from the fifteen-second advance. The passage at about 4:30 that
 echoes JUNIOR DEV's "WHO'S RESPONSIBLE? YOU." is noted as possible, not
 established, because neither the room transcript nor anything readable here
 carries its timing.
+## 2026-10-31 · Delivery-tag annotations are committed, and #9's tags are rebuilt from them (#44)
+
+#9 made `delivered/devopsdays-atlanta-2026` and
+`delivered/devopsdays-portland-2026` in its own clone and escalated the push.
+The clone was removed before the push ran, so the tags existed nowhere, while
+AGENTS.md's table listed them. A tag held only in a run's clone is lost with
+it, and its annotation with it, since the annotation was never committed.
+
+Each annotation now lives in `delivery-tags/<event-id>.txt`, and the tag is
+made with `--cleanup=verbatim` and a fixed tagger, so the tag object is a
+function of the file, the commit and the tagger line alone. Atlanta (on
+`e8d5a60`, approximate) and Portland (on `3c3cb28`, exact) are recreated that
+way with tagger `hecaton <hecaton@localhost>`, the identity this repo's run
+commits carry, at `2026-10-31T16:00:00Z`. The text follows #9's report and
+AGENTS.md's evidence, re-read on 2026-10-31: the Drive modified times of both
+decks, the Atlanta link mailed at 21:57:11Z, the Portland v7 email at 10:00 PDT
+and its 10:51 PDT confirmation, and the registry's slots. #9's tag objects
+(`928b7412`, `b9bd3914`) are not reproduced; their text and tagger date are
+not recorded anywhere, so the new objects have new SHAs, which AGENTS.md
+records.
+
+The push is escalated as `gh api` calls to `git/tags` and `git/refs`, which
+need no clone. The ref call names the tag object SHA computed here, so if
+GitHub were to write the object differently the ref is refused rather than
+pointing at an object that does not match the repo.
+`tests/test_delivery_tag_annotations.py` rebuilds each object from the file
+and checks it against that SHA, and holds each file to its table row.
+
+SREday Austin's tag (#30) is left as #30 escalated it. Writing a file for it
+here would make a second, different tag object for the same name.

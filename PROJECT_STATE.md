@@ -138,6 +138,10 @@ mails on every Monday's run.
   approximate (#30): the last commit before the 17:30 UTC slot, but the
   recording shows a deck correction that only `9c7291e` (18:03 UTC) carries.
   The tag is in the run's clone; its push is escalated
+- 2026-10-31 #9's Atlanta and Portland tags, lost with the clone that made
+  them, recreated from annotations committed in `delivery-tags/` with a fixed
+  tagger date (#44). Their push is escalated as `gh api` calls that must make
+  the tag objects AGENTS.md records
 - 2026-10-31 video-check cron confirmed running after the events/ to talks/
   move: the tracked line resolves the repo through `sk-repo`, and it mailed at
   09:17 on 10-05, 10-12, 10-19 and 10-26. The script's install comment, the last

@@ -1,0 +1,7 @@
+Delivered at DevOpsDays Atlanta 2026
+
+Event: devopsdays Atlanta 2026, registry id devopsdays-atlanta-2026
+Date: 2026-04-21, in the Ignites block 13:00 to 13:30 EDT (Michael's place in it is not recorded), The Historic Academy of Medicine, Atlanta (room not recorded), Ignite, 5 minutes, 20 auto-advancing slides
+Deck: devopsdays-atlanta-ignite-v5-repo-with-notes, Google Slides 1F8QaWE3-JETvsnklZAZwsK-0KCMURkHzW1AxYKSmFpw, last modified 2026-04-20T21:54:07Z
+Commit: approximate. This repo did not hold the Atlanta material on 2026-04-21; its only commit then was the SREday Texas scaffold, 1979c17, and the Ignite lived in peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite. e8d5a60 is the first commit here that carries what Atlanta delivered: the incident forensics and the three-layer install.
+Evidence: The deck link was mailed to the organizer on 2026-04-20 at 16:57 CDT (21:57:11Z), three minutes after the file's last edit; Drive shows no change since. The PDF export of the same deck sits at the root of the Atlanta repo. Nothing records which copy the organizers put on screen. The slot is from conference-knowledge events/registry.yaml. The deck named devopsdays-atlanta-ignite-arcade-v5-with-notes (1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk) is a 2026-09-02 copy, not the file presented. Tagged retroactively (#9), recreated after the first tag was lost unpushed (#44).

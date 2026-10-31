@@ -90,6 +90,8 @@ for the timeline, quoted from the session transcript.
   ([`portland-2026-transcript.md`](post-event/portland-2026-transcript.md)), and
   of a run-through earlier that day
   ([`portland-2026-run-two-transcript.md`](post-event/portland-2026-run-two-transcript.md)).
+- [**`delivery-tags/`**](delivery-tags/): the annotation of each `delivered/`
+  tag that marks a delivery of this talk, kept so the tag can be rebuilt.
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
 - [**`e2e/`**](e2e/): the same claims checked against live services: the linked
   recordings and the video check, run against YouTube.
