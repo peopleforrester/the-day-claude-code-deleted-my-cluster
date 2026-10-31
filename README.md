@@ -11,8 +11,14 @@ here; the material lives here.
 | Event | Date | Format | What that version emphasized | Recording |
 |---|---|---|---|---|
 | DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | The incident, closing on three deterministic layers | [video](https://www.youtube.com/watch?v=ts0ZnPDrBRI) |
-| SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework | none linked |
+| SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework | [video](https://www.youtube.com/watch?v=EoQ-knQKMek) |
 | DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | The 2026 fleet incident added; closes on verification, not blast radius | [video](https://www.youtube.com/watch?v=rUJ07SnFsXA) |
+
+The speaking record itself (events, dates, slots, rooms and recordings) is
+kept in `peopleforrester/conference-knowledge`, `events/registry.yaml`, under the
+ids `devopsdays-atlanta-2026`, `sreday-austin-2026` and
+`devopsdays-portland-2026`. This table is its public rendering; where the two
+disagree, the registry wins.
 
 The Ignite came first and the long form followed. The three-layer model is the
 five-minute condensation; the Eight Guardrails Framework is the full articulation.

@@ -27,11 +27,15 @@ predecessor. Do not treat it as authoritative; its forensics were folded into
 
 ## Delivery record
 
-| Event | Date | Format | Status | Recording |
-|---|---|---|---|---|
-| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | Delivered | <https://www.youtube.com/watch?v=ts0ZnPDrBRI> |
-| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered | none linked |
-| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Delivered | <https://www.youtube.com/watch?v=rUJ07SnFsXA> |
+Conference information is not kept here. Which events this talk was given at,
+their dates, slots, rooms and recordings live in conference-knowledge
+(`~/repos/conferences/conference-knowledge`), `events/registry.yaml`, under
+`devopsdays-atlanta-2026`, `sreday-austin-2026` and `devopsdays-portland-2026`.
+Read them there. To change them, file an `agent-task` issue on
+`peopleforrester/conference-knowledge`; never write into that checkout.
+
+The README's "Given at" table is the public rendering of that record, pinned by
+`tests/test_event_details.py`. The delivery tags are in `AGENTS.md`.
 
 ## The two incidents
 

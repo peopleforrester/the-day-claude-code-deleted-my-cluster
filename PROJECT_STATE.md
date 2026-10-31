@@ -35,19 +35,17 @@ DevOpsDays Atlanta ignite repo.
 
 ## Delivery record
 
-| Event | Date | Format | Status | Recording |
-|---|---|---|---|---|
-| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite | Delivered | <https://www.youtube.com/watch?v=ts0ZnPDrBRI> |
-| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered | none linked |
-| DevOpsDays Portland 2026 | 2026-09-10 13:50 | 5-minute Ignite | Delivered | <https://www.youtube.com/watch?v=rUJ07SnFsXA> |
+Kept in conference-knowledge, `events/registry.yaml`, under
+`devopsdays-atlanta-2026`, `sreday-austin-2026` and `devopsdays-portland-2026`:
+dates, slots, rooms and recordings. The README's "Given at" table is the public
+rendering. This repo keeps no other copy (#13).
 
 ## Next step
 
 **Portland is delivered.** Nothing in this repo is blocking.
 
-Delivered 2026-09-10, 13:50 PT, Ballroom, fourth of five in a 25-minute Ignite
-block. Twenty slides, fifteen-second auto-advance, timed at 4:49 against a
-five-minute slot.
+The Ignite ran twenty slides on a fifteen-second auto-advance, timed at 4:49
+against a five-minute slot. Its slot and room are in the registry.
 
 ### The one open question
 
@@ -146,3 +144,10 @@ mails on every Monday's run.
   stranded uncommitted in the archived `walkthrough-agenticburn`, collected as
   `post-event/portland-2026-transcript.md` with its provenance and hash; the
   suite pins the original bytes (#25)
+- 2026-10-31 conference-knowledge made the source of truth for conference
+  information (#13). The delivery tables in CLAUDE.md and here replaced with
+  pointers to its `events/registry.yaml`; the README's "Given at" table kept as
+  the public rendering, with the SREday recording the registry already had
+  (`EoQ-knQKMek`, checked against YouTube's oEmbed) replacing "none linked".
+  What the registry lacks (both Ignite recordings, this repo in SREday's
+  `repos`) handed off to conference-knowledge in an `agent-task` issue

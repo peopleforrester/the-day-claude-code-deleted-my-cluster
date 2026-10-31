@@ -1,5 +1,14 @@
 Test command: `uv run pytest -q`
 
+## Where things live
+
+- Conferences, dates, slots, rooms, recordings, contacts and travel:
+  conference-knowledge (`~/repos/conferences/conference-knowledge`),
+  `events/registry.yaml` and `speaking/`. Read it there and keep no copy here;
+  to change it, file an `agent-task` issue on `peopleforrester/conference-knowledge`.
+- The talk itself (content, argument, abstracts, research): this repo, indexed
+  from talks-knowledge (`~/repos/talks/talks-knowledge`).
+
 ## Delivery tags
 
 Every delivery of this talk is recorded as an annotated git tag, not as a fork
