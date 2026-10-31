@@ -60,6 +60,10 @@ for the timeline, quoted from the session transcript.
   canonical text is [`abstract/abstract.md`](abstract/abstract.md).
 - [**`presentations/`**](presentations/): decks. The SREday PPTX is the editable
   source; the Atlanta PDF is the Ignite cut.
+- [**`post-event/`**](post-event/): material written after a delivery.
+  [`the-guardrails-did-not-cover-it/`](post-event/the-guardrails-did-not-cover-it/blog.md)
+  is the post-Portland article on the verification gap, with social variants
+  and pull quotes, ready for `mrf-engagement-orchestrator` to publish.
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
 
 ## Just saw the talk

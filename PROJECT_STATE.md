@@ -79,10 +79,13 @@ the only substantive item left.
 
 ### Carried forward
 
-- Issue #5 is now a post-talk article: the guardrails presented in the talk do
-  not cover the failure that actually happened. It is the same open question as
-  above, written for publication rather than resolved. Publication is owned by
-  `mrf-engagement-orchestrator`.
+- Issue #5's post-talk article is written:
+  `post-event/the-guardrails-did-not-cover-it/` (`blog.md`, `social.md`,
+  `quotes.md`). It opens on the false report, states the gap in the three layers
+  presented in Portland, and closes on the open question above without
+  resolving it. `tests/test_post_event_article.py` holds it to the incident
+  record. Publication is owned by `mrf-engagement-orchestrator`, whose calendar
+  row `teaser-devopsdays-portland-2026` still needs re-dating and renaming.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.
@@ -111,3 +114,6 @@ the only substantive item left.
   a corrected copy had already reached the organizers
 - 2026-09-15 em-dashes removed from authored prose, 19 pre-existing dead links
   repaired, American spellings applied per llm-coding-workflow#153
+- 2026-10-31 post-talk article on the verification gap written for #5; the
+  incident timeline's "fifteen minutes" at 19:58:43 corrected to twelve after the
+  150 claim, fifteen after the false report began
