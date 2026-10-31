@@ -14,12 +14,13 @@ from `../hooks/git/` installed.
 for production repos: when you adapt this to your own project, add
 those steps before the test run.
 
-`e2e.yml` is a structural placeholder: it has the right shape and
-trigger (PR to main, separate gate) but runs no e2e-marked tests, so
-the run exits cleanly noting the gate is present-but-empty. In your
-repo, replace the test command with your real e2e suite. This repo's
-own e2e suite is in [`../e2e/`](../e2e/), declared as the
-`E2E command:` in [`../AGENTS.md`](../AGENTS.md).
+`e2e.yml` has the shape and trigger of the gate (PR to main, a
+separate job) and runs `uv run pytest tests/e2e/ -q` as a stand-in.
+Replace that command with your real e2e suite. There is no fallback:
+any failure turns the gate red, and so does a suite that finds no
+tests (pytest exits 5), so the gate stays red until you give it a
+suite. This repo's own e2e suite is in [`../e2e/`](../e2e/), declared
+as the `E2E command:` in [`../AGENTS.md`](../AGENTS.md).
 
 ### Install
 

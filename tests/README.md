@@ -42,6 +42,7 @@ pytest
 | `test_hooks.py` | The enforcement hooks return their documented verdicts: sensitive-file and PRD-issue blocks, the ABOUTME warning, the Layer 1 commit-msg, pre-commit and pre-push gates, the tiered `hooks/git` pre-commit and pre-push against stubbed linters and test runners, and `check-talk-video.sh` against a stubbed `yt-dlp`; the PostCompact re-anchor block on a 20,000-file dirty tree, and the commit-message checks on commands and messages longer than a pipe buffer, the attribution library under pipefail (#34) |
 | `test_guardrails_kit.py` | The kit's `install-layer-2.sh` applies the ValidatingAdmissionPolicy when a long `kubectl api-resources` listing names it, or when discovery partly fails, and skips it when absent; `evaluate.sh` passes the Falco, ai-workspace and workflow checks and reaches the cluster-admin audit when each listing matches early and runs on long past it. kubectl, gh and pre-commit are stubbed (#34) |
 | `test_e2e_declaration.py` | AGENTS.md declares the E2E command exactly once, its suite in `e2e/` sits outside the Test command's `testpaths`, and the `e2e` group pins `yt-dlp` |
+| `test_e2e_template.py` | Each `workflows/` template's pytest step, run under GitHub's default `bash -e` against a stubbed `uv`, fails when the suite exits 1, 2, 4 or 5 (no tests collected) and passes on 0; no step carries `\|\|`, `set +e`, `exit 0` or `continue-on-error`, and `e2e.yml`'s pytest command has no fallback (#42) |
 
 ## The E2E suite
 

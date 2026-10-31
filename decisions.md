@@ -337,3 +337,21 @@ commit. It is in the E2E command because it needs the network.
 
 `e2e.yml`'s placeholder step, which runs `pytest -m e2e` over `tests/` and
 echoes on failure, is unchanged; it is a template's stand-in, outside this fix.
+## 2026-10-31 · The e2e.yml template has no fallback, so an empty suite fails too (#42)
+
+`workflows/e2e.yml` ran `uv run pytest tests/ -m "e2e" -q --no-header || echo
+...`, so a reader who copied it got a gate that could never go red. #42 offered
+two fixes: let pytest's exit 5 ("no tests collected") be the only pass, or drop
+the fallback and have readers put their own suite in its place. This takes the
+second. A gate that passes with nothing behind it is the failure the talk is
+about, a status report with nothing behind it, and exit 5 as a pass keeps that
+for any reader whose suite moves or whose marker stops matching. So the step
+runs `uv run pytest tests/e2e/ -q` as a stand-in and goes red on any non-zero
+exit, an empty or missing suite included, until it is replaced. The template's
+header and `workflows/README.md` say so.
+
+`tests/test_e2e_template.py` holds it there by behaviour, not only by text: it
+runs each `workflows/` template's pytest step under GitHub's default `bash -e`
+with `uv` stubbed to exit 1, 2, 4 and 5, and requires the step to fail each
+time and pass on 0. `ci.yml` is held to the same tests, since a reader copies
+both. Six of its cases fail against the old template.

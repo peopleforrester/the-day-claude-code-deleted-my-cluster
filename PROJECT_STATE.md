@@ -262,3 +262,9 @@ mails on every Monday's run.
   checkout credentials dropped. `tests/test_workflow_templates.py` now covers
   them, and `e2e/test_action_pins_live.py` checks every pin in both sets is the
   commit its version tag names on GitHub
+- 2026-10-31 `workflows/e2e.yml` loses its `|| echo` fallback (#42), which
+  turned every e2e failure, not only "no tests collected", into a pass. The
+  template runs `uv run pytest tests/e2e/ -q` as a stand-in with no fallback,
+  so it is red until a reader puts their suite in its place.
+  `tests/test_e2e_template.py` runs each `workflows/` test step against a
+  stubbed `uv` and requires a red step for every non-zero exit, 5 included

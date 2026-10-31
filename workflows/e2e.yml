@@ -3,12 +3,11 @@ name: e2e
 # Tier 3 of the tiered enforcement model — fires only on PR to main.
 # Mirrors the e2e.yml referenced on slide 11 of the talk deck.
 #
-# This is a starter template. In a real production repo, the steps
-# below would run integration / end-to-end tests that hit the actual
-# surface (network, real services, real infrastructure). For the talk
-# repo itself there are no e2e tests yet — the workflow runs the
-# consistency suite under a marker filter so it always exits cleanly
-# while still demonstrating the trigger shape and gate behavior.
+# This is a starter template. Replace the test command in the last
+# step with your repo's e2e suite: integration / end-to-end tests that
+# hit the actual surface (network, real services, real infrastructure).
+# Until you do, the gate is red, because a gate that passes with no
+# suite behind it gates nothing.
 
 on:
   pull_request:
@@ -36,14 +35,13 @@ jobs:
 
       - run: uv sync --locked --group dev
 
-      - name: Run e2e tests (or pass if none defined)
+      - name: Run e2e tests
         run: |
-          # Adapt this command to your repo's e2e suite. Common shapes:
+          # Replace this command with your repo's e2e suite. Common shapes:
           #   uv run pytest tests/e2e/ -x -q
           #   npm run test:e2e
           #   ./scripts/e2e-test.sh
           #
-          # The talk repo currently has no e2e-marked tests; the suite
-          # exits cleanly with "no tests collected" under the marker.
-          uv run pytest tests/ -m "e2e" -q --no-header || \
-            echo "No e2e-marked tests yet — this gate is a structural placeholder."
+          # There is no fallback on purpose. Any non-zero exit fails the
+          # gate, including pytest's exit 5, "no tests collected".
+          uv run pytest tests/e2e/ -q
