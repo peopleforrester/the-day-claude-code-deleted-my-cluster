@@ -44,55 +44,48 @@ fi
 # --- Step 3: Extract the command ---
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
-# --- Step 4: Only check git commit commands ---
-# Match "git commit" anywhere in the command (handles chained commands with &&)
-if ! grep -qE 'git\s+commit' <<< "$COMMAND"; then
-    exit 0  # Not a git commit - allow it
-fi
-
-# --- Step 5: Extract the commit message, not the full command ---
-# The full command may contain file paths (e.g., git add claude-config/)
-# that would false-positive on pattern matching. Extract only the message.
-MSG=""
-
-# Heredoc style, any delimiter: git commit -F - <<'MSG' ... MSG
+# --- Step 4: Find the commit's own message, heredoc-aware ---
 #
-# This matched only the literal word EOF until 2026-08-16, so a commit written
-# with any other delimiter was never examined and the attribution rule below
-# silently did not apply to it. The delimiter is now read from the redirection
-# itself and the body is taken up to the line that closes it.
+# Deciding what to scan by pattern-matching the raw command failed three ways
+# (llm-coding-workflow#154), all reproduced:
 #
-# Every grep here reads a captured string rather than a pipe, and the first
-# match is cut from the captured text rather than by head: a writer piped into
-# grep -q or head dies of SIGPIPE once the reader has its answer (#34).
-DELIM=$(grep -oP "<<-?\s*['\"]?\K[A-Za-z_][A-Za-z0-9_]*" <<< "$COMMAND" || true)
-DELIM=${DELIM%%$'\n'*}
-if [ -n "$DELIM" ]; then
-    MSG=$(echo "$COMMAND" | awk -v d="$DELIM" '
-        !found && $0 ~ ("<<-?[[:space:]]*[\"'\'']?" d "[\"'\'']?[[:space:]]*$") { found=1; next }
-        found && $0 ~ ("^[[:space:]]*" d "[[:space:]]*$") { found=0; next }
-        found { print }
-    ')
-fi
-
-# -m "message" or -m 'message' style (if heredoc extraction found nothing)
+#   1. The delimiter was taken with `head -1` from anywhere in the command, so
+#      a decoy heredoc earlier in the line supplied the scanned text.
+#   2. Because of (1) it FAILED OPEN: attribution in the real message passed
+#      whenever another heredoc came first.
+#   3. It fired on commands running no git at all, because the literal string
+#      `git commit` appeared inside a heredoc body as documentation. That one
+#      blocked a `cat` writing these very tests on 2026-09-24.
 #
-# -z plus (?s) so the match spans newlines. Without it, grep worked line by line
-# and `head -1` kept only the first line, so every line after the subject of a
-# multi-line -m message went unchecked.
-if [ -z "$MSG" ]; then
-    MSG=$(printf '%s' "$COMMAND" \
-        | grep -ozP "(?s)git\s+commit\s+.*?-m\s+['\"]\K[^'\"]*" \
-        | tr -d '\0')
+# The helper walks the command tracking heredoc extent, so a line is known to
+# be shell or body and only shell lines can carry an invocation. It ships in
+# lib/ beside this script, as the attribution library does (hooks/README.md).
+# Synced from the live working set on 2026-10-31 (#38), when the copy published
+# here still took the first delimiter; that version is in the history at
+# 3c3cb28, the commit tagged delivered/devopsdays-portland-2026.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXTRACT="${SCRIPT_DIR}/lib/extract_commit_message.py"
+
+if [ ! -f "$EXTRACT" ]; then
+    echo "check-commit-message.sh: cannot find $EXTRACT — refusing to skip the AI-attribution check silently." >&2
+    exit 2
 fi
 
-# --message="message" style
-if [ -z "$MSG" ]; then
-    MSG=$(grep -oP -- "--message=['\"]?\K[^'\"]*" <<< "$COMMAND" || true)
-    MSG=${MSG%%$'\n'*}
-fi
+set +e
+MSG=$(printf '%s' "$COMMAND" | python3 "$EXTRACT")
+EXTRACT_STATUS=$?
+set -e
 
-# If extraction failed entirely, skip check rather than false-positive
+case "$EXTRACT_STATUS" in
+    1) exit 0 ;;   # no git commit in this command
+    2) exit 0 ;;   # a commit runs but carries no inline message (editor, -F file)
+    0) ;;
+    *)
+        echo "check-commit-message.sh: message extraction failed (status $EXTRACT_STATUS)." >&2
+        exit 2
+        ;;
+esac
+
 if [ -z "$MSG" ]; then
     exit 0
 fi
@@ -106,7 +99,6 @@ fi
 # Until 2026-10-31 this looked for ../../scripts/git-hooks/lib/, the path in the
 # working set it was synced from. Nothing at that path was published, so an
 # installed copy refused every commit whose message it could read (#18).
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="${SCRIPT_DIR}/lib/check-ai-attribution.sh"
 if [ -f "$LIB" ]; then
     # shellcheck source=/dev/null

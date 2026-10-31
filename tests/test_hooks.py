@@ -180,8 +180,8 @@ def test_check_commit_message_warns_without_issue_link() -> None:
 FILLER = "".join(f"filler line {i}\n" for i in range(200_000))
 
 
-def test_check_commit_message_reads_first_heredoc_of_a_long_command() -> None:
-    # Every later `<<` is another delimiter match; the first one is the message's.
+def test_check_commit_message_reads_the_commit_heredoc_of_a_long_command() -> None:
+    # Every later `<<` is another delimiter match; the commit's comes first.
     command = (
         "git commit -F - <<'MSG'\nFix the retry loop\n\nGenerated with Claude Code\nMSG\n"
         + "".join(f"cat <<D{i}\n" for i in range(100_000))
@@ -191,7 +191,7 @@ def test_check_commit_message_reads_first_heredoc_of_a_long_command() -> None:
     assert 'AI/Claude reference: "Claude Code"' in result.stderr
 
 
-def test_check_commit_message_reads_first_long_option_of_a_long_command() -> None:
+def test_check_commit_message_reads_a_long_option_of_a_long_command() -> None:
     command = 'git commit --message="Generated with Claude Code"' + " --message=x" * 100_000
     result = run_hook(CHECK_COMMIT, {"tool_name": "Bash", "tool_input": {"command": command}})
     assert result.returncode == 2, result.stderr[-500:]
@@ -228,12 +228,89 @@ def test_attribution_library_blocks_long_message_under_pipefail(
     assert "BLOCKED: Commit message contains AI/Claude reference" in result.stdout
 
 
-def test_check_commit_message_refuses_without_library(tmp_path: Path) -> None:
-    lone = tmp_path / CHECK_COMMIT.name
-    shutil.copy(CHECK_COMMIT, lone)
-    result = run_hook(lone, commit_payload("Fix the retry loop\n\nIssue #18"))
+@pytest.mark.parametrize("present", ["extract_commit_message.py", "check-ai-attribution.sh"])
+def test_check_commit_message_refuses_without_its_lib(tmp_path: Path, present: str) -> None:
+    # Each of the two lib files on its own, so a missing one is named, not skipped.
+    (tmp_path / "lib").mkdir()
+    shutil.copy(CHECK_COMMIT, tmp_path / CHECK_COMMIT.name)
+    shutil.copy(CLAUDE_HOOKS / "lib" / present, tmp_path / "lib" / present)
+    result = run_hook(tmp_path / CHECK_COMMIT.name, commit_payload("Fix the retry loop\n\nIssue #18"))
     assert result.returncode == 2
     assert "refusing to skip the AI-attribution check silently" in result.stderr
+    missing = ({"extract_commit_message.py", "check-ai-attribution.sh"} - {present}).pop()
+    assert missing in result.stderr
+
+
+def bash_payload(command: str) -> dict:
+    return {"tool_name": "Bash", "tool_input": {"command": command}}
+
+
+# The shape hooks/README.md walks through: a file written by one heredoc, then
+# a commit whose message is another under a different delimiter. As synced on
+# 2026-09-10 the hook took the first delimiter, scanned only the file and passed
+# the commit (#38). Under one shared delimiter it read both bodies, by accident.
+DECOY_HEREDOC = (
+    "cat > notes.md <<'EOF'\nfile content\nEOF\n"
+    "git commit -F - <<'MSG'\nFix the retry loop\n\nGenerated with Claude Code\nMSG"
+)
+
+
+@pytest.mark.parametrize("hooks_dir", ["repo", "installed"])
+def test_check_commit_message_reads_past_a_decoy_heredoc(
+    hooks_dir: str, installed_hooks: Path
+) -> None:
+    script = CHECK_COMMIT if hooks_dir == "repo" else installed_hooks / CHECK_COMMIT.name
+    result = run_hook(script, bash_payload(DECOY_HEREDOC))
+    assert result.returncode == 2, result.stderr
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+def test_check_commit_message_ignores_a_commit_written_inside_a_heredoc() -> None:
+    # Documentation that shows a commit is not a commit; this once blocked a cat.
+    command = "cat > HOWTO.md <<'EOF'\nThen run git commit -m 'Generated with Claude Code'\nEOF"
+    result = run_hook(CHECK_COMMIT, bash_payload(command))
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
+
+
+def test_check_commit_message_allows_a_commit_left_to_the_editor() -> None:
+    result = run_hook(CHECK_COMMIT, bash_payload("git add -A && git commit"))
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
+
+
+# Commands whose message the 2026-09-10 copy here or the live copy of
+# 2026-10-31 did not read, or read wrongly, and so passed; this copy reads
+# each (#38). The apostrophe was the old copy's alone.
+@pytest.mark.parametrize(
+    "command",
+    [
+        'git stash push -m "wip" && git commit -m "Generated with Claude Code"',
+        'git commit -m "Fix the retry loop" -m "Generated with Claude Code"',
+        'git add -A && git commit -am "Generated with Claude Code"',
+        'git commit -m"Generated with Claude Code"',
+        'git commit --message "Generated with Claude Code"',
+        'git -C /srv/repo commit -m "Generated with Claude Code"',
+        'git -c user.name=x commit -m "Generated with Claude Code"',
+        "cat > f <<'EOF' && git commit -m \"Generated with Claude Code\"\nfile body\nEOF",
+        'git commit -m "Don\'t retry; Generated with Claude Code"',
+    ],
+    ids=[
+        "earlier-m",
+        "second-m",
+        "combined-am",
+        "attached-m",
+        "message-space",
+        "global-C",
+        "global-c",
+        "file-heredoc-on-commit-line",
+        "apostrophe",
+    ],
+)
+def test_check_commit_message_blocks_attribution_in_every_message_form(command: str) -> None:
+    result = run_hook(CHECK_COMMIT, bash_payload(command))
+    assert result.returncode == 2, result.stderr
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
 
 
 # ─── auto-reanchor.sh (PostCompact) ────────────────────────────────────

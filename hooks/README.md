@@ -4,7 +4,8 @@
 the agent's published hook reference the same day.** If you are reading this
 much later, check the dates below before trusting the event names: this surface
 moves fast, and the previous version of this file was four months stale and
-wrong about it.
+wrong about it. `check-commit-message.sh` and its `lib/` were synced again on
+2026-10-31; see the defect below.
 
 These are the actual scripts behind [`docs/the-framework.md`](../docs/the-framework.md)
 and the talk. Paths, hostnames and usernames are replaced with `$HOME`, `$USER`
@@ -17,7 +18,8 @@ You already know CI. The extra for AI agents lives here.
 ```
 hooks/
 ├── claude-code/   agent lifecycle hooks
-│   └── lib/       check-ai-attribution.sh, sourced by check-commit-message.sh
+│   └── lib/       check-ai-attribution.sh and extract_commit_message.py,
+│                  both used by check-commit-message.sh
 └── git/           pre-commit + pre-push (tiered local enforcement)
 ../workflows/      ci.yml (defense in depth for anyone without local hooks)
 ```
@@ -91,7 +93,7 @@ command to decide whether it cares:
 | Script | Event | Purpose | How it is bypassed |
 |---|---|---|---|
 | `session-start.sh` | SessionStart | Detect pending work in `PROJECT_STATE.md` plus uncommitted changes; emit a directive to reconcile before editing | Advisory. The model can ignore the directive |
-| `check-commit-message.sh` | PreToolUse (Bash) | Block a commit whose message carries AI attribution | `--no-verify`; `core.hooksPath=/dev/null`; committing without the CLI; **and see the heredoc defect below** |
+| `check-commit-message.sh` | PreToolUse (Bash) | Block a commit whose message carries AI attribution | `--no-verify`; `core.hooksPath=/dev/null`; committing without the CLI; a command shape its parser does not read (see the defect below) |
 | `block-sensitive-files.sh` | PreToolUse (Edit\|Write) | Exit 2 on writes to `.env`, `*.pem`, `*.key`, `id_*`, `*credential*`, `*secret*` | A `Bash` redirect writes the same file without touching Edit or Write. Pattern evasion |
 | `enforce-prd-issue-first.sh` | PreToolUse (Edit\|Write) | Require a tracking issue before a spec file is created | Same Bash-redirect gap |
 | `validate-file.sh` | PostToolUse (Edit\|Write) | Ruff and yamllint on every write | Post hoc. The write already happened. Non-Python, non-YAML files skip |
@@ -103,31 +105,57 @@ command to decide whether it cares:
 
 ### A defect worth studying, in `check-commit-message.sh`
 
-It is published **as it is**, defect included, because it is a better teaching
-artifact that way.
-
 The script tries to scan only the commit message rather than the whole command.
-It keeps only the first heredoc delimiter it finds, which is the **first**
-heredoc in the command. A very common shape is a file write followed by a commit:
+As synced on 2026-09-10 it kept the first heredoc delimiter it found anywhere in
+the command and scanned that heredoc's body. A common shape is a file write
+followed by a commit:
 
 ```bash
 cat > notes.md <<'EOF'
 ...file content...
 EOF
-git commit -m "$(cat <<'EOF'
+git commit -F - <<'MSG'
 message
-EOF
-)"
+MSG
 ```
 
-Here the delimiter resolves against the **file-writing** heredoc, so the file
-body gets scanned and **the real commit message is never examined**. That is a
-bypass, and it is invisible: the hook reports success.
+The delimiter resolved to `EOF`, the **file-writing** heredoc, so the file body
+got scanned and **the real commit message was never examined**. That is a
+bypass, and it was invisible: the hook reported success. (Had both heredocs
+used `EOF`, it would have read both bodies, by accident rather than design.)
+The same pattern-matching blocked commands that ran no git at all, because the
+words `git commit` appeared in a heredoc body as documentation.
 
-The lesson generalises past this script. **A control that parses a command
-string is guessing.** The reliable version anchors on the invocation, or runs
-where the action actually happens, which is why Layer 1 and Layer 2 sit above
-this one.
+The live configuration fixed this in `peopleforrester/llm-coding-workflow#154`, and the copy here
+was resynced to it on 2026-10-31 (#38). The extraction moved into
+`lib/extract_commit_message.py`, which walks the command line by line and tracks
+where each heredoc body starts and ends. A line is shell or body, only a shell
+line can carry the `git commit`, and only a heredoc opened by that invocation is
+its message.
+
+Resyncing turned up more of the same, so the copy here is ahead of the live one
+again, with every shape tested in `tests/test_hooks.py`. The live helper read a
+`-m` from the start of the commit's line, so `git stash push -m "wip" && git
+commit -m ...` scanned `wip`, a regression the old script did not have. Both
+read only the first `-m`, while git joins every `-m` into the message. Neither
+read `git commit -am "..."`, `-m"..."` or `--message "..."`, and neither saw
+`git -C <path> commit` as a commit at all; each passed unscanned. (The live
+helper did fix one more: the old script cut a `-m` message at its first
+apostrophe.)
+
+The lesson is the same one, made sharper by the fix. **A control that parses a
+command string is guessing.** The helper is a better guess, and it is still a
+guess: it is not a shell. A message built in a variable (`git commit -m "$msg"`),
+read from a file (`-F msg.txt`), or written by an editor is not seen here, and
+a commit run through an alias, `sudo` or `env` is not recognized as one. The
+reliable version anchors on the invocation, or runs where the action actually
+happens: the live set sources the same pattern list from a native `commit-msg`
+hook, which reads the message git is about to record, and Layer 1 and Layer 2
+sit above both.
+
+The 2026-09-10 copy, defect included, stays in this repo's history at
+`3c3cb28`, the commit `main` held when the talk started at DevOpsDays Portland,
+which the `delivered/devopsdays-portland-2026` tag marks.
 
 ### Fixed here first: pipes cut short under pipefail
 
@@ -139,7 +167,7 @@ the same shape in `echo "$scrubbed" | grep -qiP`: sourced by a caller that sets
 pipefail, a message longer than a pipe buffer with an attribution near its top
 read as clean, because echo died once grep had its match. Both now capture the
 output and search or cut the captured text, as `check-commit-message.sh` does
-for its delimiter and `--message` reads, and `tests/test_hooks.py` runs them on
+for its issue-link check, and `tests/test_hooks.py` runs them on
 a 20,000-file working tree and a 200,000-line message (#34).
 
 These fixes were made here on 2026-10-31. The live copies in the working set
@@ -155,9 +183,10 @@ chmod +x ~/.claude/hooks/*.sh
 ```
 
 Copy the `lib/` directory too, which `cp -R` does. `check-commit-message.sh`
-sources `lib/check-ai-attribution.sh` from beside itself, and without it the
-hook refuses every commit whose message it can read rather than skip the check
-silently. The library is sourced, not run, so it needs no execute bit.
+runs `lib/extract_commit_message.py` and sources `lib/check-ai-attribution.sh`
+from beside itself, and without either it refuses every commit rather than skip
+the check silently. Neither needs an execute bit: the helper is run with
+`python3`, which must be on `PATH` along with `jq`, and the library is sourced.
 
 Then wire them up in `~/.claude/settings.json`:
 

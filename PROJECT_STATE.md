@@ -242,3 +242,10 @@ mails on every Monday's run.
   (`secretName:`). All three files now match the archived Atlanta repo byte
   for byte, and `incident/REDACTIONS.md` counts 27 password, token and secret
   assignments instead of 30
+- 2026-10-31 `check-commit-message.sh` resynced to the live heredoc-aware hook
+  (#38), not kept frozen with the first-delimiter defect: the helper is
+  published as `hooks/claude-code/lib/extract_commit_message.py`, with fixes
+  made here first for `-am`, every `-m`, `git -C`, and a heredoc before the
+  commit on its line. `hooks/README.md` tells the defect as history and keeps
+  the "parsing is guessing" lesson; the 2026-09-10 copy stays at `3c3cb28`.
+  The live helper's port is a follow-up in llm-coding-workflow

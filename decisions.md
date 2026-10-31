@@ -222,3 +222,39 @@ runs far past a pipe buffer after the first match.
 The heredoc defect `hooks/README.md` keeps on purpose in
 `check-commit-message.sh`, taking the first delimiter in the command, is
 unchanged: the capture keeps the first match just as `head -1` did.
+
+## 2026-10-31 · `check-commit-message.sh` is resynced to the live heredoc-aware hook (#38)
+
+This corrects two entries above: "The attribution library is published beside
+the hook", which left the hook's heredoc parsing as synced on 2026-09-10, and
+the last paragraph of "Published scripts search captured output", which kept
+the first-delimiter defect unchanged. Of the two options in #38, the published
+copy is resynced to the live one, and `hooks/README.md` now tells the defect as
+history and the fix as the lesson. It is not kept frozen.
+
+Four things decide it. `hooks/README.md` publishes these scripts for readers to
+install, and a hook kept with a known fail-open bypass is one they would
+install. This repo already fixes published defects ahead of the live set rather
+than keep them (#23, #34). The old copy is not lost: it is in history at
+`3c3cb28`, the commit the `delivered/devopsdays-portland-2026` tag marks.
+Nothing in the deck, the outlines or the abstract cites the defect; only
+`hooks/README.md` and the bypass column of `docs/the-framework.md` did, and
+both are rewritten. The lesson those two drew, that a control parsing a command
+string is guessing, holds for the fix as well, so the section keeps it.
+
+Like the attribution library, the helper is published beside the hook, as
+`hooks/claude-code/lib/extract_commit_message.py`, and the hook reads it from
+`lib/`. The resync turned up more parsing bypasses, and they are fixed here
+first, as #23 and #34 were: the live helper read `-m` from the start of the
+commit's line, a regression the old copy did not have; it read only the first
+`-m`; it did not read `-am`, `-m"..."`, `--message "..."` or a bare value; it
+did not see `git -C <path> commit` as a commit; and it took a heredoc opened
+before the commit on the same line as the message. A heredoc after the commit
+on its line is scanned too, which reads too much rather than too little. The
+issue-link check keeps this repo's here-strings from #34. Porting these fixes to
+the live helper is a follow-up in llm-coding-workflow.
+
+The sample in the old `hooks/README.md` section was wrong as well: with both
+heredocs delimited by `EOF`, the old hook read both bodies and caught the
+message. The bypass needs the commit's heredoc under a different delimiter, so
+the sample and its test now use `MSG`.
