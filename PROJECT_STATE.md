@@ -136,3 +136,9 @@ mails on every Monday's run.
   09:17 on 10-05, 10-12, 10-19 and 10-26. The script's install comment, the last
   copy of the old path, now matches it (#10). Removing the job is
   llm-coding-workflow#470
+- 2026-10-31 abstract corrected against the incident artifacts (#15): six
+  minutes, not forty; `kubeadm reset -f`, not a force override; iptables and CNI
+  on all nine nodes, not netplan on the control plane; logs, not transcripts.
+  The SREday text is kept unedited as `abstract/sreday-austin-2026-as-submitted.md`.
+  README, framework doc and guardrail docs fixed to match; the delivered decks
+  are left as records, with their mismatches listed in `presentations/README.md`

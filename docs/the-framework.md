@@ -235,8 +235,11 @@ connects the work back to the discussion.
   detailed bypass surface per control is the kind of thing you write
   down so you do not pretend a single layer is enough.
 - **The incident itself:** what happened to a nine-node Kubernetes
-  cluster in forty minutes, told from the session JSONL. That is
-  what motivated this entire stack.
+  cluster six minutes into an agent session, told from the logs,
+  scripts and health reports the session left behind (the session
+  transcript no longer exists). See
+  [`../incident/ANALYSIS.md`](../incident/ANALYSIS.md). That is what
+  motivated this entire stack.
 
 The talk recording and slides-as-delivered will land in `post-event/`
 after May 11.

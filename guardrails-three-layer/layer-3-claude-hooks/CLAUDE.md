@@ -37,14 +37,15 @@ anyway, so asking is actually faster than discovering the block.
 ## Why this policy exists
 
 The incident that forced this repo to exist (DevOpsDays Atlanta 2026) was
-a Claude Code session with direct cluster access executing
-`etcd --force-new-cluster` during CNI troubleshooting. etcd quorum gone.
-All 187 pods across 20+ namespaces gone with the cluster state. Velero
-was running but never tested for restore. Hours of downtime.
+a Claude Code session with root SSH to every node running
+`kubeadm reset -f` across the cluster, deleting the etcd data on all three
+control-plane members. etcd quorum gone. All 187 pods across 20+
+namespaces gone with the cluster state. Velero was running but never
+tested for restore. Hours of downtime.
 
 The goal is not to slow you down. It is to make the next
-`etcd --force-new-cluster` impossible even when you think it's the
-efficient path.
+`kubeadm reset` or `etcd --force-new-cluster` impossible even when you
+think it's the efficient path.
 
 ## What is safe to do without asking
 

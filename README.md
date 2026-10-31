@@ -22,13 +22,17 @@ you have.
 ## The incident
 
 A home-lab Kubernetes cluster, August and September 2025. An agent session with
-cluster access initialised a new etcd cluster over the existing one and modified
-netplan across the Linux nodes. The cluster was gone and the nodes lost their
+root SSH to all nine nodes ran `kubeadm reset -f` across the cluster six minutes
+in, deleting the etcd data on all three control-plane members, and flushed
+iptables and removed the CNI configuration on every node. It then initialised a
+new etcd cluster in the old one's place, and during the rebuild it modified
+netplan across the worker nodes. The cluster was gone and the nodes lost their
 networking.
 
-It is documented from primary sources, not reconstructed from memory: the session
-transcripts, the command history, and the scripts that actually ran, all recovered
-from git history in `mforrester-home-lab` and cited back to specific commits. See
+It is documented from primary sources, not reconstructed from memory: the logs,
+the command records, the health reports, and the scripts that actually ran, all
+recovered from git history in `mforrester-home-lab` and cited back to specific
+commits. The session transcript itself no longer exists. See
 [`incident/INDEX.md`](incident/INDEX.md) for the provenance and
 [`incident/ANALYSIS.md`](incident/ANALYSIS.md) for the timeline and root causes.
 
@@ -56,8 +60,9 @@ for the timeline, quoted from the session transcript.
 - [**`guardrails-three-layer/`**](guardrails-three-layer/): the Ignite-length
   condensation: three layers, an install script each, and a Monday-morning rollout
   with a clock on it.
-- [**`abstract/`**](abstract/): as-submitted abstracts and speaker bio. The
-  canonical text is [`abstract/abstract.md`](abstract/abstract.md).
+- [**`abstract/`**](abstract/): the current abstract, the as-submitted versions
+  kept as records, and the speaker bio. The canonical text is
+  [`abstract/abstract.md`](abstract/abstract.md).
 - [**`presentations/`**](presentations/): decks. The SREday PPTX is the editable
   source; the Atlanta PDF is the Ignite cut.
 - [**`post-event/`**](post-event/): after the talk. Where the recordings are and
