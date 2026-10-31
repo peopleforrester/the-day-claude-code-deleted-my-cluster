@@ -453,6 +453,17 @@ def test_tiered_pre_push_blocks_committed_secret(git_repo: Path) -> None:
     assert "potential secret in: config.txt" in result.stdout
 
 
+def test_tiered_pre_push_blocks_file_with_many_secrets(git_repo: Path) -> None:
+    # Far more matches than the five the hook prints, so grep is still writing
+    # when the listing is cut; the scan must not read that as a clean file.
+    lines = "".join(f"key{i} = {FAKE_AWS_KEY}\n" for i in range(200_000))
+    commit_file(git_repo, "keys.txt", lines)
+    result = run_hook(TIERED_PRE_PUSH, cwd=git_repo)
+    assert result.returncode == 1, result.stdout[-500:]
+    assert "potential secret in: keys.txt" in result.stdout
+    assert result.stdout.count(FAKE_AWS_KEY) == 5
+
+
 # ─── scripts/check-talk-video.sh ───────────────────────────────────────
 
 CHECK_VIDEO = REPO_ROOT / "scripts" / "check-talk-video.sh"
