@@ -205,3 +205,11 @@ mails on every Monday's run.
   for all three. `tests/test_delivery_tags.py` requires it on every row, and
   `e2e/test_tag_reports_live.py` reads the issue through `gh` to check it names
   each tag and event id
+- 2026-10-31 both Ignite recordings pulled into a run clone's gitignored
+  `recordings/`. YouTube's bot check is passed with the `web_embedded` client
+  and a Node runtime; the recipe and hashes are in
+  `post-event/portland-2026-recording.md`. With the media, slide boundaries
+  observed rather than inferred: slide 9 ran 19th, between 19 and 20, and was
+  heard there; slide 7 ran 1:35–1:50, slide 12 2:35–2:50. Caption quotes checked
+  against Whisper and the room transcript. The copy in Michael's checkout, and
+  why the deck ran 9 out of place, are still open (#29)
