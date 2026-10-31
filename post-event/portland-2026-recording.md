@@ -39,7 +39,14 @@ captions below rather than replacing the audio.
 and is not known to be committed in any. It is in
 [`portland-2026-run-two-transcript.md`](portland-2026-run-two-transcript.md)
 (issue #35): a false start, then a full restart of about 940 words. It carries
-no timestamps, and it is not established that it is the run-through cited below.
+no timestamps.
+
+**So is run one, the likelier source of the 20-of-20 figure.**
+`My recording 211.mp3`, "Run through.", numbered just before run two, was
+routed to `Unleash_an_Agent_Watch_It_Burn` and `Webinar_Claude_Code_Hands_On`
+and is not known to be committed in either. It is in
+[`portland-2026-run-one-transcript.md`](portland-2026-run-one-transcript.md)
+(issue #46): one attempt, no restart, about 870 words.
 
 ## The watch that found it, and the false report it made first
 
@@ -114,9 +121,19 @@ All beats that were heard came in deck order.
 | 19 | Who's the problem | Yes: markers, puppy, "I am" | 4:23 |
 | 20 | Don't trust AI, verify everything | **Not heard**; the repo plug and a different close instead | 4:52 |
 
-The issue records the 2026-09-10 run-through as 20 of 20 beats in deck order;
-which recording that came from is not recorded (see
-[`portland-2026-run-two-transcript.md`](portland-2026-run-two-transcript.md)).
+The issue records the 2026-09-10 run-through as 20 of 20 beats in deck order,
+timed to about 5:48 at 150 wpm, without naming the recording. **It most likely
+describes run one**,
+[`portland-2026-run-one-transcript.md`](portland-2026-run-one-transcript.md).
+5:48 at 150 wpm is 870 words; run one is about 870 and reaches every slide
+once, in the cue card's order. Run two's restart,
+[`portland-2026-run-two-transcript.md`](portland-2026-run-two-transcript.md),
+is about 940 words (about 6:17). It puts slide 9's junior developer after slide
+19, which is the delivered file's real order (the annotation below), so order
+fits run one only if "deck order" means the cue card's, as this review reads
+it. The word count is the firmer evidence. It is an inference either way,
+since the issue cites no source. Even run one drops slide 10's compaction line and slide 12's "Eleven
+got a cluster", so "20 of 20" counts slides, not every line on the card.
 The room heard 16 of the 20, one of them (12) without its silence. Slide 7's
 silence was talked over, and 9, the three-layers frame on 14, and the closing
 line on 20 were lost.

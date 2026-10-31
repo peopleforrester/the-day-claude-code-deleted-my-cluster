@@ -405,3 +405,28 @@ and checks it against that SHA, and holds each file to its table row.
 
 SREday Austin's tag (#30) is left as #30 escalated it. Writing a file for it
 here would make a second, different tag object for the same name.
+## 2026-10-31 · Run one is collected, and named as the likelier 20-of-20 run (#46)
+
+`My recording 211.mp3`, the run-through recorded just before run two on the
+day of the Portland Ignite, was routed to `Unleash_an_Agent_Watch_It_Burn`
+and `Webinar_Claude_Code_Hands_On`, and the private Neo4j edition holds a byte
+copy of the first. None is known to be committed: the Watch It Burn copy is on
+no branch and in no history on GitHub, the Webinar repo ignores
+`transcripts/`, and the Neo4j edition's history cannot be read from here. So
+it is collected as `post-event/portland-2026-run-one-transcript.md`, the way
+#35 collected run two, from the Watch It Burn copy, the one public copy that
+is not gitignored.
+
+"Run one" is an inference from the numbering: 212 calls itself run two, and
+209 and 210 that day are other material. The header says so.
+
+`post-event/portland-2026-recording.md` now says the 20-of-20 figure from
+issue #8 most likely describes run one, not that it does. Run one is about
+870 words from "Welcome", which is 5:48 at 150 wpm, and reaches every slide
+once in the cue card's order; run two's restart is about 940 words. The word
+count carries the claim, not the order: run two puts slide 9 after slide 19,
+which is where the delivered v7 file plays JUNIOR DEV (#45), so it fits "deck
+order" if that meant the file's order. Issue #8 names no recording, so the
+match is a strong inference, not a record. Both files also note that run one drops slide 10's
+compaction and slide 12's "Eleven got a cluster", so the figure counts
+slides, not every cue-card line.

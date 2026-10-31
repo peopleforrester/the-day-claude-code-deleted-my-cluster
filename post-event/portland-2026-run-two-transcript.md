@@ -62,9 +62,9 @@ run-through of 20 of 20 beats timed to about 5:48 at 150 wpm, from issue #8.
 That figure does not say which recording it came from, and it does not match
 this restart's word count. A separate run-through the same day,
 `My recording 211.mp3` ("this is the day Claude Code deleted my cluster. Run
-through."), about 900 words, sits uncommitted beside this copy in
-`Unleash_an_Agent_Watch_It_Burn/transcripts/` and is the closer match; it is
-not collected here.
+through."), about 870 words, is the closer match. It is collected, under issue
+#46, as [`portland-2026-run-one-transcript.md`](portland-2026-run-one-transcript.md),
+which sets out why it most likely is the run cited.
 
 ## Misheard terms, and what it gets wrong
 

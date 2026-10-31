@@ -170,6 +170,13 @@ mails on every Monday's run.
   committed; the full one in `Unleash_an_Agent_Watch_It_Burn` is absent from
   every branch and all history on GitHub. Collected the same way as
   `post-event/portland-2026-run-two-transcript.md` (#35)
+- 2026-10-31 the day's first run-through transcript (`My recording 211.mp3`,
+  "Run through.") checked: three copies across `~/repos`, none known to be
+  committed. Collected the same way as
+  `post-event/portland-2026-run-one-transcript.md`; at about 870 words, all
+  twenty slides in the cue card's order, it is the run issue #8's 20-of-20, 5:48 figure
+  most likely describes, and `post-event/portland-2026-recording.md` says so
+  (#46)
 - 2026-10-31 conference-knowledge made the source of truth for conference
   information (#13). The delivery tables in CLAUDE.md and here replaced with
   pointers to its `events/registry.yaml`; the README's "Given at" table kept as

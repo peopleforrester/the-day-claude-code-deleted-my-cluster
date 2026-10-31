@@ -37,6 +37,15 @@ TRANSCRIPTS = [
         8254,
         "a25d282d1602ca908e57cc1fac3fa4807cb0ba6058b449253756aad188894574",
     ),
+    # Run one, the same day's first run-through and the likelier source of
+    # issue #8's 20-of-20 figure, routed on 2026-09-10 to
+    # Unleash_an_Agent_Watch_It_Burn and collected here under issue #46.
+    Transcript(
+        Path("post-event") / "portland-2026-run-one-transcript.md",
+        "My recording 211.mp3",
+        5237,
+        "38cb06d1a414efeef17c7dc2bfd20c767a06bed291f1e103e4937280616826c9",
+    ),
 ]
 
 transcripts = pytest.mark.parametrize("t", TRANSCRIPTS, ids=lambda t: t.path.name)

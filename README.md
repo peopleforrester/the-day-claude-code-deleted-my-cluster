@@ -88,8 +88,9 @@ for the timeline, quoted from the session transcript.
   ([`portland-2026-recording.md`](post-event/portland-2026-recording.md)), and
   the raw transcript of the Portland delivery from a recording made in the room
   ([`portland-2026-transcript.md`](post-event/portland-2026-transcript.md)), and
-  of a run-through earlier that day
-  ([`portland-2026-run-two-transcript.md`](post-event/portland-2026-run-two-transcript.md)).
+  of two run-throughs earlier that day
+  ([`portland-2026-run-one-transcript.md`](post-event/portland-2026-run-one-transcript.md),
+  [`portland-2026-run-two-transcript.md`](post-event/portland-2026-run-two-transcript.md)).
 - [**`delivery-tags/`**](delivery-tags/): the annotation of each `delivered/`
   tag that marks a delivery of this talk, kept so the tag can be rebuilt.
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
