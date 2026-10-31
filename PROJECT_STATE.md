@@ -227,3 +227,8 @@ mails on every Monday's run.
   each with output far past a pipe buffer; nine of them failed before the fix.
   The live working-set copies still pipe; the resync is a follow-up in
   llm-coding-workflow
+- 2026-10-31 #22 waits on llm-coding-workflow#481, the live pre-push fix, filed
+  with the replacement code and still open; read again the same day, the live
+  line 102 is still `grep -EnP ... | head -5`. When #481 lands, resync
+  `hooks/git/pre-push` from the live copy and move the `hooks/README.md` sync
+  date. The other scripts' resync is llm-coding-workflow#482
