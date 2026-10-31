@@ -89,7 +89,7 @@ scripts live beside them as `devopsdays-atlanta-ignite-outline-*.md`.
 ## Framework evolution: `agentic-covenants`
 
 The next evolution beyond the Eight Guardrails lives in
-`~/repos/events/agentic-covenants` (<https://github.com/peopleforrester/agentic-covenants>).
+`~/repos/portfolio/agentic-covenants` (<https://github.com/peopleforrester/agentic-covenants>).
 It may be gestured at as a direction in a closing beat. It does not replace the
 eight guardrails in any talk whose abstract promised them.
 
