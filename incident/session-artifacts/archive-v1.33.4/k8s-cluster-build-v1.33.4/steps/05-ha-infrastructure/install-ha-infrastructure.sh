@@ -82,7 +82,7 @@ listen stats
     stats uri /stats
     stats refresh 30s
     stats show-node
-    stats auth admin:admin123
+    stats auth admin:<REDACTED-BASIC-AUTH-PASSWORD>
 EOF" >> $LOG_FILE 2>&1
 
     # Step 3: Get network interface name
@@ -228,7 +228,7 @@ if [ -z "$FAILED_NODES" ]; then
     echo "✓ HA Infrastructure successfully installed" | tee -a $LOG_FILE
     echo "  VIP: $VIP (active on $VIP_HOLDER)" | tee -a $LOG_FILE
     echo "  HAProxy: Load balancing on port 8443" | tee -a $LOG_FILE
-    echo "  HAProxy Stats: http://<node-ip>:8080/stats (admin/admin123)" | tee -a $LOG_FILE
+    echo "  HAProxy Stats: http://<node-ip>:8080/stats (admin/<REDACTED-BASIC-AUTH-PASSWORD>)" | tee -a $LOG_FILE
 else
     echo "✗ Failed components:$FAILED_NODES" | tee -a $LOG_FILE
     echo "Please check the log file for details" | tee -a $LOG_FILE

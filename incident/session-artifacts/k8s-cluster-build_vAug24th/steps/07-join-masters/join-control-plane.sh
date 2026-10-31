@@ -19,7 +19,7 @@ kubeadm join 192.168.0.100:6443 \
     --token <REDACTED-KUBEADM-TOKEN> \
     --discovery-token-ca-cert-hash sha256:7539ce73805bdbd6ba72efdc42a43a3d5c48ab9e4ebdc0c20c47cd40adaeac5c \
     --control-plane \
-    --certificate-key b12bffd3a967b3ce3464540920a87b96f971c1671e78581cef2ffe840d0c2ac1
+    --certificate-key <REDACTED-KUBEADM-CERTIFICATE-KEY>
 
 echo ""
 echo "=== Control Plane Join Complete ==="

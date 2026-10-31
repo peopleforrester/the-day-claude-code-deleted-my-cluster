@@ -10,6 +10,22 @@ carries evidentiary weight are untouched.
 | Kubernetes service-account JWTs | 7 |
 | kubeadm join tokens | 28 |
 | Hardcoded password, token, and secret assignments | 30 |
+| kubeconfig client private keys (`client-key-data`) | 1 |
+| kubeadm certificate keys (`--certificate-key`, `certificate_key`, `CERT_KEY=`) | 12 |
+| HAProxy stats basic-auth passwords | 6 |
+
+Each row counts `<REDACTED-...>` markers in the tree, and
+`tests/test_redactions.py` holds the table to them.
+
+Left in place on purpose, because they are public material rather than
+credentials: `--discovery-token-ca-cert-hash` values (hashes of the cluster CA's
+public key), `certificate-authority-data` and `client-certificate-data` (the
+certificates, without their keys), and container image digests.
+
+The last three rows were missed by the first pass. The monthly security scan of
+2026-10 (`peopleforrester/infrastructure-security-scanning#129`) found them, and
+they were redacted on 2026-10-31 (#26). The first pass had redacted the token
+beside each certificate key and left the key.
 
 ## Why, given the credentials are dead
 

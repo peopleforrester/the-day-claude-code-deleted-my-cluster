@@ -170,3 +170,10 @@ mails on every Monday's run.
   `hooks/claude-code/lib/check-ai-attribution.sh`, the hook reads it from
   `lib/`, and the install step copies `lib/` too. The suite now runs the hook
   on clean and attributed messages, both in place and as installed
+- 2026-10-31 the monthly security scan (infrastructure-security-scanning#129)
+  found credentials the first redaction pass missed in
+  `incident/session-artifacts/` (#26): the one kubeconfig client key, 12
+  kubeadm certificate keys and 6 HAProxy stats passwords. All are redacted,
+  `incident/REDACTIONS.md` counts them, and `tests/test_redactions.py` holds
+  the table to the markers and fails on those shapes in the clear. The values
+  stay in `e8d5a60`'s history and the archived Atlanta repo

@@ -66,3 +66,20 @@ documents, and documenting the dependency alone would leave the published hook
 unusable as published. The rest of the hook is left as synced on 2026-09-10:
 the live copy has since replaced its heredoc parsing, and the heredoc defect is
 published on purpose as a teaching artifact (`hooks/README.md`).
+
+## 2026-10-31 · Every certificate key is redacted; public material stays
+
+Issue #26 named the first file for each credential the first redaction pass
+missed. The tree held more: kubeadm certificate keys sat in seven lines beyond
+the five it listed, one of them a fifth distinct key in
+`k8s-cluster-build_vAug24th/steps/07-join-masters/join-control-plane.sh`, and the
+HAProxy stats password also appeared in `stats auth` and an `echo` in
+`install-ha-infrastructure.sh`. Every occurrence is redacted, since the point is
+that the tree matches what `incident/REDACTIONS.md` says. Each credential type
+gets its own marker and its own row in that file's table. Left in place, as
+public material: the `--discovery-token-ca-cert-hash` values, the
+`certificate-authority-data` and `client-certificate-data` certificates, and
+image digests. `tests/test_redactions.py` holds the table to the marker counts
+and fails on the three missed shapes, so the next miss is caught by a check
+rather than by care. History is not rewritten: the values remain in `e8d5a60`
+and in the archived Atlanta repo, which `REDACTIONS.md` already points to.

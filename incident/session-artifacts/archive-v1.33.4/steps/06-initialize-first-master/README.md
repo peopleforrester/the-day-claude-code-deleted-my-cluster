@@ -44,7 +44,7 @@ k8s01   NotReady   control-plane   36s   v1.33.4   192.168.0.50
 ### 5. Join Commands Saved
 - Control plane join: `steps/06-initialize-first-master/control-plane-join.sh`
 - Worker join: `steps/06-initialize-first-master/worker-join.sh`
-- Certificate key: edb097cdda22eb6bcf9d4fb5d1f5eb9d27a6f40514f2af4d2d658b4394d2329e
+- Certificate key: <REDACTED-KUBEADM-CERTIFICATE-KEY>
 - Token: <REDACTED-KUBEADM-TOKEN>
 
 ## Files Created

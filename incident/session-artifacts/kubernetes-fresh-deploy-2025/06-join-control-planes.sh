@@ -17,7 +17,7 @@ NODE_NAMES=("k8s02" "k8s03")
 # Join parameters from initial control plane
 TOKEN="<REDACTED-KUBEADM-TOKEN>"
 CA_HASH="5862d7151e76b4e9bf7153a38877feab0ba1f6c55517c9a7b1fa9acae433cbc3"
-CERT_KEY="4955eea0e10dc530e7020a7ee72f7fe0e4d6e70af63332900e30e2f21cd1b5bd"
+CERT_KEY="<REDACTED-KUBEADM-CERTIFICATE-KEY>"
 API_SERVER="192.168.0.50:6443"
 
 echo "Joining additional control plane nodes" | tee "$JOIN_LOG"

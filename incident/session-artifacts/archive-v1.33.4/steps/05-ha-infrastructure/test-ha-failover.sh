@@ -38,7 +38,7 @@ for node in "${CONTROL_NODES[@]}"; do
     IP="192.168.0.$node"
     NODE_NAME="k8s$(printf '%02d' $((node - 49)))"
 
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u admin:admin123 http://$IP:8080/stats 2>/dev/null)
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u admin:<REDACTED-BASIC-AUTH-PASSWORD> http://$IP:8080/stats 2>/dev/null)
     if [ "$HTTP_CODE" = "200" ]; then
         echo "    ✓ $NODE_NAME ($IP:8080): Accessible" | tee -a $LOG_FILE
     else

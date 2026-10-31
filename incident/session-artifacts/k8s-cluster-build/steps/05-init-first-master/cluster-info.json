@@ -9,11 +9,11 @@
   "tokens": {
     "bootstrap_token": "<REDACTED-KUBEADM-TOKEN>",
     "discovery_token_ca_cert_hash": "sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201",
-    "certificate_key": "236f00aec52e421293b62e25bc2e353a23b057b44deae0d8e5d538788446e67b",
+    "certificate_key": "<REDACTED-KUBEADM-CERTIFICATE-KEY>",
     "certificate_key_expiry": "2 hours from initialization"
   },
   "join_commands": {
-    "control_plane": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201 --control-plane --certificate-key 236f00aec52e421293b62e25bc2e353a23b057b44deae0d8e5d538788446e67b",
+    "control_plane": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201 --control-plane --certificate-key <REDACTED-KUBEADM-CERTIFICATE-KEY>",
     "worker": "kubeadm join 192.168.0.100:6443 --token <REDACTED-KUBEADM-TOKEN> --discovery-token-ca-cert-hash sha256:931f0c7a0b2113b0aafc6c8a2b34017e6c3ad03a9cad00ff5986cdcb936fe201"
   },
   "components": {
