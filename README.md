@@ -6,6 +6,18 @@ This repo is named for the talk rather than for any one conference, because the
 talk has been given more than once and will be again. Event-specific repos point
 here; the material lives here.
 
+## About this talk
+
+| | |
+|---|---|
+| Speaker | Michael Rishi Forrester ([bio](abstract/bio.md)) |
+| Argues | Putting a human back in the loop is the wrong lesson from an agent that wiped a cluster: let the agent operate fast inside a boundary it cannot break out of, enforced in layers that each catch what the others miss. Told from a 2025 home-lab incident, with the 2026 fleet that was reported but never created added from Portland on. The Ignite closes on three deterministic layers; the long form carries the Eight Guardrails Framework |
+| Forms | 5-minute Ignite (20 auto-advancing slides) and a 30-minute talk |
+| Status | Delivered three times, listed under "Given at" below. No further delivery is booked as of 2026-10-31. The current abstract for the next submission is [`abstract/abstract.md`](abstract/abstract.md) |
+| Built from | `peopleforrester/SREday-Texas-2026`, whose history this repo carries, and `peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite`; the 2025 evidence is recovered from `mforrester-home-lab`, the 2026 account from the `Unleash_an_Agent_Watch_It_Burn` session transcript. See "Provenance" below |
+| Registered in | `peopleforrester/talks-knowledge`, the source of truth for the talks: row 1 of `talks/register.md` (idea `deleted-my-cluster`), the research index, and the abstract library |
+| Event state | `peopleforrester/conference-knowledge`: dates, CFPs, acceptances and the delivery record |
+
 ## Given at
 
 | Event | Date | Format | What that version emphasized | Recording |

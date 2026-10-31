@@ -66,15 +66,15 @@ def test_pdf_export_policy_documented(repo_root: Path) -> None:
     The senior review flagged that the prior `.gitignore` was ambiguous
     about PDFs. The README used to carry the policy directly but that
     is repo-plumbing; the visitor-facing README is now policy-free and
-    the asset policy lives in CLAUDE.md alongside other contributor /
-    session instructions. The test follows the policy to its new home.
+    the asset policy lives in AGENTS.md (which CLAUDE.md links to)
+    alongside other contributor / session instructions. The test follows the policy to its new home.
     """
-    claude_md = (repo_root / "CLAUDE.md").read_text(encoding="utf-8").lower()
+    claude_md = (repo_root / "AGENTS.md").read_text(encoding="utf-8").lower()
     assert "asset policy" in claude_md or "pdf" in claude_md, (
-        "CLAUDE.md does not mention PDFs or an 'Asset policy' section. "
+        "AGENTS.md does not mention PDFs or an 'Asset policy' section. "
         "Document the PDF-export decision so it does not drift."
     )
     assert "derived" in claude_md or "ignored" in claude_md or "not committed" in claude_md, (
-        "CLAUDE.md mentions PDF but does not state the policy "
+        "AGENTS.md mentions PDF but does not state the policy "
         "(derived / ignored / not committed)."
     )

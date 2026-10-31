@@ -156,3 +156,10 @@ mails on every Monday's run.
   (`EoQ-knQKMek`, checked against YouTube's oEmbed) replacing "none linked".
   What the registry lacks (both Ignite recordings, this repo in SREday's
   `repos`) handed off to conference-knowledge in an `agent-task` issue
+- 2026-10-31 identity check for the talk-repo fleet standard (#16): the rules
+  in CLAUDE.md merged into AGENTS.md and CLAUDE.md made a symlink to it;
+  "Where things live" names talks-knowledge for the register, research index
+  and abstracts, and conference-knowledge for event state; `decisions.md`
+  started, append-only, with the earlier decisions carried from this file;
+  the README gains "About this talk" (speaker, argument, status, built from).
+  `tests/test_identity.py` pins all four
