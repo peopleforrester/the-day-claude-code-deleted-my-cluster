@@ -67,7 +67,9 @@ for the timeline, quoted from the session transcript.
   source; the Atlanta PDF is the Ignite cut.
 - [**`post-event/`**](post-event/): after the talk. Where the recordings are and
   what the room actually got, set against the cue card
-  ([`portland-2026-recording.md`](post-event/portland-2026-recording.md)).
+  ([`portland-2026-recording.md`](post-event/portland-2026-recording.md)), and
+  the raw transcript of the Portland delivery from a recording made in the room
+  ([`portland-2026-transcript.md`](post-event/portland-2026-transcript.md)).
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
 
 ## Just saw the talk

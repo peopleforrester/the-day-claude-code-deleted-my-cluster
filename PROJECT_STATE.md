@@ -142,3 +142,7 @@ mails on every Monday's run.
   The SREday text is kept unedited as `abstract/sreday-austin-2026-as-submitted.md`.
   README, framework doc and guardrail docs fixed to match; the delivered decks
   are left as records, with their mismatches listed in `presentations/README.md`
+- 2026-10-31 the room transcript of the Portland delivery (`My recording 214.mp3`),
+  stranded uncommitted in the archived `walkthrough-agenticburn`, collected as
+  `post-event/portland-2026-transcript.md` with its provenance and hash; the
+  suite pins the original bytes (#25)

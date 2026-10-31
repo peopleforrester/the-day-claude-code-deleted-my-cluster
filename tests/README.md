@@ -34,6 +34,7 @@ pytest
 | `test_readme_layout.py` | Every directory listed in README "Repository Layout" exists on disk |
 | `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, each tag reads `delivered/<event-id>`, each row names a deck file id and says exact or approximate, and each commit is in HEAD's history |
 | `test_license.py` | LICENSE file present at repo root |
+| `test_post_event_transcript.py` | The rescued Portland transcript is the original file byte for byte below its marker, names its source and caveat, and is linked from the post-event record |
 | `test_shell_lint.py` | Every published shell script under `hooks/`, `scripts/` and `guardrails-three-layer/` parses with `bash -n` and is clean at shellcheck error severity (shellcheck must be on `PATH`) |
 | `test_hooks.py` | The enforcement hooks return their documented verdicts: sensitive-file and PRD-issue blocks, the ABOUTME warning, the Layer 1 commit-msg, pre-commit and pre-push gates, the tiered `hooks/git` pre-commit and pre-push against stubbed linters and test runners, and `check-talk-video.sh` against a stubbed `yt-dlp` |
 

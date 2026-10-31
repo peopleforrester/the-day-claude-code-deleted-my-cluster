@@ -27,6 +27,13 @@ found earlier. The recollection of "about thirty days" was close: it was 24.
 Both upload dates come from the videos' own metadata (`yt-dlp --write-info-json`),
 not from the channel listing, which returns `NA` for every date.
 
+**Portland also has a transcript from the room.** A separate recording,
+`My recording 214.mp3`, was transcribed on the day and routed to the archived
+`walkthrough-agenticburn` repo, where it was never committed. It is collected
+in [`portland-2026-transcript.md`](portland-2026-transcript.md) (issue #25). It
+is raw diarization with approximate speaker labels, so it cross-checks the
+captions below rather than replacing the audio.
+
 ## The watch that found it, and the false report it made first
 
 The weekly check in `scripts/check-talk-video.sh` mailed "Portland Ignite video
