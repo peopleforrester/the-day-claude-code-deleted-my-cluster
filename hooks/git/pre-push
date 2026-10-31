@@ -84,7 +84,11 @@ fi
 while IFS= read -r file; do
     if [ -z "$file" ]; then continue; fi
     if [ -f "$file" ] && file "$file" | grep -q text; then
-        if grep -EnP "$SECRET_PATTERNS" "$file" 2>/dev/null | head -5; then
+        # Capture before truncating: piping grep into head under pipefail lets
+        # grep die of SIGPIPE on a file with many matches, reading as clean.
+        matches=$(grep -nE "$SECRET_PATTERNS" "$file" 2>/dev/null || true)
+        if [ -n "$matches" ]; then
+            head -5 <<< "$matches"
             echo "  ^^^ potential secret in: $file"
             SECRETS_FOUND=true
         fi

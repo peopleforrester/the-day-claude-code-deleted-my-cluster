@@ -114,8 +114,9 @@ source. Free.
 ## The incident that forced this repo to exist
 
 In August 2025, a Claude Code session with direct access to a 9-node
-production homelab Kubernetes cluster executed `etcd --force-new-cluster`
-during CNI troubleshooting. etcd quorum gone. All 187 pods across 20+
+production homelab Kubernetes cluster ran `kubeadm reset -f` on all nine
+nodes six minutes into a cluster-build session, deleting the etcd data on all
+three control-plane members. etcd quorum gone. All 187 pods across 20+
 namespaces (Prometheus, Grafana, Loki, Jaeger, Harbor, ArgoCD, Velero) gone
 with the cluster state. Recovery took days. Velero was *running* but had
 never been tested for restore.
@@ -123,8 +124,8 @@ never been tested for restore.
 Full write-up: [three-layers.md](./three-layers.md)
 
 The fix wasn't to trust the model more. It was to wrap the model in three
-layers of deterministic enforcement so the next `etcd --force-new-cluster`
-gets blocked before the command ever runs.
+layers of deterministic enforcement so the next `kubeadm reset` or
+`etcd --force-new-cluster` gets blocked before the command ever runs.
 
 ---
 
