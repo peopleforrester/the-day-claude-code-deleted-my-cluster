@@ -1,5 +1,5 @@
-# ABOUTME: Holds the guardrails kit's workflow templates to SHA-pinned actions and narrow permissions.
-# ABOUTME: Readers copy these files into their own repos, so a regression here ships to them (#27).
+# ABOUTME: Holds the guardrails kit's workflow templates and the root workflows/ to SHA-pinned actions and narrow permissions.
+# ABOUTME: Readers copy these files into their own repos, so a regression here ships to them (#27, #41).
 
 from __future__ import annotations
 
@@ -10,7 +10,11 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = REPO_ROOT / "guardrails-three-layer" / "layer-1-git-ci" / ".github" / "workflows"
-TEMPLATES = sorted(TEMPLATE_DIR.glob("*.yml"))
+KIT_TEMPLATES = sorted(TEMPLATE_DIR.glob("*.yml"))
+# Not active here, since they sit outside .github/, so no scan of this repo's
+# own workflows covers them; workflows/README.md tells readers to copy them.
+ROOT_WORKFLOWS = sorted((REPO_ROOT / "workflows").glob("*.yml"))
+TEMPLATES = KIT_TEMPLATES + ROOT_WORKFLOWS
 
 USES = re.compile(r"^\s*(?:-\s+)?uses:\s*(\S+)(.*)$")
 PINNED = re.compile(r"^[\w.-]+/[\w./-]+@[0-9a-f]{40}$")
@@ -18,7 +22,7 @@ VERSION_COMMENT = re.compile(r"^\s+#\s+v?\d+(\.\d+)*$")
 
 
 def _ids(path: Path) -> str:
-    return path.name
+    return path.relative_to(REPO_ROOT).as_posix()
 
 
 def _uses(path: Path) -> list[tuple[int, str, str]]:
@@ -46,8 +50,9 @@ def _top_level_block(path: Path, key: str) -> list[str]:
 
 def test_templates_found() -> None:
     """Guard against the glob finding nothing and every check passing vacuously."""
-    names = {path.name for path in TEMPLATES}
+    names = {path.name for path in KIT_TEMPLATES}
     assert {"merge-queue.yml", "policy-check.yml", "pr-validation.yml", "security-scan.yml"} <= names
+    assert {path.name for path in ROOT_WORKFLOWS} >= {"ci.yml", "e2e.yml"}
 
 
 @pytest.mark.parametrize("template", TEMPLATES, ids=_ids)

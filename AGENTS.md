@@ -115,11 +115,13 @@ The Test command collects `tests/` only and runs offline. The E2E command runs
 `e2e/`, which checks the repo's claims against live services: every recording
 the README's "Given at" table links resolves on YouTube as this talk;
 `scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite
-on the live channel; and every tag in "Tags so far" is named, with its event
-id, on the conference-knowledge issue its row says reported it. It needs the
-network, the `e2e` dependency group's pinned `yt-dlp`, and `gh` with read
-access to `peopleforrester/conference-knowledge`, which is private, and fails
-when any is missing.
+on the live channel; every tag in "Tags so far" is named, with its event
+id, on the conference-knowledge issue its row says reported it; and every
+action the kit templates and root `workflows/` pin by SHA is the commit its
+version comment's tag names on GitHub. It needs the network, `git`, the `e2e`
+dependency group's pinned `yt-dlp`, and `gh` with read access to
+`peopleforrester/conference-knowledge`, which is private, and fails when any
+is missing.
 
 ## Where things live
 

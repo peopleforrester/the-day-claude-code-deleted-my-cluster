@@ -309,3 +309,31 @@ either. That is carried over unchanged and left for its own issue.
 `tests/test_kit_clone_paths.py` pins both docs to this repo's URL. It also
 holds every `/tmp/three-layers/...` path they name to a path `git ls-files`
 lists, so an ignored directory that exists only on disk fails.
+
+## 2026-10-31 · The root workflows/ get the kit templates' pins, and pins are checked live (#41)
+
+`workflows/ci.yml` and `workflows/e2e.yml` sit outside `.github/`, so they do
+not run here and the #27 scan never saw them, but `workflows/README.md` tells
+readers to copy them into their own `.github/workflows/`. They referenced
+`actions/checkout@v7` and `astral-sh/setup-uv@v10` by mutable tag. setup-uv
+publishes no major tags past `v7`; `git ls-remote` on 2026-10-31 lists full
+tags up to `v10.3.3` and no `v10`, so either workflow failed to start as
+written.
+
+#27's rule is kept: a major line stays, pinned to the release it points at.
+`actions/checkout@v7` is v7.0.1 (`3d3c42e`). setup-uv has no `v10` to read, so
+the newest v10 release, v10.3.3 (`68559e9`, 2026-10-28), is pinned. Both SHAs
+were fetched and are commits. Both files gain workflow-level `permissions:
+contents: read` and `persist-credentials: false` on checkout; neither job
+pushes or needs the token after checkout. zizmor 1.30.1 offline, run on a copy
+placed under `.github/workflows/`, reports no findings at its default persona.
+
+`tests/test_workflow_templates.py` runs its pin, credential and permission
+cases over both sets. A version comment offline only shows a tag was named, not
+that it exists, which is how `v10` got through, so
+`e2e/test_action_pins_live.py` reads each pin's tag with `git ls-remote`,
+peels annotated tags, and fails when the tag is missing or names another
+commit. It is in the E2E command because it needs the network.
+
+`e2e.yml`'s placeholder step, which runs `pytest -m e2e` over `tests/` and
+echoes on failure, is unchanged; it is a template's stand-in, outside this fix.

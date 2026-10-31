@@ -254,3 +254,11 @@ mails on every Monday's run.
   commit on its line. `hooks/README.md` tells the defect as history and keeps
   the "parsing is guessing" lesson; the 2026-09-10 copy stays at `3c3cb28`.
   The live helper's port is a follow-up in llm-coding-workflow
+- 2026-10-31 the root `workflows/ci.yml` and `workflows/e2e.yml`, which
+  `workflows/README.md` tells readers to copy, given the kit templates'
+  treatment (#41): `actions/checkout` pinned to v7.0.1 and
+  `astral-sh/setup-uv` to v10.3.3 by SHA, since setup-uv publishes no `v10`
+  major tag and the old ref could not resolve; `permissions: contents: read`;
+  checkout credentials dropped. `tests/test_workflow_templates.py` now covers
+  them, and `e2e/test_action_pins_live.py` checks every pin in both sets is the
+  commit its version tag names on GitHub
