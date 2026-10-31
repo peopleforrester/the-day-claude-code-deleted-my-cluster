@@ -235,3 +235,10 @@ mails on every Monday's run.
   line 102 is still `grep -EnP ... | head -5`. When #481 lands, resync
   `hooks/git/pre-push` from the live copy and move the `hooks/README.md` sync
   date. The other scripts' resync is llm-coding-workflow#482
+- 2026-10-31 three over-redactions from the first pass undone (#39): the
+  markers had replaced YAML keys and a JavaScript call, not credentials, in
+  `calico.yaml` line 400 (`description:`), `dashboard-demo.html` line 152
+  (`document.getElementById(`) and `nginx-ingress-config.yaml` line 511
+  (`secretName:`). All three files now match the archived Atlanta repo byte
+  for byte, and `incident/REDACTIONS.md` counts 27 password, token and secret
+  assignments instead of 30

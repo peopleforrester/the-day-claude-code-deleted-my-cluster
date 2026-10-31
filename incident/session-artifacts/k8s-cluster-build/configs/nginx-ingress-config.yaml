@@ -508,7 +508,7 @@ spec:
       volumes:
       - name: webhook-cert
         secret:
-          <REDACTED-SECRET> ingress-nginx-admission
+          secretName: ingress-nginx-admission
 ---
 apiVersion: batch/v1
 kind: Job

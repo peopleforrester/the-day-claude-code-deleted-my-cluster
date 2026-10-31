@@ -9,7 +9,7 @@ carries evidentiary weight are untouched.
 |---|---|
 | Kubernetes service-account JWTs | 7 |
 | kubeadm join tokens | 28 |
-| Hardcoded password, token, and secret assignments | 30 |
+| Hardcoded password, token, and secret assignments | 27 |
 | kubeconfig client private keys (`client-key-data`) | 1 |
 | kubeadm certificate keys (`--certificate-key`, `certificate_key`, `CERT_KEY=`) | 12 |
 | HAProxy stats basic-auth passwords | 6 |

@@ -149,7 +149,7 @@
 
     <script>
         function showToken() {
-            const token = <REDACTED-TOKEN>'tokenInput').value;
+            const token = document.getElementById('tokenInput').value;
             if (token) {
                 alert('In the real dashboard, this would authenticate you and show:\n\n• Cluster overview\n• Node status\n• Deployments\n• Pods\n• Services\n• And full cluster management features');
             } else {
