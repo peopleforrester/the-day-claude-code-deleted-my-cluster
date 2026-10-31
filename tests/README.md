@@ -32,7 +32,7 @@ pytest
 | `test_state_consistency.py` | PROJECT_STATE.md names the canonical owner/repo, which a GitHub `origin` must also match; "Next step" names both blocking inputs |
 | `test_gitignore_coverage.py` | .gitignore covers deck/talk asset patterns; PDF-export policy is documented in README |
 | `test_readme_layout.py` | Every directory listed in README "Repository Layout" exists on disk |
-| `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, and SREday Austin on `aedb2e2` as approximate (#30); each tag reads `delivered/<event-id>`, each row names a deck file id and says exact or approximate, and each commit is in HEAD's history |
+| `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, and SREday Austin on `aedb2e2` as approximate (#30); each tag reads `delivered/<event-id>`, each row names a deck file id, says exact or approximate, and names the `peopleforrester/conference-knowledge` issue that reported it (all three on #205, #32), and each commit is in HEAD's history; every table row parses, and the convention still says to report each tag to conference-knowledge |
 | `test_repo_paths.py` | No tracked file points a `~/repos` path at a location the 2026-09-20/21 tree restructure retired (`events/`, `certifications/` and the other moved roots) |
 | `test_license.py` | LICENSE file present at repo root |
 | `test_redactions.py` | `incident/REDACTIONS.md`'s counts match the `<REDACTED-...>` markers in `incident/session-artifacts/`, and no kubeconfig client key, kubeadm certificate key or basic-auth login is left in the clear (#26) |
@@ -46,12 +46,14 @@ pytest
 
 `e2e/` holds the checks that need live services, run with
 `uv run --group e2e pytest -q e2e` (the `E2E command:` in AGENTS.md). They
-need the network and the `e2e` group's pinned `yt-dlp`, and fail rather than
-skip when either is missing.
+need the network, the `e2e` group's pinned `yt-dlp`, and `gh` with read access
+to the private `peopleforrester/conference-knowledge`, and fail rather than
+skip when any is missing.
 
 | File | What's asserted |
 |---|---|
 | `e2e/test_recordings_live.py` | Every YouTube link in the README's "Given at" table resolves and is titled as this talk; `scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite alone on the live channel |
+| `e2e/test_tag_reports_live.py` | Each tag in AGENTS.md's "Tags so far" table is named, with its event id, in the body or a comment of the conference-knowledge issue its "Reported in" cell cites, read live through `gh` (#32) |
 
 ## Adding tests
 

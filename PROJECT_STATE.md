@@ -107,7 +107,9 @@ mails on every Monday's run.
 - Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
   contents, not application behavior.
 - E2E: `uv run --group e2e pytest -q e2e`. Checks the linked recordings and the
-  video check against live YouTube; needs the network and the pinned `yt-dlp`.
+  video check against live YouTube, and each delivery tag's report on its
+  conference-knowledge issue; needs the network, the pinned `yt-dlp`, and `gh`
+  with read access to conference-knowledge.
 - CI: none configured.
 
 ## Phase history
@@ -198,3 +200,8 @@ mails on every Monday's run.
   left as published: the 2026-09-05 "do not re-raise it for Portland" covers it
   (#28). The pretalx page carries the same text. If it is ever reopened, the
   organizers' address is `portland-or@devopsdays.org`, not `talks@`
+- 2026-10-31 each delivery tag's report is pinned (#32): AGENTS.md's "Tags so
+  far" gains a "Reported in" column naming the conference-knowledge issue, #205
+  for all three. `tests/test_delivery_tags.py` requires it on every row, and
+  `e2e/test_tag_reports_live.py` reads the issue through `gh` to check it names
+  each tag and event id

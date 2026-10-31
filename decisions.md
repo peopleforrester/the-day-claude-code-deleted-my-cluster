@@ -175,3 +175,23 @@ Tagging `9c7291e` instead was considered and rejected. It would hold the deck
 as shown, but it postdates the talk and may carry edits made after it, and the
 convention is what conference-management's `check_registry.py` and the next
 organizer rely on. The AGENTS.md row sends a reader to `9c7291e` for the deck.
+
+## 2026-10-31 · Each delivery tag records the issue that reported it (#32)
+
+#9 asked for its tags to be reported back so `conference-management` can record
+them against each event. The report is an issue on
+`peopleforrester/conference-knowledge`, which owns `events/registry.yaml`, and
+until now nothing in this repo named it, so no test could tell a reported tag
+from an unreported one. AGENTS.md's "Tags so far" table gains a "Reported in"
+column holding that issue, and the steps after tagging say to fill it in.
+Atlanta and Portland are in conference-knowledge#205's body and SREday Austin in
+a comment on it, so all three rows cite #205.
+
+The offline suite checks that every row cites a conference-knowledge issue and
+that every row parses, so a row added without the column fails instead of
+dropping out of the table's tests. Whether the cited issue really names the tag
+can only be read live, so the E2E suite reads it through `gh issue view`, and
+that suite now also needs `gh` with read access to the private
+conference-knowledge repo. The check asks for the tag and its event id in the
+issue's body or a comment, not for `delivered_tag` in the registry: recording it
+there is conference-knowledge's step, and it waits on the tags reaching GitHub.

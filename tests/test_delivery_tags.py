@@ -11,19 +11,38 @@ import pytest
 
 TAG_NAME = re.compile(r"delivered/[a-z0-9][a-z0-9.-]*")
 ROW = re.compile(
-    r"^\| `(?P<tag>[^`]+)` \| `(?P<commit>[0-9a-f]+)` \| (?P<deck>[^|]+) \| (?P<kind>[^|]+) \|$"
+    r"^\| `(?P<tag>[^`]+)` \| `(?P<commit>[0-9a-f]+)` \| (?P<deck>[^|]+) \| (?P<kind>[^|]+) \|"
+    r" `(?P<reported>[^`]+)` \|$"
 )
+# The issue on conference-knowledge, which owns events/registry.yaml, that asks
+# for the tag to be recorded as the event's delivered_tag.
+REPORT_ISSUE = re.compile(r"peopleforrester/conference-knowledge#[1-9][0-9]*")
 
 
 def delivery_rows(agents_md: str) -> list[dict[str, str]]:
-    """The rows of the 'Tags so far' table in AGENTS.md."""
+    """The rows of the 'Tags so far' table in AGENTS.md.
+
+    Every body row must parse, so a row added without one of the columns,
+    such as the issue that reported it, fails here instead of dropping out.
+    """
     start = agents_md.index("### Tags so far")
     rows = []
-    for line in agents_md[start:].splitlines():
-        match = ROW.match(line.strip())
-        if match:
-            rows.append({k: v.strip() for k, v in match.groupdict().items()})
+    for line in agents_md[start:].splitlines()[1:]:
+        line = line.strip()
+        if line.startswith("#"):
+            break
+        if not line.startswith("| `"):
+            continue
+        match = ROW.match(line)
+        assert match, f"'Tags so far' row does not parse: {line}"
+        rows.append({k: v.strip() for k, v in match.groupdict().items()})
     return rows
+
+
+def delivery_tags_section(agents_md: str) -> str:
+    """AGENTS.md's 'Delivery tags' section, up to its table of tags."""
+    start = agents_md.index("## Delivery tags")
+    return agents_md[start : agents_md.index("### Tags so far", start)]
 
 
 @pytest.fixture(scope="session")
@@ -54,6 +73,41 @@ def test_sreday_austin_is_listed_on_the_commit_main_held_at_the_slot(
     row = by_tag["delivered/sreday-austin-2026"]
     assert row["commit"] == "aedb2e2"
     assert row["kind"] == "approximate"
+
+
+def test_each_tag_is_reported_on_a_conference_knowledge_issue(
+    rows: list[dict[str, str]],
+) -> None:
+    """Each row names the conference-knowledge issue that asked for the tag (#9, #32).
+
+    That issue is how conference-management learns of a tag and records it as
+    the event's delivered_tag. Atlanta and Portland are in #205's body and
+    SREday Austin in a comment on it; the e2e suite reads the issue itself.
+    """
+    assert rows, "'Tags so far' lists no tags"
+    for row in rows:
+        assert REPORT_ISSUE.fullmatch(row["reported"]), (
+            f"{row['tag']}: 'Reported in' reads {row['reported']!r}, not a "
+            "peopleforrester/conference-knowledge issue"
+        )
+    reported = {r["tag"]: r["reported"] for r in rows}
+    for tag in (
+        "delivered/devopsdays-atlanta-2026",
+        "delivered/devopsdays-portland-2026",
+        "delivered/sreday-austin-2026",
+    ):
+        assert reported[tag] == "peopleforrester/conference-knowledge#205", tag
+
+
+def test_the_convention_reports_each_tag_to_conference_knowledge(agents_md: str) -> None:
+    """The steps after tagging still ask conference-knowledge to record the tag."""
+    section = " ".join(delivery_tags_section(agents_md).split())
+    assert (
+        "open an issue on `peopleforrester/conference-knowledge` asking for the tag "
+        "to be recorded as the event's `delivered_tag`, with this repo in the event's "
+        "`repos`"
+    ) in section
+    assert 'whose "Reported in" cell names that issue' in section
 
 
 def test_tag_names_follow_the_convention(rows: list[dict[str, str]]) -> None:

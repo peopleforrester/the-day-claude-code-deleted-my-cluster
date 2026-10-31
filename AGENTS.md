@@ -113,10 +113,13 @@ E2E command: `uv run --group e2e pytest -q e2e`
 
 The Test command collects `tests/` only and runs offline. The E2E command runs
 `e2e/`, which checks the repo's claims against live services: every recording
-the README's "Given at" table links resolves on YouTube as this talk, and
+the README's "Given at" table links resolves on YouTube as this talk;
 `scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite
-on the live channel. It needs the network and the `e2e` dependency group's
-pinned `yt-dlp`, and fails when either is missing.
+on the live channel; and every tag in "Tags so far" is named, with its event
+id, on the conference-knowledge issue its row says reported it. It needs the
+network, the `e2e` dependency group's pinned `yt-dlp`, and `gh` with read
+access to `peopleforrester/conference-knowledge`, which is private, and fails
+when any is missing.
 
 ## Where things live
 
@@ -170,21 +173,28 @@ git tag -a delivered/<event-id> <commit> -F <message-file>
 git push origin delivered/<event-id>
 ```
 
-Then add a row below, and open an issue on `peopleforrester/conference-knowledge`
-asking for the tag to be recorded as the event's `delivered_tag`, with this repo
-in the event's `repos`.
+Then open an issue on `peopleforrester/conference-knowledge` asking for the
+tag to be recorded as the event's `delivered_tag`, with this repo in the event's
+`repos`, and add a row below whose "Reported in" cell names that issue. That
+issue is how `conference-management` learns of the tag; a tag no issue names is
+not reported. Adding to an open issue already asking for other tags counts, as
+long as its body or a comment names the tag and the event id.
 
 ### Tags so far
 
-| Tag | Commit | Deck presented | Commit is |
-|---|---|---|---|
-| `delivered/devopsdays-atlanta-2026` | `e8d5a60` | `devopsdays-atlanta-ignite-v5-repo-with-notes`, `1F8QaWE3-JETvsnklZAZwsK-0KCMURkHzW1AxYKSmFpw` | approximate |
-| `delivered/devopsdays-portland-2026` | `3c3cb28` | `devopsdays-portland-ignite-arcade-v7-with-notes`, `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54` | exact |
-| `delivered/sreday-austin-2026` | `aedb2e2` | `sreday-austin-2026-deck-arcade.pptx`, `1l0Ql3MW3DsrK32x8RrZKa6MVi7A9wxc2` | approximate |
+| Tag | Commit | Deck presented | Commit is | Reported in |
+|---|---|---|---|---|
+| `delivered/devopsdays-atlanta-2026` | `e8d5a60` | `devopsdays-atlanta-ignite-v5-repo-with-notes`, `1F8QaWE3-JETvsnklZAZwsK-0KCMURkHzW1AxYKSmFpw` | approximate | `peopleforrester/conference-knowledge#205` |
+| `delivered/devopsdays-portland-2026` | `3c3cb28` | `devopsdays-portland-ignite-arcade-v7-with-notes`, `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54` | exact | `peopleforrester/conference-knowledge#205` |
+| `delivered/sreday-austin-2026` | `aedb2e2` | `sreday-austin-2026-deck-arcade.pptx`, `1l0Ql3MW3DsrK32x8RrZKa6MVi7A9wxc2` | approximate | `peopleforrester/conference-knowledge#205` |
 
 Atlanta and Portland were tagged retroactively on 2026-10-31 (issue #9), and
 SREday Austin the same day (issue #30). Each tag was made in a run's clone; none
-is on the GitHub remote yet, and the push is escalated from each issue.
+is on the GitHub remote yet, and the push is escalated from each issue. All
+three are reported on conference-knowledge#205: Atlanta and Portland in its
+body, SREday Austin in a comment added from #30, because no separate issue was
+filed for it. That issue waits on the push, since `check_registry.py` reports a
+`delivered_tag` missing until the tag is on GitHub.
 
 **Atlanta is approximate** because this repo did not hold the Atlanta material
 when the talk was given on 2026-04-21. Its only commit then was the SREday Texas
