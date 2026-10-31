@@ -198,6 +198,12 @@ mails on every Monday's run.
   recording links and the unstubbed video check against live YouTube (#24)
 - 2026-10-31 the Portland recording's description ("deleted 250 clusters") is
   left as published: the 2026-09-05 "do not re-raise it for Portland" covers it
+- 2026-10-31 the delivered v7 Ignite read from its Drive export for the deck fix
+  (#33). Slide 7 is `$ etcd --force-new-cluster ...` as the cue card says;
+  slide 6's "Applying force override..." and slide 10's "HOUR 1 / etcd
+  force-overwritten" change with it, and the JUNIOR DEV slide sits nineteenth
+  instead of ninth. All listed in `presentations/README.md`. The fix itself
+  waits for the next delivery to be booked, as #33 asks; none is booked yet
   (#28). The pretalx page carries the same text. If it is ever reopened, the
   organizers' address is `portland-or@devopsdays.org`, not `talks@`
 - 2026-10-31 each delivery tag's report is pinned (#32): AGENTS.md's "Tags so
