@@ -3,7 +3,6 @@ on:
   merge_group:
 permissions:
   contents: read
-  security-events: write
 concurrency:
   group: merge-queue-${{ github.ref }}
   cancel-in-progress: false

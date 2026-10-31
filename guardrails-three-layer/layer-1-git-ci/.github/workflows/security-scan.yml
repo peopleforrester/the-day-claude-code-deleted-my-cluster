@@ -10,23 +10,26 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
-  security-events: write
-  pull-requests: write
 
 jobs:
   checkov:
     name: checkov
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload-sarif
     steps:
-      - uses: actions/checkout@v4
-      - uses: bridgecrewio/checkov-action@v12
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: bridgecrewio/checkov-action@c10e2438743528f9e4549758fad8b7a62052541d # v12.3136.0
         with:
           directory: .
           framework: kubernetes,terraform,helm,dockerfile,github_actions
           quiet: true
           output_format: sarif
           output_file_path: checkov.sarif
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3.39.1
         if: always()
         with:
           sarif_file: checkov.sarif
@@ -35,9 +38,14 @@ jobs:
   trivy-fs:
     name: trivy-fs
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload-sarif
     steps:
-      - uses: actions/checkout@v4
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
         with:
           scan-type: fs
           scan-ref: .
@@ -47,7 +55,7 @@ jobs:
           format: sarif
           output: trivy-fs.sarif
           exit-code: "1"
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3.39.1
         if: always()
         with:
           sarif_file: trivy-fs.sarif
@@ -56,26 +64,35 @@ jobs:
   gitleaks:
     name: gitleaks
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # gitleaks-action comments on the PR
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   kube-linter:
     name: kube-linter
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload-sarif
     steps:
-      - uses: actions/checkout@v4
-      - uses: stackrox/kube-linter-action@v1.0.7
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: stackrox/kube-linter-action@87802a2f4e01abebb3ee3c67a3002fea71f6eae5 # v1.0.7
         with:
           directory: k8s
           format: sarif
           output-file: kube-linter.sarif
         continue-on-error: true
-      - uses: github/codeql-action/upload-sarif@v3
+      - uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3.39.1
         if: always()
         with:
           sarif_file: kube-linter.sarif
@@ -85,7 +102,9 @@ jobs:
     name: kubesec
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: scan
         run: |
           set -euo pipefail

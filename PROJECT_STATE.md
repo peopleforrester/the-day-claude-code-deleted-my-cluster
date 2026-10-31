@@ -177,3 +177,12 @@ mails on every Monday's run.
   `incident/REDACTIONS.md` counts them, and `tests/test_redactions.py` holds
   the table to the markers and fails on those shapes in the clear. The values
   stay in `e8d5a60`'s history and the archived Atlanta repo
+- 2026-10-31 the guardrails kit's workflow templates, which `install-layer-1.sh`
+  and `START_HERE.md` copy into readers' repos, cleared of the 31 zizmor
+  findings infrastructure-security-scanning#129 reported (#27): every action
+  pinned by commit SHA with its release in a comment, write permissions moved
+  to the jobs that use them, checkout credentials dropped. trivy-action moves
+  from `0.28.0`, a tag that no longer exists, to 0.35.0, the release the March
+  2026 advisory names safe. `tests/test_workflow_templates.py` holds them to it.
+  `START_HERE.md` still clones the archived Atlanta repo, whose copies are unfixed
+

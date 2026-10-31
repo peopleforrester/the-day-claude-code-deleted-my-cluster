@@ -83,3 +83,34 @@ image digests. `tests/test_redactions.py` holds the table to the marker counts
 and fails on the three missed shapes, so the next miss is caught by a check
 rather than by care. History is not rewritten: the values remain in `e8d5a60`
 and in the archived Atlanta repo, which `REDACTIONS.md` already points to.
+
+## 2026-10-31 · The kit's workflow templates are pinned by SHA, trivy-action moves to 0.35.0
+
+The monthly security scan (infrastructure-security-scanning#129) found 31
+zizmor findings in `guardrails-three-layer/layer-1-git-ci/.github/workflows/`
+(#27). Every action is now pinned by the full commit SHA its tag pointed at on
+2026-10-31, read with `git ls-remote`, with the release in a comment. A major
+tag is pinned to the release it pointed at (`actions/checkout@v4` is v4.4.0),
+except `amannn/action-semantic-pull-request@v5`, which pointed at an untagged
+commit three behind v5.5.3, so v5.5.3 is pinned. The major lines are kept,
+including `github/codeql-action` v3; upgrades are not part of this fix.
+
+trivy-action is the exception. Its `0.28.0` tag no longer exists, so the
+template no longer resolved at all, and GHSA-69fq-xp46-6x23 names 0.35.0 the
+only tag the March 2026 compromise did not rewrite and a SHA pin before
+2025-04-09 still unsafe, since it pulls `setup-trivy` by tag. It moves to
+0.35.0 (`57a97c7`), which pins `setup-trivy` by SHA and defaults to Trivy
+v0.69.3; the template's inputs are unchanged in that release.
+
+Workflow-level permissions are `contents: read` in all four files. Write is
+granted per job: `security-events: write` on the three jobs that upload SARIF,
+`pull-requests: write` on the gitleaks job, which comments on the PR, and on
+`ai-content-detection`, which labels it; the title check gets
+`pull-requests: read`. `policy-check.yml` needs no write at all. Beyond the 31,
+`merge-queue.yml` drops a `security-events: write` its one echo step never
+used, and the PR SHAs reach the shell through `env` rather than template
+expansion. zizmor 1.30.1 offline now reports no findings at its default
+persona; at `auditor` only two low `concurrency-limits` remain, left alone
+because adding concurrency groups changes how the PR checks cancel.
+`tests/test_workflow_templates.py` holds the templates to this.
+
