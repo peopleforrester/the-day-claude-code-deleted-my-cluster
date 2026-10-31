@@ -128,3 +128,6 @@ mails on every Monday's run.
 - 2026-10-31 Portland and Atlanta recordings found and linked from the delivery
   record; delivery reviewed against the cue card; the video check's pattern
   narrowed after it mailed a false hit on other speakers' Ignites (#8)
+- 2026-10-31 `delivered/<event-id>` tag convention written into AGENTS.md; Atlanta
+  and Portland tagged retroactively (#9). The tags are pushed separately from
+  the branch
