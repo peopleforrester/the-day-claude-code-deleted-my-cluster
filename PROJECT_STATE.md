@@ -146,3 +146,11 @@ mails on every Monday's run.
   stranded uncommitted in the archived `walkthrough-agenticburn`, collected as
   `post-event/portland-2026-transcript.md` with its provenance and hash; the
   suite pins the original bytes (#25)
+- 2026-10-31 the live source of `hooks/git/pre-push` is
+  `llm-coding-workflow/scripts/git-hooks/pre-push`, and it still has both
+  secret-scan bugs fixed here: `grep -EnP` (edf8046) and grep piped into `head`
+  under pipefail. The fix there is a follow-up filed in llm-coding-workflow,
+  outside this repo. `hooks/README.md` now says the mirror is ahead on that
+  scan and keeps the 2026-09-10 sync date until the resync, which must also
+  take in the live hook's later changes (change scoping, PRD issue check,
+  `-m 'not e2e'`) (#22)
