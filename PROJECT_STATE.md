@@ -268,3 +268,11 @@ mails on every Monday's run.
   so it is red until a reader puts their suite in its place.
   `tests/test_e2e_template.py` runs each `workflows/` test step against a
   stubbed `uv` and requires a red step for every non-zero exit, 5 included
+- 2026-10-31 the delivered v7 Ignite's real slide order set beside the Portland
+  beat table (#45): JUNIOR DEV (`09/20`) plays nineteenth, so position 9 was
+  THE ESCALATION, heard at 2:09, and JUNIOR DEV was up from 4:30 to 4:45. From
+  slide 4 on every heard time falls in its real window. The beat table and
+  what the room heard are unchanged; `tests/test_deck_order_annotation.py`
+  holds the annotation to the cue card and the table. The next revision puts
+  the slide back at nine, in #33's corrected copy, which still waits for a
+  booked delivery

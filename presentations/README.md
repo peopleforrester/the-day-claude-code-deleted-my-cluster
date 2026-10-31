@@ -57,3 +57,14 @@ THE ESCALATION (10/20) to WHO'S THE PROBLEM therefore sits one position earlier
 than its counter says. The Portland recording review's "Not heard" for beat 9
 is consistent with that order. The next revision has to put the slide back at
 nine or renumber the counters and the cue card to match.
+
+The revision puts it back at nine (#45). The script is written for nine:
+"Your fault. You're the adult." answers slide 8's "I just did whatever I
+wanted", and the cue card assumes it. The move restores the order the script
+is locked to and changes no slide copy. Make it in the same
+corrected copy #33 makes, once the next delivery is booked, and leave the
+delivered v7 file as it is. Before the copy is sent, read its slide order
+from a PPTX export and check that each counter matches its position.
+[`../post-event/portland-2026-recording.md`](../post-event/portland-2026-recording.md)
+carries the real order beside its beat table, with the times each slide was
+on screen in Portland.

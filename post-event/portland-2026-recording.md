@@ -121,6 +121,74 @@ The room heard 16 of the 20, one of them (12) without its silence. Slide 7's
 silence was talked over, and 9, the three-layers frame on 14, and the closing
 line on 20 were lost.
 
+### Annotation, 2026-10-31: the deck's real slide order
+
+Issue #45. The table above, and "in deck order", follow the cue card. The
+delivered file plays in a different order, so this note sets the real order
+beside the table. Nothing above it is changed: the "Heard" and "When" columns
+are still what the room got.
+
+The v7 Slides file (`1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54`, last
+modified 2026-09-10T16:20:58Z, before the slot) was exported from Drive as
+PPTX on 2026-10-31 and its slide list read. No slide is hidden. JUNIOR DEV,
+counter `09/20`, is the **nineteenth** slide, between WHO'S THE PROBLEM
+(`19/20`) and the close (`20/20`). Every slide from THE ESCALATION (`10/20`)
+to WHO'S THE PROBLEM plays one position earlier than its counter.
+
+The windows assume the fifteen-second advance started at the recording's 0:00.
+They are worked out, not observed: the frames were not seen (see above).
+
+| Position | On screen | Slide | Cue card # | Heard at |
+|---|---|---|---|---|
+| 1 | 0:00 to 0:15 | TITLE | 1 | 0:04 |
+| 2 | 0:15 to 0:30 | THE PROMPT | 2 | 0:10 |
+| 3 | 0:30 to 0:45 | 30 SECONDS | 3 | 0:21 |
+| 4 | 0:45 to 1:00 | FALSE HOPE | 4 | 0:49 |
+| 5 | 1:00 to 1:15 | INEFFICIENCIES | 5 | 1:06 |
+| 6 | 1:15 to 1:30 | PHASE 2 | 6 | 1:25 |
+| 7 | 1:30 to 1:45 | `--force-new-cluster` | 7 | 1:30 |
+| 8 | 1:45 to 2:00 | INTERROGATION | 8 | 1:56 |
+| 9 | 2:00 to 2:15 | THE ESCALATION | 10 | 2:09 |
+| 10 | 2:15 to 2:30 | THE 2026 EDITION | 11 | 2:23 |
+| 11 | 2:30 to 2:45 | 0 | 12 | 2:33 |
+| 12 | 2:45 to 3:00 | POST-MORTEM | 13 | 2:54 |
+| 13 | 3:00 to 3:15 | THREE LAYERS | 14 | 3:11 |
+| 14 | 3:15 to 3:30 | GIT HOOKS | 15 | 3:19 |
+| 15 | 3:30 to 3:45 | ADMISSION CONTROL | 16 | 3:39 |
+| 16 | 3:45 to 4:00 | AGENT HOOKS | 17 | 3:53 |
+| 17 | 4:00 to 4:15 | CORE PRINCIPLE | 18 | 4:09 |
+| 18 | 4:15 to 4:30 | WHO'S THE PROBLEM | 19 | 4:23 |
+| 19 | 4:30 to 4:45 | JUNIOR DEV / YOU | 9 | see below |
+| 20 | 4:45 to 5:00 | AI IS A DEVELOPER | 20 | 4:52 |
+
+What that changes in reading the review:
+
+- **From slide 4 on, every heard time falls inside its slide's window in the
+  real order.** Against the cue card order, beats 10 to 19 were each heard
+  4 to 12 seconds before their slide came up, inside the window of the slide
+  one place earlier, which is the shift the real order explains. Beats 2 and 3 come before their windows either way; the
+  setup was spoken ahead of the slides.
+- **Beat 9 was not dropped while its slide was up.** Position 9 was THE
+  ESCALATION, on screen 2:00 to 2:15, and the escalation was heard at 2:09.
+  The counter jumped from `08/20` to `10/20`, and the cue card says "If the
+  number on screen is ahead of the line you are on, skip forward."
+- **JUNIOR DEV was on screen 4:30 to 4:45**, after WHO'S THE PROBLEM. In the
+  room transcript ([`portland-2026-transcript.md`](portland-2026-transcript.md)),
+  between "It was me." and the repo plug, the speaker says "we like to give
+  agents more access than we would give a human being. Why would we do that,
+  right? But I did, and I've done it, and who's responsible? I am." That is
+  close to the slide's "WHO'S RESPONSIBLE? YOU." It may be the speaker talking
+  to that slide, but this is not established: the room transcript has no
+  timings, and on 2026-10-31 YouTube refused this host the captions as well as
+  the media. The table counts "I am" under beat 19, and that stays. The
+  scripted lines "Junior dev, prod, no guardrails. Your fault. You're the
+  adult." were not heard.
+- **"In deck order" means the cue card's order**, which is what the counters
+  and the script intend. It is not the file's order.
+
+The next revision puts JUNIOR DEV back at position 9, in the corrected copy
+#33 makes. The delivered v7 file stays as it is.
+
 ### What was said that differs from the record
 
 Quoted exactly from the captions and annotated, not corrected. This is what
@@ -166,3 +234,5 @@ text and address to use if that is ever reopened, are in `decisions.md`.
    the v7 cue predicted.
 3. Rehearse the 2026 report as the record has it: "150 clusters are
    provisioning concurrently."
+4. Check the file's slide order against its counters before it is sent. v7
+   went out with JUNIOR DEV at nineteen (see the annotation above).

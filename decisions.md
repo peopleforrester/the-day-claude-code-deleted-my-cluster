@@ -355,3 +355,23 @@ runs each `workflows/` template's pytest step under GitHub's default `bash -e`
 with `uv` stubbed to exit 1, 2, 4 and 5, and requires the step to fail each
 time and pass on 0. `ci.yml` is held to the same tests, since a reader copies
 both. Six of its cases fail against the old template.
+
+## 2026-10-31 · The next Ignite revision puts JUNIOR DEV back at nine, not renumbered (#45)
+
+The delivered v7 file plays JUNIOR DEV (`09/20`) nineteenth, and
+`presentations/README.md` left two fixes open: move the slide back to nine, or
+renumber the counters and the cue card to match the file. This takes the
+first, as #45's title asks. The script is written for nine: "Your fault.
+You're the adult." answers slide 8's "I just did whatever I wanted", and
+renumbering would rewrite the cue card and the script's run to suit a slide
+that landed in the wrong place. Moving it changes no slide copy. The move is
+made in the same corrected copy #33 makes once the next delivery is booked;
+the delivered v7 file is left as it is.
+
+`post-event/portland-2026-recording.md` is annotated, not rewritten: the beat
+table and its "in deck order" stay as the review made them, and a new section
+sets the file's real order beside them with the time each slide was on screen,
+worked out from the fifteen-second advance. The passage at about 4:30 that
+echoes JUNIOR DEV's "WHO'S RESPONSIBLE? YOU." is noted as possible, not
+established, because neither the room transcript nor anything readable here
+carries its timing.

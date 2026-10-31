@@ -11,6 +11,11 @@ every 15 seconds whether or not you are ready.
 If the number on screen is ahead of the line you are on, skip forward. Never
 back up.
 
+The card is the intended order. The delivered v7 file plays JUNIOR DEV
+(`09/20`) nineteenth, so with that file the counter jumps from 08 to 10 and the
+card's skip rule drops line 9. Use a copy with the slide back at nine; see
+`README.md`.
+
 | # | On screen | Say |
 |---|---|---|
 | 1 | TITLE | True story. I have the receipts. 2025. |
