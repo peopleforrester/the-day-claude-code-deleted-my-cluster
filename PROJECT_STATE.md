@@ -134,6 +134,11 @@ mails on every Monday's run.
   09:17 on 10-05, 10-12, 10-19 and 10-26. The script's install comment, the last
   copy of the old path, now matches it (#10). Removing the job is
   llm-coding-workflow#470
+- 2026-10-31 `~/repos` paths rechecked after the tree restructure (#12): the
+  the one dead path, CLAUDE.md's `events/agentic-covenants`, was already
+  corrected to `portfolio/agentic-covenants` under #11; the other five resolve,
+  and `courses/` is Accenture-only. `tests/test_repo_paths.py`, which #11 added
+  for `events/`, now covers every root the issue lists as retired
 - 2026-10-31 abstract corrected against the incident artifacts (#15): six
   minutes, not forty; `kubeadm reset -f`, not a force override; iptables and CNI
   on all nine nodes, not netplan on the control plane; logs, not transcripts.
