@@ -42,6 +42,20 @@ def test_both_retroactive_deliveries_are_listed(rows: list[dict[str, str]]) -> N
     assert {"delivered/devopsdays-atlanta-2026", "delivered/devopsdays-portland-2026"} <= tags
 
 
+def test_sreday_austin_is_listed_on_the_commit_main_held_at_the_slot(
+    rows: list[dict[str, str]],
+) -> None:
+    """SREday Austin, the 30-minute delivery #9 missed, is tagged on aedb2e2 (#30).
+
+    aedb2e2 (17:23 UTC) is the last commit before the 17:30 UTC slot. The deck it
+    carries predates corrections visible in the recording, so it is approximate.
+    """
+    by_tag = {r["tag"]: r for r in rows}
+    row = by_tag["delivered/sreday-austin-2026"]
+    assert row["commit"] == "aedb2e2"
+    assert row["kind"] == "approximate"
+
+
 def test_tag_names_follow_the_convention(rows: list[dict[str, str]]) -> None:
     """Each tag reads delivered/<event-id>, the pattern check_registry.py accepts."""
     for row in rows:

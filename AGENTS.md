@@ -180,8 +180,11 @@ in the event's `repos`.
 |---|---|---|---|
 | `delivered/devopsdays-atlanta-2026` | `e8d5a60` | `devopsdays-atlanta-ignite-v5-repo-with-notes`, `1F8QaWE3-JETvsnklZAZwsK-0KCMURkHzW1AxYKSmFpw` | approximate |
 | `delivered/devopsdays-portland-2026` | `3c3cb28` | `devopsdays-portland-ignite-arcade-v7-with-notes`, `1e8pZupiww6PlAjrMMhU22vCJsN_e9zmmrd5rp-OmA54` | exact |
+| `delivered/sreday-austin-2026` | `aedb2e2` | `sreday-austin-2026-deck-arcade.pptx`, `1l0Ql3MW3DsrK32x8RrZKa6MVi7A9wxc2` | approximate |
 
-Both were tagged retroactively on 2026-10-31 (issue #9).
+Atlanta and Portland were tagged retroactively on 2026-10-31 (issue #9), and
+SREday Austin the same day (issue #30). Each tag was made in a run's clone; none
+is on the GitHub remote yet, and the push is escalated from each issue.
 
 **Atlanta is approximate** because this repo did not hold the Atlanta material
 when the talk was given on 2026-04-21. Its only commit then was the SREday Texas
@@ -205,5 +208,24 @@ The deck named `devopsdays-atlanta-ignite-arcade-v5-with-notes`
 (`1Q_S2UDz1F_O8Z-sGjkLy-yIXjycb5jGkAjBK7P_y2fk`) is a copy made on 2026-09-02
 during the Portland rebuild. It is not the file presented at Atlanta.
 
-SREday Austin Q2 2026 (registry id `sreday-austin-2026`) is a delivery of this
-talk too and is not yet tagged.
+**SREday Austin is approximate.** The 30-minute talk ran 12:30 to 13:00 CDT on
+2026-05-11 (17:30 to 18:00 UTC), per the registry, Michael's calendar and the
+SREday repo's README. `aedb2e2` (17:23 UTC, the pre-show cleanup) is the last
+commit before the slot, so it is what `main` held when the talk started; the
+next, `9c7291e`, is a web upload at 18:03 UTC. Unlike the Ignites, this deck is
+in the repo: `presentations/sreday-austin-2026-deck-arcade.pptx`, edited in
+Google Slides as Drive file `1l0Ql3MW3DsrK32x8RrZKa6MVi7A9wxc2`, a PPTX rather
+than a native Slides file. That file was last modified 2026-05-11T18:03:17Z,
+three minutes after the slot ended, and has not changed since. `9c7291e`
+commits it 31 seconds later, same size, and its `docProps/core.xml` carries the
+same modified time.
+
+The copy committed at `aedb2e2` (uploaded in `ebd478a` at 15:24 UTC) is not
+what was on screen. The recording (`EoQ-knQKMek`, 26:34) shows slide 16 three
+quarters of the way through reading "DON'T USE PROBABILISTIC AI (ALONE)", a
+wording only `9c7291e` has. `9c7291e` changes slides 3, 10, 16, 17, 19 and 20
+and drops the reading-list slide; only the slide 16 change is confirmed on
+screen, and nothing records which edits came after the slot. The backup the
+organizers were mailed at 15:18 UTC is the first upload, `3976399`, older
+still. The tag stays on `aedb2e2` because the convention tags `main` at the
+start; check out `9c7291e` for the deck as shown.

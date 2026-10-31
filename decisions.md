@@ -161,3 +161,17 @@ send is the two fields in `abstract/portland-2026-revision.md`, whole, for both
 the YouTube description and that page. It goes to `portland-or@devopsdays.org`
 or Shobhna Shastri directly, not `talks@devopsdays.org`. Her reply of
 2026-09-10 says she does not know where that address goes.
+
+## 2026-10-31 · SREday Austin is tagged on `aedb2e2`, approximate (#30)
+
+`delivered/sreday-austin-2026` goes on `aedb2e2`, the last commit before the
+17:30 UTC slot, as the 2026-10-31 tag convention above says: tag what `main`
+held when the talk started. It is marked approximate, not exact, because the
+deck copy in that commit is not what was on screen. The recording shows slide
+16 with "(ALONE)", which only the next commit, `9c7291e`, has; that commit is
+the Drive file's last save, three minutes after the slot ended.
+
+Tagging `9c7291e` instead was considered and rejected. It would hold the deck
+as shown, but it postdates the talk and may carry edits made after it, and the
+convention is what conference-management's `check_registry.py` and the next
+organizer rely on. The AGENTS.md row sends a reader to `9c7291e` for the deck.

@@ -32,7 +32,7 @@ pytest
 | `test_state_consistency.py` | PROJECT_STATE.md names the canonical owner/repo, which a GitHub `origin` must also match; "Next step" names both blocking inputs |
 | `test_gitignore_coverage.py` | .gitignore covers deck/talk asset patterns; PDF-export policy is documented in README |
 | `test_readme_layout.py` | Every directory listed in README "Repository Layout" exists on disk |
-| `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, each tag reads `delivered/<event-id>`, each row names a deck file id and says exact or approximate, and each commit is in HEAD's history |
+| `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, and SREday Austin on `aedb2e2` as approximate (#30); each tag reads `delivered/<event-id>`, each row names a deck file id and says exact or approximate, and each commit is in HEAD's history |
 | `test_repo_paths.py` | No tracked file points a `~/repos` path at a location the 2026-09-20/21 tree restructure retired (`events/`, `certifications/` and the other moved roots) |
 | `test_license.py` | LICENSE file present at repo root |
 | `test_redactions.py` | `incident/REDACTIONS.md`'s counts match the `<REDACTED-...>` markers in `incident/session-artifacts/`, and no kubeconfig client key, kubeadm certificate key or basic-auth login is left in the clear (#26) |
