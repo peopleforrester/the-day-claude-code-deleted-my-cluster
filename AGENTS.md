@@ -109,6 +109,14 @@ entry that names it.
 ## Tests
 
 Test command: `uv run pytest -q`
+E2E command: `uv run --group e2e pytest -q e2e`
+
+The Test command collects `tests/` only and runs offline. The E2E command runs
+`e2e/`, which checks the repo's claims against live services: every recording
+the README's "Given at" table links resolves on YouTube as this talk, and
+`scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite
+on the live channel. It needs the network and the `e2e` dependency group's
+pinned `yt-dlp`, and fails when either is missing.
 
 ## Where things live
 

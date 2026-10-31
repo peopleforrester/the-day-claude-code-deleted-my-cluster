@@ -83,3 +83,24 @@ image digests. `tests/test_redactions.py` holds the table to the marker counts
 and fails on the three missed shapes, so the next miss is caught by a check
 rather than by care. History is not rewritten: the values remain in `e8d5a60`
 and in the archived Atlanta repo, which `REDACTIONS.md` already points to.
+
+## 2026-10-31 · The E2E command checks the recordings against live YouTube (#24)
+
+AGENTS.md declared only the light `Test command:`, so `main` was gated on
+offline checks alone. The claims here that only a live service can confirm are
+the recording links in the README's "Given at" table, the public rendering of
+the delivery record, and the video check's verdict, so the E2E suite in `e2e/`
+checks those: each linked recording resolves through YouTube's oEmbed endpoint
+and is titled as this talk, and `scripts/check-talk-video.sh`, unstubbed, reads
+FOUND for the Portland Ignite alone. AGENTS.md declares `E2E command: uv run
+--group e2e pytest -q e2e`.
+
+`yt-dlp` is added as the only member of a new `e2e` dependency group, pinned to
+`2026.10.26`, the current PyPI release (uploaded 2026-10-26), so the heavy gate
+does not depend on a system install. It is not in `dev`, so the Test command
+does not install it.
+
+The `delivered/*` tags of #9 are not checked against GitHub: on 2026-10-31 they
+exist only in a run's clone and are not on the remote, so a check would fail
+the gate on a push no run can make. It is a follow-up once #9's tags are
+pushed.

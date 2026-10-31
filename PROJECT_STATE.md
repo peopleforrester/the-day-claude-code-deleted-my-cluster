@@ -105,6 +105,8 @@ mails on every Monday's run.
 - Working tree: reconcile with `git status`.
 - Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
   contents, not application behavior.
+- E2E: `uv run --group e2e pytest -q e2e`. Checks the linked recordings and the
+  video check against live YouTube; needs the network and the pinned `yt-dlp`.
 - CI: none configured.
 
 ## Phase history
@@ -177,3 +179,5 @@ mails on every Monday's run.
   `incident/REDACTIONS.md` counts them, and `tests/test_redactions.py` holds
   the table to the markers and fails on those shapes in the clear. The values
   stay in `e8d5a60`'s history and the archived Atlanta repo
+- 2026-10-31 E2E command declared in AGENTS.md: `e2e/` checks the README's
+  recording links and the unstubbed video check against live YouTube (#24)
