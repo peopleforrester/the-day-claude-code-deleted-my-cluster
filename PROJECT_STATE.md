@@ -84,7 +84,8 @@ after the talk) and Atlanta at <https://www.youtube.com/watch?v=ts0ZnPDrBRI>
 Portland delivery against the cue card: no silence longer than 1.8 seconds,
 slide 9 and the slide 20 close not heard, and a close that can be heard as the
 250 being deleted. The video's description repeats the uncorrected abstract's
-"deleted 250 clusters". (#8)
+"deleted 250 clusters". (#8) It stays as published: the 2026-09-05 decision
+covers the recording, and no correction is requested (#28, `decisions.md`).
 
 The weekly watch on netcup has done its job and should be removed; it now
 mails on every Monday's run.
@@ -189,3 +190,7 @@ mails on every Monday's run.
   `START_HERE.md` still clones the archived Atlanta repo, whose copies are unfixed
 - 2026-10-31 E2E command declared in AGENTS.md: `e2e/` checks the README's
   recording links and the unstubbed video check against live YouTube (#24)
+- 2026-10-31 the Portland recording's description ("deleted 250 clusters") is
+  left as published: the 2026-09-05 "do not re-raise it for Portland" covers it
+  (#28). The pretalx page carries the same text. If it is ever reopened, the
+  organizers' address is `portland-or@devopsdays.org`, not `talks@`

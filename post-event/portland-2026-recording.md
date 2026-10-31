@@ -143,6 +143,12 @@ cluster, it was 250, gone." That correction was dropped by decision on
 public artifact of the talk, and its description says what this repo's
 `CLAUDE.md` says must not be said.
 
+The pretalx program page,
+<https://talks.devopsdays.org/devopsdays-portland-2026/talk/97ACTV/>, carries
+the same text. **It stays as published** (#28): the 2026-09-05 decision not to
+correct the Portland abstract covers its recording too. The reasoning, and the
+text and address to use if that is ever reopened, are in `decisions.md`.
+
 ## For the next delivery
 
 1. The silences are the first thing to go under pressure, and on the evidence

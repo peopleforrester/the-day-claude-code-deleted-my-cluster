@@ -134,3 +134,30 @@ The `delivered/*` tags of #9 are not checked against GitHub: on 2026-10-31 they
 exist only in a run's clone and are not on the remote, so a check would fail
 the gate on a push no run can make. It is a follow-up once #9's tags are
 pushed.
+
+## 2026-10-31 · The Portland recording's description is not corrected
+
+The DevOpsDays Portland recording (`rUJ07SnFsXA`) carries the abstract as
+submitted, "when it deleted 250 clusters" and "it was 250, gone" (#28). No
+request goes to the organizers. This decision applies the 2026-09-05 entry
+above to the recording: that decision dropped the correction, and
+`abstract/portland-2026-revision.md` records it with "Do not re-raise it for
+Portland". The recording is the Portland delivery's own artifact, so that
+instruction covers it. Asking him again would re-raise what he closed.
+
+Three things support leaving it. The submitted text is the contract, and this
+repo annotates errors rather than rewriting them. The spoken close at 5:02
+cannot be edited, so a corrected description would still leave the recording
+saying it. And the correction already has a public home of its own: the
+newsletter issue `enforced-by-infrastructure-3-the-abstract-said-250` in
+`mrf-engagement-orchestrator`'s `content_calendar.yaml`, set for 2026-11-10,
+is about this exact text, and the post-talk article (#5, #36) links the video
+without quoting its description.
+
+The text is the same on the pretalx program page,
+<https://talks.devopsdays.org/devopsdays-portland-2026/talk/97ACTV/>, read from
+the schedule export on 2026-10-31. Should Michael ever reopen this, the text to
+send is the two fields in `abstract/portland-2026-revision.md`, whole, for both
+the YouTube description and that page. It goes to `portland-or@devopsdays.org`
+or Shobhna Shastri directly, not `talks@devopsdays.org`. Her reply of
+2026-09-10 says she does not know where that address goes.
