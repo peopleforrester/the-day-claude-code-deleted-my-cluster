@@ -40,6 +40,18 @@ pytest
 | `test_shell_lint.py` | Every published shell script under `hooks/`, `scripts/` and `guardrails-three-layer/` parses with `bash -n` and is clean at shellcheck error severity (shellcheck must be on `PATH`) |
 | `test_workflow_templates.py` | The guardrails kit's workflow templates pin every action by full commit SHA with a version comment, drop checkout credentials, grant only read permissions at workflow level, and pin trivy-action to the 0.35.0 commit GHSA-69fq-xp46-6x23 names safe (#27) |
 | `test_hooks.py` | The enforcement hooks return their documented verdicts: sensitive-file and PRD-issue blocks, the ABOUTME warning, the Layer 1 commit-msg, pre-commit and pre-push gates, the tiered `hooks/git` pre-commit and pre-push against stubbed linters and test runners, and `check-talk-video.sh` against a stubbed `yt-dlp` |
+| `test_e2e_declaration.py` | AGENTS.md declares the E2E command exactly once, its suite in `e2e/` sits outside the Test command's `testpaths`, and the `e2e` group pins `yt-dlp` |
+
+## The E2E suite
+
+`e2e/` holds the checks that need live services, run with
+`uv run --group e2e pytest -q e2e` (the `E2E command:` in AGENTS.md). They
+need the network and the `e2e` group's pinned `yt-dlp`, and fail rather than
+skip when either is missing.
+
+| File | What's asserted |
+|---|---|
+| `e2e/test_recordings_live.py` | Every YouTube link in the README's "Given at" table resolves and is titled as this talk; `scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite alone on the live channel |
 
 ## Adding tests
 

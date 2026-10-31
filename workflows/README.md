@@ -15,10 +15,11 @@ for production repos: when you adapt this to your own project, add
 those steps before the test run.
 
 `e2e.yml` is a structural placeholder: it has the right shape and
-trigger (PR to main, separate gate) but the talk repo has no
-e2e-marked tests yet, so the run exits cleanly noting the gate is
-present-but-empty. In your repo, replace the test command with your
-real e2e suite.
+trigger (PR to main, separate gate) but runs no e2e-marked tests, so
+the run exits cleanly noting the gate is present-but-empty. In your
+repo, replace the test command with your real e2e suite. This repo's
+own e2e suite is in [`../e2e/`](../e2e/), declared as the
+`E2E command:` in [`../AGENTS.md`](../AGENTS.md).
 
 ### Install
 

@@ -105,6 +105,8 @@ mails on every Monday's run.
 - Working tree: reconcile with `git status`.
 - Tests: `uv run pytest -q`. The suite checks the repo's claims against its own
   contents, not application behavior.
+- E2E: `uv run --group e2e pytest -q e2e`. Checks the linked recordings and the
+  video check against live YouTube; needs the network and the pinned `yt-dlp`.
 - CI: none configured.
 
 ## Phase history
@@ -185,4 +187,5 @@ mails on every Monday's run.
   from `0.28.0`, a tag that no longer exists, to 0.35.0, the release the March
   2026 advisory names safe. `tests/test_workflow_templates.py` holds them to it.
   `START_HERE.md` still clones the archived Atlanta repo, whose copies are unfixed
-
+- 2026-10-31 E2E command declared in AGENTS.md: `e2e/` checks the README's
+  recording links and the unstubbed video check against live YouTube (#24)
