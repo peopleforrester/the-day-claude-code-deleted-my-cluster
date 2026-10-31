@@ -198,6 +198,26 @@ appropriate linters and tests.
 | `pre-push` (any branch) | 2 | Secret scan (AKIA, ghp_*, sk-*, BEGIN PRIVATE KEY) + unit tests. `.skip-unit-tests` opts out | `git push --no-verify` |
 | `pre-push` (main only) | 3 | e2e gate: Python `tests/e2e/`, Node `test:e2e` script, or `scripts/e2e-test.sh`. `.skip-e2e` opts out. `.direct-push-allowed` skips all pre-push checks | Admin force-push on a protected branch |
 
+### Fixed here first: the secret scan passed files it should have blocked
+
+As synced, `pre-push` ran the content scan with `grep -EnP`. GNU grep rejects
+`-E` and `-P` together ("conflicting matchers specified", exit 2), and with
+stderr discarded that error read as "no match", so the scan passed every file.
+The copy here uses `grep -nE` (the patterns are plain ERE, and BSD grep has no
+`-P`) and is tested against a committed secret in `tests/test_hooks.py`.
+
+A second defect sat behind the first. The scan piped grep into `head -5` under
+`set -o pipefail`, so on a file with many matches `head` exited, grep died of
+SIGPIPE, and the pipeline's failure again read as a clean file. The copy here
+captures the matches first and truncates only the listing, with a test that
+commits a file of 200,000 keys.
+
+Both fixes were made in this mirror (2026-10-16 and 2026-10-31), after the
+2026-09-10 sync, and the live configuration still carries the broken line. The
+sync date at the top stays where it is until the live copy is fixed and the two
+are resynced. If you installed `pre-push` from here before 2026-10-31, copy it
+again.
+
 ### Install (per repo)
 
 ```bash
