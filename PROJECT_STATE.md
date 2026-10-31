@@ -131,3 +131,8 @@ mails on every Monday's run.
 - 2026-10-31 `delivered/<event-id>` tag convention written into AGENTS.md; Atlanta
   and Portland tagged retroactively (#9). The tags are pushed separately from
   the branch
+- 2026-10-31 video-check cron confirmed running after the events/ to talks/
+  move: the tracked line resolves the repo through `sk-repo`, and it mailed at
+  09:17 on 10-05, 10-12, 10-19 and 10-26. The script's install comment, the last
+  copy of the old path, now matches it (#10). Removing the job is
+  llm-coding-workflow#470

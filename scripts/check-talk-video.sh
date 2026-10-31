@@ -43,10 +43,19 @@
 # delivery is reviewed in post-event/portland-2026-recording.md. The weekly cron
 # has done its job and should come out; on a hit it mails again every Monday.
 #
-# Install as a weekly cron. Cron's PATH will not find yt-dlp or gog, so set it:
-#   17 9 * * 1 export PATH=$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$PATH; \
-#     $HOME/repos/events/the-day-claude-code-deleted-my-cluster/scripts/check-talk-video.sh \
-#     --notify >> $HOME/logs/talk-video.log 2>&1
+# Install as a weekly cron. The tracked line is in
+# llm-coding-workflow/netcup-dotfiles/crontab; its removal is
+# peopleforrester/llm-coding-workflow#470. Three things it needs:
+#   - the repo path from the catalog, not hardcoded. The 2026-09-20/21 tree
+#     restructure moved this repo from events/ to talks/ (issue #10).
+#   - a full PATH, because cron's will not find yt-dlp or gog.
+#   - GOG_KEYRING_PASSWORD, because without it gog cannot unlock its keyring
+#     and fails with no TTY.
+#   17 9 * * 1 R1=$($HOME/repos/workflow/scripts-knowledge/bin/sk-repo path --alert \
+#     peopleforrester/the-day-claude-code-deleted-my-cluster) || exit 1; \
+#     export PATH=$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/usr/bin:/bin; \
+#     export GOG_KEYRING_PASSWORD="$(cat $HOME/secrets/google/gog/.keyring-pw)"; \
+#     ${R1}/scripts/check-talk-video.sh --notify >> $HOME/logs/talk-video.log 2>&1
 
 set -euo pipefail
 
