@@ -33,7 +33,7 @@ pytest
 | `test_gitignore_coverage.py` | .gitignore covers deck/talk asset patterns; PDF-export policy is documented in README |
 | `test_readme_layout.py` | Every directory listed in README "Repository Layout" exists on disk |
 | `test_delivery_tags.py` | AGENTS.md's delivery-tag table lists Atlanta and Portland, and SREday Austin on `aedb2e2` as approximate (#30); each tag reads `delivered/<event-id>`, each row names a deck file id, says exact or approximate, and names the `peopleforrester/conference-knowledge` issue that reported it (all three on #205, #32), and each commit is in HEAD's history; every table row parses, and the convention still says to report each tag to conference-knowledge |
-| `test_repo_paths.py` | No tracked file points a `~/repos` path at a location the 2026-09-20/21 tree restructure retired (`events/`, `certifications/` and the other moved roots) |
+| `test_repo_paths.py` | No tracked file points a `~/repos` path at a location the 2026-09-20/21 tree restructure retired (`events/`, `certifications/` and the other moved roots); AGENTS.md's framework-evolution section points at `~/repos/portfolio/agentic-covenants` and its GitHub URL, and the file names no other `~/repos` path for it (#37) |
 | `test_license.py` | LICENSE file present at repo root |
 | `test_redactions.py` | `incident/REDACTIONS.md`'s counts match the `<REDACTED-...>` markers in `incident/session-artifacts/`, and no kubeconfig client key, kubeadm certificate key or basic-auth login is left in the clear (#26) |
 | `test_post_event_transcript.py` | The rescued Portland transcript is the original file byte for byte below its marker, names its source and caveat, and is linked from the post-event record |

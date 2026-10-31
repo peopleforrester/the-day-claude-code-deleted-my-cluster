@@ -148,6 +148,9 @@ mails on every Monday's run.
   corrected to `portfolio/agentic-covenants` under #11; the other five resolve,
   and `courses/` is Accenture-only. `tests/test_repo_paths.py`, which #11 added
   for `events/`, now covers every root the issue lists as retired
+- 2026-10-31 `tests/test_repo_paths.py` now also requires AGENTS.md's
+  framework-evolution section to name `~/repos/portfolio/agentic-covenants`, so a
+  different wrong path fails, not only the retired one (#37)
 - 2026-10-31 abstract corrected against the incident artifacts (#15): six
   minutes, not forty; `kubeadm reset -f`, not a force override; iptables and CNI
   on all nine nodes, not netplan on the control plane; logs, not transcripts.
