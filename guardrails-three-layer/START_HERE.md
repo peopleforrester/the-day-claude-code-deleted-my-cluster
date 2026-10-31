@@ -20,8 +20,8 @@ Clock time: ~30 minutes for the minimum posture.
 
 ```bash
 cd <your-repo>
-git clone --depth=1 https://github.com/peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite /tmp/three-layers
-/tmp/three-layers/bin/evaluate.sh
+git clone --depth=1 https://github.com/peopleforrester/the-day-claude-code-deleted-my-cluster /tmp/three-layers
+/tmp/three-layers/guardrails-three-layer/bin/evaluate.sh
 ```
 
 Write down your score. You will run this again at the end.
@@ -33,9 +33,9 @@ Write down your score. You will run this again at the end.
 Copy the client-side hooks into your repo and activate them:
 
 ```bash
-cp -r /tmp/three-layers/layer-1-git-ci/.githooks ./.githooks
-cp    /tmp/three-layers/layer-1-git-ci/.pre-commit-config.yaml ./.pre-commit-config.yaml
-cp    /tmp/three-layers/layer-1-git-ci/scripts/install-hooks.sh ./scripts/install-hooks.sh
+cp -r /tmp/three-layers/guardrails-three-layer/layer-1-git-ci/.githooks ./.githooks
+cp    /tmp/three-layers/guardrails-three-layer/layer-1-git-ci/.pre-commit-config.yaml ./.pre-commit-config.yaml
+cp    /tmp/three-layers/guardrails-three-layer/layer-1-git-ci/scripts/install-hooks.sh ./scripts/install-hooks.sh
 chmod +x ./.githooks/* ./scripts/install-hooks.sh
 ./scripts/install-hooks.sh
 ```
@@ -87,7 +87,7 @@ gh api -X PUT "repos/$REPO/branches/main/protection" \
 **Path B, Terraform:**
 
 ```bash
-cp /tmp/three-layers/layer-1-git-ci/terraform/branch-protection.tf ./terraform/
+cp /tmp/three-layers/guardrails-three-layer/layer-1-git-ci/terraform/branch-protection.tf ./terraform/
 # edit the repository name at the top, then:
 cd terraform && terraform init && terraform apply
 ```
@@ -95,7 +95,7 @@ cd terraform && terraform init && terraform apply
 Then copy the GitHub Actions workflows:
 
 ```bash
-cp -r /tmp/three-layers/layer-1-git-ci/.github/workflows/* ./.github/workflows/
+cp -r /tmp/three-layers/guardrails-three-layer/layer-1-git-ci/.github/workflows/* ./.github/workflows/
 git add .github/workflows
 git commit -m "ci: add Layer 1 security-scan + policy-check workflows"
 git push
@@ -112,7 +112,7 @@ Layer 1 is done.
 The fast win for anyone using Claude Code locally:
 
 ```bash
-cp -r /tmp/three-layers/layer-3-claude-hooks/.claude ./.claude
+cp -r /tmp/three-layers/guardrails-three-layer/layer-3-claude-hooks/.claude ./.claude
 chmod +x ./.claude/hooks/*.sh
 ```
 
@@ -152,7 +152,7 @@ helm install kyverno kyverno/kyverno -n kyverno --create-namespace \
   --set replicaCount=3
 
 # apply the policies in Audit mode first
-kubectl apply -f /tmp/three-layers/layer-2-kubernetes/kyverno/
+kubectl apply -f /tmp/three-layers/guardrails-three-layer/layer-2-kubernetes/kyverno/
 
 # watch what would have been blocked
 kubectl get policyreports -A
@@ -160,8 +160,8 @@ kubectl get clusterpolicyreports
 
 # after a week: flip every policy to Enforce
 sed -i 's/validationFailureAction: Audit/validationFailureAction: Enforce/' \
-  /tmp/three-layers/layer-2-kubernetes/kyverno/*.yaml
-kubectl apply -f /tmp/three-layers/layer-2-kubernetes/kyverno/
+  /tmp/three-layers/guardrails-three-layer/layer-2-kubernetes/kyverno/*.yaml
+kubectl apply -f /tmp/three-layers/guardrails-three-layer/layer-2-kubernetes/kyverno/
 ```
 
 Falco comes next:
@@ -169,7 +169,7 @@ Falco comes next:
 ```bash
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm install falco falcosecurity/falco -n falco --create-namespace \
-  --values /tmp/three-layers/layer-2-kubernetes/falco/values.yaml
+  --values /tmp/three-layers/guardrails-three-layer/layer-2-kubernetes/falco/values.yaml
 ```
 
 Full Layer 2 guidance: [layer-2-kubernetes/README.md](./layer-2-kubernetes/README.md)
@@ -178,8 +178,9 @@ Full Layer 2 guidance: [layer-2-kubernetes/README.md](./layer-2-kubernetes/READM
 
 ## After rollout
 
-Re-run `./bin/evaluate.sh`. If you started at 3/15 and you finish this
-playbook at 11/15, you did the work.
+Re-run `/tmp/three-layers/guardrails-three-layer/bin/evaluate.sh` from your
+repo. If you started at 3/15 and you finish this playbook at 11/15, you did
+the work.
 
 **If your AI agent ever types `etcd --force-new-cluster` from now on: at
 least four different layers say no before the command runs.** That is the

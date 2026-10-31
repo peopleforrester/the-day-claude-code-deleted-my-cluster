@@ -38,6 +38,9 @@ docs/senior-review-fixes.md
 # Per-project Claude Code state directory (caches, transient state).
 # Not for publication.
 .claude/
+# Except the guardrails kit's Layer 3 template, which readers copy into
+# their own repos as .claude/ (#40).
+!guardrails-three-layer/layer-3-claude-hooks/.claude/
 
 # Slide-tool intermediates (commit source, ignore derived output)
 .reveal-md/

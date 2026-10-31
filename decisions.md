@@ -282,3 +282,30 @@ beats at about 5:48. Its restart is about 940 words, about 6:17 at that rate,
 and a second run-through the same day, `My recording 211.mp3`, about 900 words
 and also uncommitted, is the closer match. That one is left for its own issue
 rather than collected here, since #35 asked about 212 only.
+
+## 2026-10-31 · The kit's clone instructions point at this repo, and Layer 3's template is restored (#40)
+
+`guardrails-three-layer/START_HERE.md` and the kit's `README.md` told readers
+to clone the archived Atlanta Ignite repo, which still holds the workflow
+templates with mutable tags and broad permissions that #27 fixed here only.
+Both now clone this repo into `/tmp/three-layers`, and every path under it
+goes through `guardrails-three-layer/`. The README's own start block now runs
+`evaluate.sh` from the reader's repo, as START_HERE does, since the script
+scores the git repo of the current directory. Its old form, `cd` into the clone
+and run `./bin/evaluate.sh`, scored the kit. Its tree is now rooted at the kit
+directory, with `three-layers.md` beside the README, where it is, and not under
+`docs/`. The Atlanta repo is left as it is; nothing here needs it unarchived.
+
+Pointing readers here exposed a gap from the consolidation: the root
+`.gitignore` ignores every `.claude/` directory, so
+`layer-3-claude-hooks/.claude/` (`settings.json` and eight hooks) never came
+across from the Atlanta repo. START_HERE's Layer 3 step and
+`bin/install-layer-3.sh` both copy from it. It is restored from the Atlanta
+checkout, byte-identical to the copy on that repo's GitHub `main`, and the
+`.gitignore` has a negation for that one directory. The template's
+`settings.json` runs a `prompt-secret-scan.sh` that the Atlanta copy never had
+either. That is carried over unchanged and left for its own issue.
+
+`tests/test_kit_clone_paths.py` pins both docs to this repo's URL. It also
+holds every `/tmp/three-layers/...` path they name to a path `git ls-files`
+lists, so an ignored directory that exists only on disk fails.

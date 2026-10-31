@@ -30,13 +30,18 @@ string catches it on push.
 ## Start here (60 seconds)
 
 ```bash
-git clone https://github.com/peopleforrester/DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite
-cd DevOpsDaysAtlanta_2026_Cluster_Destruction_Ignite
-./bin/evaluate.sh
+git clone --depth=1 https://github.com/peopleforrester/the-day-claude-code-deleted-my-cluster /tmp/three-layers
+cd <your-repo>
+/tmp/three-layers/guardrails-three-layer/bin/evaluate.sh
 ```
 
 `evaluate.sh` scores your current setup across all three layers and tells you
-which layer to deploy next. No installs, no side effects, no writes.
+which layer to deploy next. No installs, no side effects, no writes. Run it
+from inside the repo you want scored: it reads the git repo of the current
+directory, not the kit's.
+
+The kit lives in the `guardrails-three-layer/` directory of the talk's repo,
+so every path below is relative to that directory.
 
 ---
 
@@ -54,7 +59,7 @@ which layer to deploy next. No installs, no side effects, no writes.
 ## The repo, at a glance
 
 ```
-.
+guardrails-three-layer/
 ├── README.md                       (this file)
 ├── START_HERE.md                   (30-minute Monday-morning rollout)
 ├── bin/
@@ -65,8 +70,7 @@ which layer to deploy next. No installs, no side effects, no writes.
 ├── layer-1-git-ci/                 (git hooks + GitHub CI)
 ├── layer-2-kubernetes/             (Kyverno + Falco + RBAC + NetworkPolicy + PSS)
 ├── layer-3-claude-hooks/           (Claude Code .claude/settings.json + hooks)
-└── docs/
-    └── three-layers.md             (the full reference — everything below, in one doc)
+└── three-layers.md                 (the full reference — everything below, in one doc)
 ```
 
 ---
