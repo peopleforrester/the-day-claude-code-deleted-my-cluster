@@ -32,6 +32,17 @@
 # matches the year in the video TITLE. DevOpsDays titles have carried the year
 # consistently since 2016, but that is a convention, not a guarantee.
 #
+# The pattern is the talk's own title, not a word any Ignite carries. It used to
+# include "ignite", and on 2026-10-05 that reported FOUND and mailed "the Portland
+# Ignite recording appears to be up" on four other speakers' Ignites, four days
+# before this one was uploaded. A confident, specific, false status report: the
+# failure the talk is about, made by the script written to avoid it.
+#
+# OUTCOME, 2026-10-31: found. https://www.youtube.com/watch?v=rUJ07SnFsXA,
+# uploaded 2026-10-09, 5:11, in the "DevOpsDays Portland, 2026" playlist. The
+# delivery is reviewed in post-event/portland-2026-recording.md. The weekly cron
+# has done its job and should come out; on a hit it mails again every Monday.
+#
 # Install as a weekly cron. Cron's PATH will not find yt-dlp or gog, so set it:
 #   17 9 * * 1 export PATH=$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$PATH; \
 #     $HOME/repos/events/the-day-claude-code-deleted-my-cluster/scripts/check-talk-video.sh \
@@ -40,7 +51,7 @@
 set -euo pipefail
 
 readonly CHANNEL="https://www.youtube.com/channel/UCxzmx6LKP5PmcR1wVUj1dxw"
-readonly PATTERN='claude|cluster|forrester|ignite'
+readonly PATTERN='deleted my cluster'
 readonly YEAR='2026'
 readonly NOTIFY_TO="michaelrishiforrester@gmail.com"
 

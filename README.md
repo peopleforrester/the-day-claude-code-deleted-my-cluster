@@ -8,11 +8,11 @@ here; the material lives here.
 
 ## Given at
 
-| Event | Date | Format | What that version emphasized |
-|---|---|---|---|
-| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | The incident, closing on three deterministic layers |
-| SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework |
-| DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | The 2026 fleet incident added; closes on verification, not blast radius |
+| Event | Date | Format | What that version emphasized | Recording |
+|---|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | The incident, closing on three deterministic layers | [video](https://www.youtube.com/watch?v=ts0ZnPDrBRI) |
+| SREday Austin Q2 2026 | 2026-05-11, 12:30 | 30 minutes | Full incident forensics plus the Eight Guardrails Framework | none linked |
+| DevOpsDays Portland 2026 | 2026-09-10, 13:50 | 5-minute Ignite, 20 slides | The 2026 fleet incident added; closes on verification, not blast radius | [video](https://www.youtube.com/watch?v=rUJ07SnFsXA) |
 
 The Ignite came first and the long form followed. The three-layer model is the
 five-minute condensation; the Eight Guardrails Framework is the full articulation.
@@ -60,6 +60,9 @@ for the timeline, quoted from the session transcript.
   canonical text is [`abstract/abstract.md`](abstract/abstract.md).
 - [**`presentations/`**](presentations/): decks. The SREday PPTX is the editable
   source; the Atlanta PDF is the Ignite cut.
+- [**`post-event/`**](post-event/): after the talk. Where the recordings are and
+  what the room actually got, set against the cue card
+  ([`portland-2026-recording.md`](post-event/portland-2026-recording.md)).
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
 
 ## Just saw the talk

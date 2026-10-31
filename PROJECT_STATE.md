@@ -35,11 +35,11 @@ DevOpsDays Atlanta ignite repo.
 
 ## Delivery record
 
-| Event | Date | Format | Status |
-|---|---|---|---|
-| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite | Delivered |
-| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered |
-| DevOpsDays Portland 2026 | 2026-09-10 13:50 | 5-minute Ignite | Delivered |
+| Event | Date | Format | Status | Recording |
+|---|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite | Delivered | <https://www.youtube.com/watch?v=ts0ZnPDrBRI> |
+| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered | none linked |
+| DevOpsDays Portland 2026 | 2026-09-10 13:50 | 5-minute Ignite | Delivered | <https://www.youtube.com/watch?v=rUJ07SnFsXA> |
 
 ## Next step
 
@@ -77,6 +77,20 @@ the only substantive item left.
   with the submitted description. The corrected text is kept in
   `abstract/portland-2026-revision.md` for the next submission.
 
+### The recordings are up
+
+Both Ignites are published: Portland at
+<https://www.youtube.com/watch?v=rUJ07SnFsXA> (uploaded 2026-10-09, 29 days
+after the talk) and Atlanta at <https://www.youtube.com/watch?v=ts0ZnPDrBRI>
+(2026-05-15, 24 days). `post-event/portland-2026-recording.md` sets the
+Portland delivery against the cue card: no silence longer than 1.8 seconds,
+slide 9 and the slide 20 close not heard, and a close that can be heard as the
+250 being deleted. The video's description repeats the uncorrected abstract's
+"deleted 250 clusters". (#8)
+
+The weekly watch on netcup has done its job and should be removed; it now
+mails on every Monday's run.
+
 ### Carried forward
 
 - Issue #5 is now a post-talk article: the guardrails presented in the talk do
@@ -111,3 +125,6 @@ the only substantive item left.
   a corrected copy had already reached the organizers
 - 2026-09-15 em-dashes removed from authored prose, 19 pre-existing dead links
   repaired, American spellings applied per llm-coding-workflow#153
+- 2026-10-31 Portland and Atlanta recordings found and linked from the delivery
+  record; delivery reviewed against the cue card; the video check's pattern
+  narrowed after it mailed a false hit on other speakers' Ignites (#8)

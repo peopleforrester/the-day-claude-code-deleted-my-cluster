@@ -27,11 +27,11 @@ predecessor. Do not treat it as authoritative; its forensics were folded into
 
 ## Delivery record
 
-| Event | Date | Format | Status |
-|---|---|---|---|
-| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | Delivered |
-| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered |
-| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Delivered |
+| Event | Date | Format | Status | Recording |
+|---|---|---|---|---|
+| DevOpsDays Atlanta 2026 | 2026-04-21 | 5-minute Ignite, 20 slides | Delivered | <https://www.youtube.com/watch?v=ts0ZnPDrBRI> |
+| SREday Austin Q2 2026 | 2026-05-11 12:30 | 30 minutes | Delivered | none linked |
+| DevOpsDays Portland 2026 | 2026-09-10 13:50 PT | 5-minute Ignite, 20 slides | Delivered | <https://www.youtube.com/watch?v=rUJ07SnFsXA> |
 
 ## The two incidents
 
