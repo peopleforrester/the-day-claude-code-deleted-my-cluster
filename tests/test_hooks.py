@@ -175,12 +175,92 @@ def test_check_commit_message_warns_without_issue_link() -> None:
     assert "No issue link" in result.stderr
 
 
+# Far more lines after the first match than a pipe buffer holds, so a writer
+# piped into grep -q or head is still writing when the reader exits (#34).
+FILLER = "".join(f"filler line {i}\n" for i in range(200_000))
+
+
+def test_check_commit_message_reads_first_heredoc_of_a_long_command() -> None:
+    # Every later `<<` is another delimiter match; the first one is the message's.
+    command = (
+        "git commit -F - <<'MSG'\nFix the retry loop\n\nGenerated with Claude Code\nMSG\n"
+        + "".join(f"cat <<D{i}\n" for i in range(100_000))
+    )
+    result = run_hook(CHECK_COMMIT, {"tool_name": "Bash", "tool_input": {"command": command}})
+    assert result.returncode == 2, result.stderr[-500:]
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+def test_check_commit_message_reads_first_long_option_of_a_long_command() -> None:
+    command = 'git commit --message="Generated with Claude Code"' + " --message=x" * 100_000
+    result = run_hook(CHECK_COMMIT, {"tool_name": "Bash", "tool_input": {"command": command}})
+    assert result.returncode == 2, result.stderr[-500:]
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Fix the retry loop\n\nGenerated with Claude Code\n" + FILLER,
+        "Fix the retry loop\n\nIssue #34\n" + FILLER + "Co-Authored-By: Claude\n",
+    ],
+    ids=["early-match", "late-match"],
+)
+def test_attribution_library_blocks_long_message_under_pipefail(
+    tmp_path: Path, message: str
+) -> None:
+    # The library is sourced by enforcement points that set pipefail, so it
+    # must not read a match as clean when the message outruns the pipe buffer.
+    msg_file = tmp_path / "msg"
+    msg_file.write_text(message)
+    script = (
+        "set -euo pipefail\n"
+        'source "$1"\n'
+        'if out=$(check_ai_attribution "$(cat "$2")"); then echo CLEAN; else echo "$out"; fi\n'
+    )
+    result = subprocess.run(
+        [BASH, "-c", script, "bash", str(CLAUDE_HOOKS / "lib" / "check-ai-attribution.sh"), str(msg_file)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "BLOCKED: Commit message contains AI/Claude reference" in result.stdout
+
+
 def test_check_commit_message_refuses_without_library(tmp_path: Path) -> None:
     lone = tmp_path / CHECK_COMMIT.name
     shutil.copy(CHECK_COMMIT, lone)
     result = run_hook(lone, commit_payload("Fix the retry loop\n\nIssue #18"))
     assert result.returncode == 2
     assert "refusing to skip the AI-attribution check silently" in result.stderr
+
+
+# ─── auto-reanchor.sh (PostCompact) ────────────────────────────────────
+
+AUTO_REANCHOR = CLAUDE_HOOKS / "auto-reanchor.sh"
+
+
+def test_auto_reanchor_prints_block_on_clean_tree(git_repo: Path) -> None:
+    commit_file(git_repo, "a.txt", "a\n")
+    result = run_hook(AUTO_REANCHOR, cwd=git_repo)
+    assert result.returncode == 0, result.stderr
+    assert "--- POST-COMPACTION RE-ANCHOR ---" in result.stderr
+    assert "Working tree clean" in result.stderr
+
+
+def test_auto_reanchor_prints_block_on_very_dirty_tree(git_repo: Path) -> None:
+    # Enough untracked files that git status is still writing when the listing
+    # is cut to ten lines; the hook must still print its block.
+    commit_file(git_repo, "a.txt", "a\n")
+    for i in range(20_000):
+        (git_repo / f"untracked-{i:05d}.txt").touch()
+    result = run_hook(AUTO_REANCHOR, cwd=git_repo)
+    assert result.returncode == 0, result.stderr[-500:]
+    assert "--- POST-COMPACTION RE-ANCHOR ---" in result.stderr
+    assert "Dirty files: ?? untracked-00000.txt" in result.stderr
+    assert result.stderr.count("?? untracked-") == 10
+    assert "ACTION: Re-read CLAUDE.md" in result.stderr
 
 
 # ─── enforce-prd-issue-first.sh (PreToolUse Edit|Write) ────────────────
@@ -294,6 +374,23 @@ COMMIT_MSG = GITHOOKS / "commit-msg"
     ],
 )
 def test_commit_msg(tmp_path: Path, message: str, expected: int) -> None:
+    msg_file = tmp_path / "COMMIT_EDITMSG"
+    msg_file.write_text(message)
+    result = run_hook(COMMIT_MSG, args=(str(msg_file),))
+    assert result.returncode == expected, result.stderr
+
+
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        ("feat: add x\n\nGenerated with Claude Code\n" + FILLER, 1),
+        ("feat: add x\n\nGenerated with Claude Code\nReviewed-by: Human <h@example.com>\n" + FILLER, 0),
+    ],
+    ids=["unreviewed", "reviewed"],
+)
+def test_commit_msg_long_body(tmp_path: Path, message: str, expected: int) -> None:
+    # The match sits above a body longer than a pipe buffer, so grep -q has
+    # its answer while the message is still being written to it.
     msg_file = tmp_path / "COMMIT_EDITMSG"
     msg_file.write_text(message)
     result = run_hook(COMMIT_MSG, args=(str(msg_file),))

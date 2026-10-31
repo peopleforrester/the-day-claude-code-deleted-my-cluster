@@ -46,7 +46,7 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
 # --- Step 4: Only check git commit commands ---
 # Match "git commit" anywhere in the command (handles chained commands with &&)
-if ! echo "$COMMAND" | grep -qE 'git\s+commit'; then
+if ! grep -qE 'git\s+commit' <<< "$COMMAND"; then
     exit 0  # Not a git commit - allow it
 fi
 
@@ -61,7 +61,12 @@ MSG=""
 # with any other delimiter was never examined and the attribution rule below
 # silently did not apply to it. The delimiter is now read from the redirection
 # itself and the body is taken up to the line that closes it.
-DELIM=$(echo "$COMMAND" | grep -oP "<<-?\s*['\"]?\K[A-Za-z_][A-Za-z0-9_]*" | head -1)
+#
+# Every grep here reads a captured string rather than a pipe, and the first
+# match is cut from the captured text rather than by head: a writer piped into
+# grep -q or head dies of SIGPIPE once the reader has its answer (#34).
+DELIM=$(grep -oP "<<-?\s*['\"]?\K[A-Za-z_][A-Za-z0-9_]*" <<< "$COMMAND" || true)
+DELIM=${DELIM%%$'\n'*}
 if [ -n "$DELIM" ]; then
     MSG=$(echo "$COMMAND" | awk -v d="$DELIM" '
         !found && $0 ~ ("<<-?[[:space:]]*[\"'\'']?" d "[\"'\'']?[[:space:]]*$") { found=1; next }
@@ -83,7 +88,8 @@ fi
 
 # --message="message" style
 if [ -z "$MSG" ]; then
-    MSG=$(echo "$COMMAND" | grep -oP -- "--message=['\"]?\K[^'\"]*" | head -1)
+    MSG=$(grep -oP -- "--message=['\"]?\K[^'\"]*" <<< "$COMMAND" || true)
+    MSG=${MSG%%$'\n'*}
 fi
 
 # If extraction failed entirely, skip check rather than false-positive
@@ -128,8 +134,8 @@ fi
 #   Closes #12         same, and closes it
 #   Trivial: <reason>  the explicit hatch, for typos and comment tweaks
 if [ -n "$MSG" ]; then
-    if ! echo "$MSG" | grep -qiE '(^|[^a-z])(issue|closes|fixes|refs) +#[0-9]+'; then
-        if ! echo "$MSG" | grep -qE '^[[:space:]]*Trivial:[[:space:]]*\S'; then
+    if ! grep -qiE '(^|[^a-z])(issue|closes|fixes|refs) +#[0-9]+' <<< "$MSG"; then
+        if ! grep -qE '^[[:space:]]*Trivial:[[:space:]]*\S' <<< "$MSG"; then
             echo "No issue link. Add a trailer naming the milestone this commit moves:" >&2
             echo "" >&2
             echo "    Issue #<n>          the milestone issue" >&2

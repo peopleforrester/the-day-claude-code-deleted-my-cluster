@@ -107,8 +107,8 @@ It is published **as it is**, defect included, because it is a better teaching
 artifact that way.
 
 The script tries to scan only the commit message rather than the whole command.
-It finds the heredoc delimiter with `head -1`, which takes the **first** heredoc
-in the command. A very common shape is a file write followed by a commit:
+It keeps only the first heredoc delimiter it finds, which is the **first**
+heredoc in the command. A very common shape is a file write followed by a commit:
 
 ```bash
 cat > notes.md <<'EOF'
@@ -128,6 +128,23 @@ The lesson generalises past this script. **A control that parses a command
 string is guessing.** The reliable version anchors on the invocation, or runs
 where the action actually happens, which is why Layer 1 and Layer 2 sit above
 this one.
+
+### Fixed here first: pipes cut short under pipefail
+
+`auto-reanchor.sh` cut `git status --short` to ten lines by piping it into
+`head -10` under `set -euo pipefail`. On a working tree with many changes, head
+exited while git was still writing, git died of SIGPIPE, and `set -e` ended the
+hook before it printed the re-anchor block. `lib/check-ai-attribution.sh` had
+the same shape in `echo "$scrubbed" | grep -qiP`: sourced by a caller that sets
+pipefail, a message longer than a pipe buffer with an attribution near its top
+read as clean, because echo died once grep had its match. Both now capture the
+output and search or cut the captured text, as `check-commit-message.sh` does
+for its delimiter and `--message` reads, and `tests/test_hooks.py` runs them on
+a 20,000-file working tree and a 200,000-line message (#34).
+
+These fixes were made here on 2026-10-31. The live copies in the working set
+still pipe, and its native `commit-msg` hook sources the library under
+pipefail, so the sync date at the top stays until the two are resynced.
 
 ### Install
 

@@ -49,7 +49,12 @@ kubectl apply -f "${SRC}/networkpolicies/ai-workspace.yaml"
 
 echo
 echo "Applying ValidatingAdmissionPolicy (K8s 1.30+)"
-if kubectl api-resources | grep -q validatingadmissionpolicies; then
+# Capture the listing before searching it. Piped straight into grep -q under
+# pipefail, kubectl dies of SIGPIPE once grep has its match, and a cluster that
+# serves the API took the skip branch (#34). `|| true` also keeps the listing
+# when kubectl exits 1 because one unrelated API group failed discovery.
+api_resources="$(kubectl api-resources || true)"
+if grep -q validatingadmissionpolicies <<< "${api_resources}"; then
     kubectl apply -f "${SRC}/vap/deny-privileged.yaml"
 else
     echo "  ValidatingAdmissionPolicy not available on this API server. Skipping."

@@ -81,7 +81,7 @@ check_ai_attribution() {
 
         local forbidden refused=0
         for forbidden in "${never_exemptible[@]}"; do
-            if printf '%s' "$noun" | grep -qiP "$forbidden"; then
+            if grep -qiP "$forbidden" <<< "$noun"; then
                 echo "BLOCKED: Proper-noun: may not exempt an attribution construct."
                 echo ""
                 echo "Declared: \"$noun\""
@@ -125,10 +125,14 @@ check_ai_attribution() {
         'language\s+model'
     )
 
+    # Each pattern searches the captured message, not a pipe. Under the
+    # pipefail some callers set, `echo | grep -q` failed once grep found its
+    # match and the echo, still writing a long message, died of SIGPIPE: the
+    # attribution read as clean (#34).
     local pattern matched
     for pattern in "${ai_patterns[@]}"; do
-        if echo "$scrubbed" | grep -qiP "$pattern"; then
-            matched=$(echo "$scrubbed" | grep -oiP "$pattern" | head -1)
+        if matched=$(grep -m1 -oiP "$pattern" <<< "$scrubbed"); then
+            matched=${matched%%$'\n'*}
             echo "BLOCKED: Commit message contains AI/Claude reference: \"$matched\""
             echo ""
             echo "Rule: NEVER include references to Claude Code, Claude, or AI in commit messages."

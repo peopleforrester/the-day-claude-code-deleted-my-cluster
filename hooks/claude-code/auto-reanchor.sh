@@ -14,7 +14,11 @@ fi
 
 REPO_NAME=$(basename "$REPO_ROOT")
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo "detached")
-STATUS=$(git -C "$REPO_ROOT" status --short 2>/dev/null | head -10)
+# Capture, then cut to ten lines. Piped into head under pipefail, git died of
+# SIGPIPE on a tree with many changes and set -e aborted the hook before it
+# printed anything (#34).
+STATUS=$(git -C "$REPO_ROOT" status --short 2>/dev/null || true)
+STATUS=$(head -10 <<< "$STATUS")
 RECENT=$(git -C "$REPO_ROOT" log --oneline -3 2>/dev/null || echo "no commits")
 
 # Check for project state

@@ -39,6 +39,12 @@ section() {
 # =====================================================================
 section "Layer 1 - Git + CI"
 
+# Every listing below is captured before it is searched. Under pipefail, piping
+# a command into grep -q fails whenever grep finds its match and exits while
+# the command is still writing, since the writer dies of SIGPIPE: a present
+# component then read as missing (#34). Searching a captured variable has no
+# writer left to kill.
+
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     repo_root="$(git rev-parse --show-toplevel)"
     cd "${repo_root}"
@@ -64,12 +70,15 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     fi
 
     if command -v pre-commit >/dev/null 2>&1; then
-        check l1 "pre-commit framework installed" ok "$(pre-commit --version 2>/dev/null | head -1)"
+        pc_version="$(pre-commit --version 2>/dev/null || true)"
+        check l1 "pre-commit framework installed" ok "${pc_version%%$'\n'*}"
     else
         check l1 "pre-commit framework installed" fail "pip install --user pre-commit"
     fi
 
-    if [[ -d ".github/workflows" ]] && ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | grep -qiE 'security|policy|scan|check'; then
+    # ls exits 2 when either glob matches nothing, so its status is ignored too.
+    workflows="$(ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null || true)"
+    if grep -qiE 'security|policy|scan|check' <<< "${workflows}"; then
         check l1 "GitHub Actions workflow for security/policy" ok
     else
         check l1 "GitHub Actions workflow for security/policy" fail "see layer-1-git-ci/.github/workflows"
@@ -121,13 +130,15 @@ if command -v kubectl >/dev/null 2>&1; then
             check l2 "Kyverno ClusterPolicies applied" fail "Kyverno CRDs not present"
         fi
 
-        if kubectl get ns falco >/dev/null 2>&1 || kubectl get ds -A 2>/dev/null | grep -qi falco; then
+        if kubectl get ns falco >/dev/null 2>&1 \
+            || grep -qi falco <<< "$(kubectl get ds -A 2>/dev/null || true)"; then
             check l2 "Falco installed" ok
         else
             check l2 "Falco installed" fail "helm install falco falcosecurity/falco -n falco"
         fi
 
-        if kubectl get ns 2>/dev/null | awk 'NR>1 {print $1}' | grep -qx "ai-workspace"; then
+        namespaces="$(kubectl get ns 2>/dev/null || true)"
+        if awk 'NR>1 && $1=="ai-workspace" {found=1} END {exit !found}' <<< "${namespaces}"; then
             pss="$(kubectl get ns ai-workspace -o jsonpath='{.metadata.labels.pod-security\.kubernetes\.io/enforce}' 2>/dev/null || true)"
             if [[ "${pss}" == "restricted" ]]; then
                 check l2 "ai-workspace ns with PSS restricted" ok
@@ -138,8 +149,10 @@ if command -v kubectl >/dev/null 2>&1; then
             check l2 "ai-workspace ns with PSS restricted" fail "kubectl apply -f layer-2-kubernetes/rbac/ai-agent.yaml"
         fi
 
-        if kubectl auth can-i --list 2>/dev/null | grep -q .; then
-            if kubectl get clusterroles cluster-admin -o yaml 2>/dev/null | grep -q 'name: cluster-admin'; then
+        can_i="$(kubectl auth can-i --list 2>/dev/null || true)"
+        if [[ -n "${can_i}" ]]; then
+            cluster_admin="$(kubectl get clusterroles cluster-admin -o yaml 2>/dev/null || true)"
+            if grep -q 'name: cluster-admin' <<< "${cluster_admin}"; then
                 check l2 "cluster-admin bindings audited" unknown "run: kubectl get clusterrolebindings -o wide | grep cluster-admin"
             fi
         fi

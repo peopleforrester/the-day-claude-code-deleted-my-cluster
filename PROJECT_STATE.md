@@ -213,3 +213,11 @@ mails on every Monday's run.
   scan and keeps the 2026-09-10 sync date until the resync, which must also
   take in the live hook's later changes (change scoping, PRD issue check,
   `-m 'not e2e'`) (#22)
+- 2026-10-31 the SIGPIPE class #23 fixed in pre-push removed from the other
+  published scripts (#34): `auto-reanchor.sh`, the kit's `install-layer-2.sh`
+  and `evaluate.sh`, the Layer 1 `commit-msg`, `check-commit-message.sh` and
+  the attribution library now capture output before searching or cutting it.
+  `tests/test_guardrails_kit.py` and new cases in `tests/test_hooks.py` drive
+  each with output far past a pipe buffer; nine of them failed before the fix.
+  The live working-set copies still pipe; the resync is a follow-up in
+  llm-coding-workflow

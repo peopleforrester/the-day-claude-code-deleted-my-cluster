@@ -195,3 +195,30 @@ that suite now also needs `gh` with read access to the private
 conference-knowledge repo. The check asks for the tag and its event id in the
 issue's body or a comment, not for `delivered_tag` in the registry: recording it
 there is conference-knowledge's step, and it waits on the tags reaching GitHub.
+
+## 2026-10-31 · Published scripts search captured output, never a pipe into an early reader (#34)
+
+#23 found the pre-push secret scan passing files because grep, piped into
+`head -5` under pipefail, died of SIGPIPE when head exited. The same shape sat
+in five more published scripts: `auto-reanchor.sh` (`git status | head -10`,
+which aborted the hook), the kit's `install-layer-2.sh` and `evaluate.sh`
+(`kubectl ... | grep -q`, which read a present API or component as missing),
+the Layer 1 `commit-msg` and the shared attribution library
+(`echo "$msg" | grep -q`, which read an attribution above a long body as
+absent), and `check-commit-message.sh` (`grep -o | head -1`, harmless there
+only because that hook sets no pipefail).
+
+The rule for every published script is now the one a20a8fd and #23 used:
+capture the command's output with `out=$(cmd || true)`, then search it with
+`grep -q ... <<< "$out"` or cut it from the captured text (`head <<< "$out"`,
+`${out%%$'\n'*}`). A here-string has no writer for the reader to kill. Readers
+that consume all their input (`wc`, `tail`, `tr`, `sed` without `q`) are left
+piped, and so are the one-line producers piped into `grep -q` in the
+`pre-commit` and `pre-push` hooks (`file`, and `echo` of a ref name): their
+single short write lands before grep can match, so there is nothing for
+SIGPIPE to interrupt. Each fixed script has a behavioural test whose output
+runs far past a pipe buffer after the first match.
+
+The heredoc defect `hooks/README.md` keeps on purpose in
+`check-commit-message.sh`, taking the first delimiter in the command, is
+unchanged: the capture keeps the first match just as `head -1` did.
