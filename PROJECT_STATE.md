@@ -163,3 +163,10 @@ mails on every Monday's run.
   started, append-only, with the earlier decisions carried from this file;
   the README gains "About this talk" (speaker, argument, status, built from).
   `tests/test_identity.py` pins all four
+- 2026-10-31 `check-commit-message.sh` sourced its attribution library from
+  `../../scripts/git-hooks/lib/`, a path in the working set it was synced from
+  that was never published, so an installed copy refused every commit whose
+  message it could read (#18). The library is published beside it as
+  `hooks/claude-code/lib/check-ai-attribution.sh`, the hook reads it from
+  `lib/`, and the install step copies `lib/` too. The suite now runs the hook
+  on clean and attributed messages, both in place and as installed

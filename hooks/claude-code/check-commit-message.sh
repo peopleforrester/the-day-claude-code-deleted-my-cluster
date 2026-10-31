@@ -92,10 +92,16 @@ if [ -z "$MSG" ]; then
 fi
 
 # --- Steps 6-7: Product-name scrub + AI/Claude pattern check ---
-# Shared with the native git commit-msg hook (scripts/git-hooks/commit-msg) so
-# the two enforcement points can never drift onto different pattern lists.
+# The pattern list lives in lib/check-ai-attribution.sh, shared with the native
+# git commit-msg hook in the live set so the two enforcement points can never
+# drift onto different pattern lists. It ships beside this script; install the
+# lib/ directory with it (hooks/README.md).
+#
+# Until 2026-10-31 this looked for ../../scripts/git-hooks/lib/, the path in the
+# working set it was synced from. Nothing at that path was published, so an
+# installed copy refused every commit whose message it could read (#18).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIB="${SCRIPT_DIR}/../../scripts/git-hooks/lib/check-ai-attribution.sh"
+LIB="${SCRIPT_DIR}/lib/check-ai-attribution.sh"
 if [ -f "$LIB" ]; then
     # shellcheck source=/dev/null
     source "$LIB"

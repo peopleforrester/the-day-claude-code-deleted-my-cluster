@@ -126,6 +126,63 @@ def test_check_commit_message_ignores_non_commit_commands() -> None:
     assert result.returncode == 0
 
 
+def commit_payload(message: str) -> dict:
+    return {"tool_name": "Bash", "tool_input": {"command": f'git commit -m "{message}"'}}
+
+
+@pytest.fixture()
+def installed_hooks(tmp_path: Path) -> Path:
+    """The hooks copied the way hooks/README.md says to, away from this repo's tree (#18)."""
+    dest = tmp_path / ".claude" / "hooks"
+    dest.mkdir(parents=True)
+    subprocess.run(["cp", "-R", f"{CLAUDE_HOOKS}/.", str(dest)], check=True)
+    return dest
+
+
+@pytest.mark.parametrize("hooks_dir", ["repo", "installed"])
+def test_check_commit_message_allows_clean_message(
+    hooks_dir: str, installed_hooks: Path
+) -> None:
+    script = CHECK_COMMIT if hooks_dir == "repo" else installed_hooks / CHECK_COMMIT.name
+    result = run_hook(script, commit_payload("Fix the retry loop\n\nIssue #18"))
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
+
+
+@pytest.mark.parametrize("hooks_dir", ["repo", "installed"])
+def test_check_commit_message_blocks_attribution(hooks_dir: str, installed_hooks: Path) -> None:
+    script = CHECK_COMMIT if hooks_dir == "repo" else installed_hooks / CHECK_COMMIT.name
+    result = run_hook(script, commit_payload("Fix the retry loop\n\nGenerated with Claude Code"))
+    assert result.returncode == 2
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Make CLAUDE.md a symlink to AGENTS.md\n\nIssue #16",
+        "Scan with llm-guard before release\n\nIssue #3",
+    ],
+)
+def test_check_commit_message_allows_product_names(message: str) -> None:
+    result = run_hook(CHECK_COMMIT, commit_payload(message))
+    assert result.returncode == 0, result.stderr
+
+
+def test_check_commit_message_warns_without_issue_link() -> None:
+    result = run_hook(CHECK_COMMIT, commit_payload("Fix the retry loop"))
+    assert result.returncode == 0, result.stderr
+    assert "No issue link" in result.stderr
+
+
+def test_check_commit_message_refuses_without_library(tmp_path: Path) -> None:
+    lone = tmp_path / CHECK_COMMIT.name
+    shutil.copy(CHECK_COMMIT, lone)
+    result = run_hook(lone, commit_payload("Fix the retry loop\n\nIssue #18"))
+    assert result.returncode == 2
+    assert "refusing to skip the AI-attribution check silently" in result.stderr
+
+
 # ─── enforce-prd-issue-first.sh (PreToolUse Edit|Write) ────────────────
 
 ENFORCE_PRD = CLAUDE_HOOKS / "enforce-prd-issue-first.sh"

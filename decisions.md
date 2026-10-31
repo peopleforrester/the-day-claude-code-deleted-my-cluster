@@ -53,3 +53,16 @@ the research index and the abstract library, and conference-knowledge for event
 state. The README gains an "About this talk" table naming the speaker, the
 argument, the status and the repos the talk is built from.
 `tests/test_identity.py` pins the symlink, this log and both pointers.
+
+## 2026-10-31 · The attribution library is published beside the hook
+
+`hooks/claude-code/check-commit-message.sh` sourced its pattern check from
+`../../scripts/git-hooks/lib/check-ai-attribution.sh`, a path that exists only
+in the working set it was synced from (#18). Of the three options in the issue,
+the library is published as `hooks/claude-code/lib/check-ai-attribution.sh`,
+synced from that working set on 2026-10-31, and the hook reads it from `lib/`
+beside itself. Inlining it would break the one-pattern-list design the hook
+documents, and documenting the dependency alone would leave the published hook
+unusable as published. The rest of the hook is left as synced on 2026-09-10:
+the live copy has since replaced its heredoc parsing, and the heredoc defect is
+published on purpose as a teaching artifact (`hooks/README.md`).

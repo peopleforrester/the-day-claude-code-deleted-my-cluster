@@ -17,6 +17,7 @@ You already know CI. The extra for AI agents lives here.
 ```
 hooks/
 ├── claude-code/   agent lifecycle hooks
+│   └── lib/       check-ai-attribution.sh, sourced by check-commit-message.sh
 └── git/           pre-commit + pre-push (tiered local enforcement)
 ../workflows/      ci.yml (defense in depth for anyone without local hooks)
 ```
@@ -132,9 +133,14 @@ this one.
 
 ```bash
 mkdir -p ~/.claude/hooks
-cp hooks/claude-code/*.sh ~/.claude/hooks/
+cp -R hooks/claude-code/. ~/.claude/hooks/
 chmod +x ~/.claude/hooks/*.sh
 ```
+
+Copy the `lib/` directory too, which `cp -R` does. `check-commit-message.sh`
+sources `lib/check-ai-attribution.sh` from beside itself, and without it the
+hook refuses every commit whose message it can read rather than skip the check
+silently. The library is sourced, not run, so it needs no execute bit.
 
 Then wire them up in `~/.claude/settings.json`:
 
