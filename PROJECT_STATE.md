@@ -92,10 +92,13 @@ mails on every Monday's run.
 
 ### Carried forward
 
-- Issue #5 is now a post-talk article: the guardrails presented in the talk do
-  not cover the failure that actually happened. It is the same open question as
-  above, written for publication rather than resolved. Publication is owned by
-  `mrf-engagement-orchestrator`.
+- Issue #5's post-talk article is written:
+  `post-event/the-guardrails-did-not-cover-it/` (`blog.md`, `social.md`,
+  `quotes.md`). It opens on the false report, states the gap in the three layers
+  presented in Portland, and closes on the open question above without
+  resolving it. `tests/test_post_event_article.py` holds it to the incident
+  record. Publication is owned by `mrf-engagement-orchestrator`, whose calendar
+  row `teaser-devopsdays-portland-2026` still needs re-dating and renaming.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.
@@ -317,3 +320,7 @@ mails on every Monday's run.
   published extractor below its header is the live helper on
   llm-coding-workflow's `staging` and at the commit its header names. The E2E
   command now also needs `gh` read access to llm-coding-workflow
+- 2026-11-13 post-talk article on the verification gap, written for #5 on
+  2026-10-31 and stranded on `agent/5-13454`, landed under #53; the incident
+  timeline's "fifteen minutes" at 19:58:43 corrected to twelve after the 150
+  claim, fifteen after the false report began

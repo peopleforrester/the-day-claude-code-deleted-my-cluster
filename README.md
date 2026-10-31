@@ -91,6 +91,9 @@ for the timeline, quoted from the session transcript.
   of two run-throughs earlier that day
   ([`portland-2026-run-one-transcript.md`](post-event/portland-2026-run-one-transcript.md),
   [`portland-2026-run-two-transcript.md`](post-event/portland-2026-run-two-transcript.md)).
+  [`the-guardrails-did-not-cover-it/`](post-event/the-guardrails-did-not-cover-it/blog.md)
+  is the post-Portland article on the verification gap, with social variants
+  and pull quotes, ready for `mrf-engagement-orchestrator` to publish.
 - [**`delivery-tags/`**](delivery-tags/): the annotation of each `delivered/`
   tag that marks a delivery of this talk, kept so the tag can be rebuilt.
 - [**`tests/`**](tests/): consistency checks over the repo's own claims.
