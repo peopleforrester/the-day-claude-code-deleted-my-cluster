@@ -430,3 +430,29 @@ order" if that meant the file's order. Issue #8 names no recording, so the
 match is a strong inference, not a record. Both files also note that run one drops slide 10's
 compaction and slide 12's "Eleven got a cluster", so the figure counts
 slides, not every cue-card line.
+
+## 2026-10-31 · Layer 3's missing prompt-secret-scan.sh is to be added, not dropped (#47)
+
+The Layer 3 template's `settings.json` registers a `UserPromptSubmit` hook,
+`.claude/hooks/prompt-secret-scan.sh`, that neither this repo nor the Atlanta
+copy restored in #40 ever had, so a reader who copies the template gets a
+failing hook on every prompt. #47 offered two fixes: add the script, or drop
+the entry. This takes the first. `three-layers.md` gives "Block secrets in
+prompts" as `UserPromptSubmit`'s typical use, and the template already wires
+it; dropping the entry would leave the doc describing a guard the template
+does not have.
+
+The script reads `.prompt` with `jq`, checks it against the eight patterns
+Layer 1's `pre-commit` uses, and on a match prints `{"decision": "block",
+"reason": ...}`, which stops the prompt before the model sees it. The reason
+names the pattern, never the matched value. It is to be linted by
+`tests/test_shell_lint.py` like the other hooks, and tested by feeding it
+prompts with and without each pattern, with a test that every command path
+in `settings.json` is a tracked, executable file in `.claude/hooks/`.
+
+None of it is in this commit. Two agent sessions on 2026-10-31 were refused
+writes under `layer-3-claude-hooks/.claude/`, which the agent tooling treats
+as a sensitive path needing human approval, and neither had anyone to give
+it. The draft passed shellcheck and behaved as above when run in memory.
+The script, the README's file list and the tests land together once a
+session may write there.
