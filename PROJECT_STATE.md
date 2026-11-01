@@ -99,11 +99,10 @@ mails on every Monday's run.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.
-- Issue #47 is open: the Layer 3 template's `settings.json` runs a
-  `prompt-secret-scan.sh` that does not exist. The fix is decided (add the
-  script; see `decisions.md`) but not made, because agent sessions here are
-  refused writes under `layer-3-claude-hooks/.claude/` without a human to
-  approve them.
+- Issue #47 is fixed: the Layer 3 template now has the
+  `prompt-secret-scan.sh` its `settings.json` runs, and
+  `tests/test_layer3_hooks.py` holds every hook path that file names to a
+  tracked, executable script.
 
 ## Branch & Tests
 - Branch: main. `staging` is kept fast-forwarded to main and carries no

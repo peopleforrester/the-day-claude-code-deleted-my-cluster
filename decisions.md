@@ -456,3 +456,22 @@ as a sensitive path needing human approval, and neither had anyone to give
 it. The draft passed shellcheck and behaved as above when run in memory.
 The script, the README's file list and the tests land together once a
 session may write there.
+
+## 2026-11-01 · Layer 3's prompt-secret-scan.sh is added, as the 2026-10-31 entry decided (#47)
+
+This carries out "Layer 3's missing prompt-secret-scan.sh is to be added, not
+dropped (#47)". That entry's last paragraph, that none of the fix had landed
+because sessions were refused writes under `layer-3-claude-hooks/.claude/`, no
+longer holds: this session was allowed the write.
+
+The script is as that entry described. It reads `.prompt` with `jq`, checks it
+against the eight `SECRET_PATTERNS` Layer 1's `pre-commit` uses, and on a match
+prints `{"decision": "block", "reason": ...}` and exits 0. The reason names the
+pattern, never the value. `tests/test_layer3_hooks.py` holds the two pattern
+lists equal, so a pattern added to one and not the other fails the suite. It
+also feeds the hook a fake secret for each pattern, assembled at runtime so the
+test file does not trip the scanners it tests, and checks clean and empty
+prompts pass. The same file checks every command in the template's
+`settings.json` against `git ls-files`, not the disk, and requires mode
+`100755`, because a reader's clone holds what git tracks, and their copy runs the
+hook as a command. `tests/test_shell_lint.py` picks the script up unchanged.

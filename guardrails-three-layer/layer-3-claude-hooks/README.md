@@ -31,6 +31,7 @@ Two things make it insufficient on its own:
     block-destructive-bash.sh                  the single most important hook
     block-kubectl-destructive.sh               namespace-scoped delete/drain guard
     protect-files.sh                           /.env, /.git, /.ssh, .kube/config, /etc
+    prompt-secret-scan.sh                      block prompts carrying Layer 1's secret patterns
     audit-log.sh                               JSONL + Splunk/Datadog/Loki/SQLite
     permission-auto-decide.sh                  auto-approve/deny in the permission dialog
     session-start-context.sh                   inject branch + kubectl context + CLAUDE.md
