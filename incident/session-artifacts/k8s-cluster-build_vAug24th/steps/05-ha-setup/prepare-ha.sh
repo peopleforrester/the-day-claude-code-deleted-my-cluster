@@ -47,7 +47,7 @@ fi
 # Setup audit policy
 echo "3. Setting up audit policy..."
 if [ ! -f /etc/kubernetes/audit-policy.yaml ]; then
-    cp /tmp/audit-policy.yaml /etc/kubernetes/audit-policy.yaml
+    cp /tmp/audit-policy.yaml /etc/kubernetes/audit-policy.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     echo "   Audit policy configured"
 else
     echo "   Audit policy already exists"
@@ -55,8 +55,8 @@ fi
 
 # Setup kube-vip
 echo "4. Setting up kube-vip..."
-if [ -f /tmp/setup-kube-vip.sh ]; then
-    bash /tmp/setup-kube-vip.sh
+if [ -f /tmp/setup-kube-vip.sh ]; then  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+    bash /tmp/setup-kube-vip.sh  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 else
     echo "   ERROR: kube-vip setup script not found"
     exit 1

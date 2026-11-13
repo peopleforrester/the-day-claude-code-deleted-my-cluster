@@ -25,6 +25,10 @@ npm-debug.log*
 scratch/
 drafts-local/
 
+# Temp files. Everything this repo's code and tests write goes here,
+# never to /tmp, and a run removes what it wrote.
+tmp/
+
 # Submitted under "visible to organizers only" — captured locally,
 # not published. Remove this line deliberately to publish.
 abstract/speaker-notes-organizers.md

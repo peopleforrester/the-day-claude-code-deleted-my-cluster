@@ -49,7 +49,7 @@ ssh root@$NODE_IP "chmod 600 /etc/netplan/60-kubevirt-bridge.yaml"
 
 # Create safety rollback
 echo "4. Creating safety rollback (60 seconds)..."
-ssh root@$NODE_IP 'cat > /tmp/rollback-network.sh << "EOF"
+ssh root@$NODE_IP 'cat > /tmp/rollback-network.sh << "EOF"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 #!/bin/bash
 sleep 60
 if ! ping -c 1 192.168.0.1 > /dev/null 2>&1; then
@@ -59,8 +59,8 @@ if ! ping -c 1 192.168.0.1 > /dev/null 2>&1; then
 fi
 EOF'
 
-ssh root@$NODE_IP "chmod +x /tmp/rollback-network.sh"
-ssh root@$NODE_IP "nohup /tmp/rollback-network.sh > /tmp/rollback.log 2>&1 &"
+ssh root@$NODE_IP "chmod +x /tmp/rollback-network.sh"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+ssh root@$NODE_IP "nohup /tmp/rollback-network.sh > /tmp/rollback.log 2>&1 &"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 # Apply configuration
 echo "5. Applying netplan configuration..."

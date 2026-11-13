@@ -15,7 +15,7 @@ echo "" | tee -a $LOG_FILE
 
 # 1. Copy kubeadm config to the first master
 echo "1. Copying kubeadm configuration..." | tee -a $LOG_FILE
-scp steps/06-initialize-first-master/kubeadm-config.yaml root@$FIRST_MASTER:/tmp/kubeadm-config.yaml >> $LOG_FILE 2>&1
+scp steps/06-initialize-first-master/kubeadm-config.yaml root@$FIRST_MASTER:/tmp/kubeadm-config.yaml >> $LOG_FILE 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 # 2. Ensure crictl is configured
 echo "2. Configuring crictl..." | tee -a $LOG_FILE
@@ -30,7 +30,7 @@ EOF" >> $LOG_FILE 2>&1
 # 3. Pre-pull images (optional but helps with troubleshooting)
 echo "3. Pre-pulling Kubernetes images..." | tee -a $LOG_FILE
 echo "   This may take a few minutes..." | tee -a $LOG_FILE
-ssh root@$FIRST_MASTER "kubeadm config images pull --config=/tmp/kubeadm-config.yaml" >> $LOG_FILE 2>&1
+ssh root@$FIRST_MASTER "kubeadm config images pull --config=/tmp/kubeadm-config.yaml" >> $LOG_FILE 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 if [ $? -ne 0 ]; then
     echo "   ⚠ Image pull had issues, but continuing..." | tee -a $LOG_FILE
@@ -41,7 +41,7 @@ echo "4. Initializing Kubernetes cluster..." | tee -a $LOG_FILE
 echo "   This will take several minutes..." | tee -a $LOG_FILE
 
 # Run kubeadm init and capture output
-ssh root@$FIRST_MASTER "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" 2>&1 | tee -a $LOG_FILE
+ssh root@$FIRST_MASTER "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" 2>&1 | tee -a $LOG_FILE  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 # Check if initialization was successful
 if ssh root@$FIRST_MASTER "test -f /etc/kubernetes/admin.conf" 2>/dev/null; then

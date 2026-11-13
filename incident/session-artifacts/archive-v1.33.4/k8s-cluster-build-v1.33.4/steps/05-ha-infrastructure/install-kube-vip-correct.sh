@@ -36,18 +36,18 @@ for node in "${CONTROL_NODES[@]}"; do
 
     # Extract the binary from the container
     echo "  Extracting kube-vip binary from container..."
-    ssh root@$IP "mkdir -p /tmp/kube-vip-extract"
+    ssh root@$IP "mkdir -p /tmp/kube-vip-extract"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # Create a container and copy the binary out
-    ssh root@$IP "ctr run --rm --mount type=bind,src=/tmp/kube-vip-extract,dst=/extract,options=rbind:rw ${KUBE_VIP_IMAGE} extract-${NODE_NAME} cp /kube-vip /extract/kube-vip" 2>/dev/null
+    ssh root@$IP "ctr run --rm --mount type=bind,src=/tmp/kube-vip-extract,dst=/extract,options=rbind:rw ${KUBE_VIP_IMAGE} extract-${NODE_NAME} cp /kube-vip /extract/kube-vip" 2>/dev/null  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # If that didn't work, try the docker.io image
-    if [ ! -f /tmp/kube-vip-extract/kube-vip ]; then
-        ssh root@$IP "ctr run --rm --mount type=bind,src=/tmp/kube-vip-extract,dst=/extract,options=rbind:rw docker.io/plndr/kube-vip:${KUBE_VIP_VERSION} extract-${NODE_NAME} cp /kube-vip /extract/kube-vip" 2>/dev/null
+    if [ ! -f /tmp/kube-vip-extract/kube-vip ]; then  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+        ssh root@$IP "ctr run --rm --mount type=bind,src=/tmp/kube-vip-extract,dst=/extract,options=rbind:rw docker.io/plndr/kube-vip:${KUBE_VIP_VERSION} extract-${NODE_NAME} cp /kube-vip /extract/kube-vip" 2>/dev/null  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     fi
 
     # Move binary to final location
-    ssh root@$IP "mv /tmp/kube-vip-extract/kube-vip /usr/local/bin/kube-vip 2>/dev/null && chmod +x /usr/local/bin/kube-vip"
+    ssh root@$IP "mv /tmp/kube-vip-extract/kube-vip /usr/local/bin/kube-vip 2>/dev/null && chmod +x /usr/local/bin/kube-vip"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # Verify the binary works
     KUBE_VIP_CHECK=$(ssh root@$IP "/usr/local/bin/kube-vip version 2>&1 | head -1" 2>/dev/null)
@@ -124,7 +124,7 @@ EOF"
     # This will be removed once the cluster is initialized
     echo "  Creating test configuration..."
 
-    ssh root@$IP "cat > /tmp/kube-vip-test.sh << 'EOF'
+    ssh root@$IP "cat > /tmp/kube-vip-test.sh << 'EOF'  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 #!/bin/bash
 # Test script for kube-vip (temporary until cluster init)
 ip addr add $VIP/32 dev $INTERFACE 2>/dev/null
@@ -132,12 +132,12 @@ arping -c 3 -A -I $INTERFACE $VIP 2>/dev/null
 echo \"VIP $VIP configured on $INTERFACE for testing\"
 EOF"
 
-    ssh root@$IP "chmod +x /tmp/kube-vip-test.sh"
+    ssh root@$IP "chmod +x /tmp/kube-vip-test.sh"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # Only activate on first node for now
     if [ "$node" = "50" ]; then
         echo "  Activating VIP on primary node for testing..."
-        ssh root@$IP "/tmp/kube-vip-test.sh"
+        ssh root@$IP "/tmp/kube-vip-test.sh"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
         # Check if VIP is assigned
         HAS_VIP=$(ssh root@$IP "ip addr show | grep -q '$VIP' && echo 'yes' || echo 'no'" 2>/dev/null)

@@ -3,10 +3,52 @@
 
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
+
+REPO_TMP = Path(__file__).resolve().parent.parent / "tmp"
+
+
+def scratch_parent() -> Path:
+    """The directory this run's temp files go under: always inside the checkout's tmp/.
+
+    A session whose launcher already points TMPDIR inside tmp/ keeps its own
+    directory there. Any other TMPDIR, or none, means tmp/ itself, so a run
+    started from a plain shell does not land in the system tempdir.
+    """
+    session = os.environ.get("TMPDIR")
+    if session and Path(session).resolve().is_relative_to(REPO_TMP):
+        return Path(session).resolve()
+    return REPO_TMP
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config: pytest.Config) -> None:
+    """Root tmp_path under the checkout's git-ignored tmp/ unless --basetemp names a place.
+
+    Left alone, pytest roots every tmp_path in the system tempdir. The run gets
+    a directory of its own under tmp/, removed when the run ends; pass
+    --basetemp to keep a failing test's files. GIT_CEILING_DIRECTORIES stops
+    git, run in a fixture directory that is not a repo, from climbing into
+    this checkout. tryfirst, so pytest's tmpdir plugin reads the option after
+    this sets it.
+    """
+    if config.option.basetemp is not None:
+        return
+    parent = scratch_parent()
+    parent.mkdir(parents=True, exist_ok=True)
+    root = Path(tempfile.mkdtemp(prefix="pytest-", dir=parent))
+    config.option.basetemp = str(root / "basetemp")
+    ceilings = [str(root), os.environ.get("GIT_CEILING_DIRECTORIES", "")]
+    env = pytest.MonkeyPatch()
+    env.setenv("GIT_CEILING_DIRECTORIES", os.pathsep.join(c for c in ceilings if c))
+    config.add_cleanup(env.undo)
+    config.add_cleanup(lambda: shutil.rmtree(root, ignore_errors=True))
 
 
 @pytest.fixture(scope="session")

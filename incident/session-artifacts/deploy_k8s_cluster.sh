@@ -68,9 +68,9 @@ update_progress
 for node in "${!VMS[@]}"; do
     ip="${VMS[$node]}"
     print_status "Copying scripts to $node..."
-    sshpass -p "$SSH_PASS" scp -o StrictHostKeyChecking=no install_k8s_prerequisites.sh $SSH_USER@$ip:/tmp/
+    sshpass -p "$SSH_PASS" scp -o StrictHostKeyChecking=no install_k8s_prerequisites.sh $SSH_USER@$ip:/tmp/  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     if [ "$node" == "master" ]; then
-        sshpass -p "$SSH_PASS" scp -o StrictHostKeyChecking=no init_master.sh $SSH_USER@$ip:/tmp/
+        sshpass -p "$SSH_PASS" scp -o StrictHostKeyChecking=no init_master.sh $SSH_USER@$ip:/tmp/  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     fi
 done
 

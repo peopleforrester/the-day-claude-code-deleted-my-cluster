@@ -475,3 +475,64 @@ prompts pass. The same file checks every command in the template's
 `settings.json` against `git ls-files`, not the disk, and requires mode
 `100755`, because a reader's clone holds what git tracks, and their copy runs the
 hook as a command. `tests/test_shell_lint.py` picks the script up unchanged.
+
+## 2026-11-13 · The incident evidence keeps its `/tmp` paths under a per-line waiver; everything else moves to `tmp/` (#48)
+
+PRD 526 (`peopleforrester/llm-coding-workflow#526`) has every repo keep its
+temp files in its own git-ignored `tmp/`, with `sk-tmp-check` failing on a
+tracked shell or Python line that names `/tmp`, `/var/tmp` or `/dev/shm`. Its
+open question 3 asked whether this repo is in scope or keeps its paths under a
+repo-level waiver, and Michael answered on 2026-11-10: in scope. So excluding
+`incident/session-artifacts/` from the check is not available.
+
+All 133 findings the issue lists are in that tree, in 37 files. The PRD calls
+them "a talk's demo material"; they are the 2025 incident's evidence, recovered
+verbatim, and almost every path is on a cluster node at the far end of an `ssh`
+or `scp`, where this repo's `tmp/` means nothing. AGENTS.md says never to
+rewrite a command from either incident: "If it reads awkwardly, annotate it;
+do not rewrite." The PRD's own rule for a path that must stay is a
+`tmp-ok: <reason>` comment on the line. The two agree, so each of the 133
+lines keeps its text and gains one fixed trailing comment,
+`# tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md`.
+That is in scope without a repo-level waiver, and no command is rewritten.
+
+It is still a change to the evidence, the second after the credential
+redactions, and `incident/REDACTIONS.md` now says so and how to cut the
+comment off. Where a quoted command sent over `ssh` runs across several lines,
+the comment falls inside the quotes, because the check reads the waiver only
+on the line it reports.
+The remote shell reads it as a comment, so the command is unchanged, but the
+quoted string is not byte for byte what the agent wrote; anyone quoting those
+lines cuts the comment first. The comment's text has no quote, `$`, backtick
+or parenthesis, so it cannot close or expand anything it lands in, and
+`bash -n` gives the same result on all 37 files as before.
+
+The two bare `mktemp` calls in the same tree are left alone. They follow
+`TMPDIR`, the PRD lists rewriting them as a non-goal, and they are evidence.
+
+What this repo's own code writes does move:
+
+- `tests/conftest.py` gives each run a directory of its own under `tmp/` as
+  pytest's basetemp and removes it when the run ends, so `uv run pytest -q`
+  from a plain shell no longer writes to `/tmp/pytest-of-<user>`. A `TMPDIR`
+  already inside `tmp/` (a launcher's or hecaton's per-session directory) is
+  kept; any other is ignored. It sets `GIT_CEILING_DIRECTORIES` for the run's
+  directory, because a fixture directory inside this checkout would otherwise
+  resolve to this repo in git.
+- The Layer 3 kit's `stop-run-tests.sh` wrote the suite's output to
+  `/tmp/claude-tests.log`; it now writes `tmp/claude-tests.log` in the reader's
+  project. `block-destructive-bash.sh` let `netplan apply` through once
+  `/tmp/netplan-backup-*.yaml` existed, and told the agent to create it there;
+  it now wants the backup in the project's `tmp/`. That is a change to what a
+  published guardrail asks for, made on its merits as well: a backup in a
+  system tempdir, often a tmpfs, does not survive the reboot a bad
+  `netplan apply` ends in. The template's `CLAUDE.md` and README say the same.
+- `tests/test_kit_clone_paths.py` keeps `/tmp/three-layers` with a waiver. It
+  is the path the kit docs tell a reader to clone into, and the test only
+  parses it.
+
+Left as they are: the kit's Markdown (`START_HERE.md`, the kit and Layer 1
+READMEs) and two `echo` lines in `install-hooks.sh` still tell a reader to
+clone into `/tmp/three-layers` and to write a demo file in `/tmp`. The check
+reads code, not instructions to a reader on their own machine, and the clone
+directory was settled under #40.

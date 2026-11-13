@@ -19,8 +19,8 @@ echo "================================================" | tee -a "$INIT_LOG"
 
 # First, install kube-vip
 echo "Installing kube-vip v1.0.0..." | tee -a "$INIT_LOG"
-ssh root@$FIRST_MASTER "curl -sL https://github.com/kube-vip/kube-vip/releases/download/v1.0.0/kube-vip-linux-amd64.tar.gz -o /tmp/kube-vip.tar.gz" 2>&1 | tee -a "$INIT_LOG"
-ssh root@$FIRST_MASTER "tar -xzf /tmp/kube-vip.tar.gz -C /tmp && mv /tmp/kube-vip /usr/local/bin/ && chmod +x /usr/local/bin/kube-vip" 2>&1 | tee -a "$INIT_LOG"
+ssh root@$FIRST_MASTER "curl -sL https://github.com/kube-vip/kube-vip/releases/download/v1.0.0/kube-vip-linux-amd64.tar.gz -o /tmp/kube-vip.tar.gz" 2>&1 | tee -a "$INIT_LOG"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+ssh root@$FIRST_MASTER "tar -xzf /tmp/kube-vip.tar.gz -C /tmp && mv /tmp/kube-vip /usr/local/bin/ && chmod +x /usr/local/bin/kube-vip" 2>&1 | tee -a "$INIT_LOG"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 echo "✓ kube-vip installed" | tee -a "$INIT_LOG"
 
 # Generate kube-vip manifest
@@ -36,7 +36,7 @@ echo "✓ kube-vip manifest created" | tee -a "$INIT_LOG"
 
 # Create kubeadm config
 echo "Creating kubeadm configuration..." | tee -a "$INIT_LOG"
-ssh root@$FIRST_MASTER "cat > /tmp/kubeadm-config.yaml <<EOF
+ssh root@$FIRST_MASTER "cat > /tmp/kubeadm-config.yaml <<EOF  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:

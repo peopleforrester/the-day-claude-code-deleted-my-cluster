@@ -50,6 +50,11 @@ chmod +x ../<your-repo>/.claude/hooks/*.sh
 
 Start a new Claude Code session in that repo. The hooks fire automatically.
 
+Two hooks keep files in that repo's own `tmp/`, never in `/tmp`:
+`stop-run-tests.sh` writes the suite's output to `tmp/claude-tests.log`, and
+`block-destructive-bash.sh` lets `netplan apply` through only once
+`tmp/netplan-backup-*.yaml` exists. Add `tmp/` to that repo's `.gitignore`.
+
 ## Verify
 
 Ask Claude Code to run any of:

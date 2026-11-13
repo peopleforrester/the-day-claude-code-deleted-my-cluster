@@ -11,19 +11,30 @@ fail() {
     exit 2
 }
 
+# Test output goes to the project's own tmp/, never a system tempdir. Keep tmp/ in
+# the project's .gitignore.
+LOG_DIR="${CLAUDE_PROJECT_DIR:-${PWD}}/tmp"
+
+run_suite() {
+    local name="$1"
+    shift
+    mkdir -p "${LOG_DIR}"
+    "$@" >"${LOG_DIR}/claude-tests.log" 2>&1 || fail "${name} failed"
+}
+
 if [[ -f package.json ]]; then
-    npm test --silent >/tmp/claude-tests.log 2>&1 || fail "npm test failed"
+    run_suite "npm test" npm test --silent
 fi
 if [[ -f pyproject.toml || -f setup.py ]]; then
     if command -v pytest >/dev/null 2>&1; then
-        pytest -q >/tmp/claude-tests.log 2>&1 || fail "pytest failed"
+        run_suite "pytest" pytest -q
     fi
 fi
 if [[ -f Cargo.toml ]]; then
-    cargo test --quiet >/tmp/claude-tests.log 2>&1 || fail "cargo test failed"
+    run_suite "cargo test" cargo test --quiet
 fi
 if [[ -f go.mod ]]; then
-    go test ./... >/tmp/claude-tests.log 2>&1 || fail "go test failed"
+    run_suite "go test" go test ./...
 fi
 
 exit 0

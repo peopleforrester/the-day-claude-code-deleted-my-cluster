@@ -8,7 +8,7 @@ echo "Start time: $(date)"
 echo ""
 
 # Create the sysctl configuration for Kubernetes
-cat > /tmp/kubernetes-sysctl.conf << 'EOF'
+cat > /tmp/kubernetes-sysctl.conf << 'EOF'  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 # Kubernetes prerequisites
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -16,7 +16,7 @@ net.ipv4.ip_forward = 1
 EOF
 
 # Create the modules configuration
-cat > /tmp/kubernetes-modules.conf << 'EOF'
+cat > /tmp/kubernetes-modules.conf << 'EOF'  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 overlay
 br_netfilter
 EOF
@@ -34,11 +34,11 @@ for node in "${NODES[@]}"; do
 
   # Persist kernel modules
   echo "  - Persisting kernel modules..."
-  scp /tmp/kubernetes-modules.conf root@$node:/etc/modules-load.d/kubernetes.conf 2>&1
+  scp /tmp/kubernetes-modules.conf root@$node:/etc/modules-load.d/kubernetes.conf 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
   # Configure sysctl parameters
   echo "  - Configuring sysctl parameters..."
-  scp /tmp/kubernetes-sysctl.conf root@$node:/etc/sysctl.d/99-kubernetes.conf 2>&1
+  scp /tmp/kubernetes-sysctl.conf root@$node:/etc/sysctl.d/99-kubernetes.conf 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
   ssh root@$node "sysctl --system" 2>&1 > /dev/null
 
   # Update and install basic packages
@@ -50,7 +50,7 @@ for node in "${NODES[@]}"; do
 done
 
 # Cleanup temporary files
-rm -f /tmp/kubernetes-sysctl.conf /tmp/kubernetes-modules.conf
+rm -f /tmp/kubernetes-sysctl.conf /tmp/kubernetes-modules.conf  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 echo "=== Prerequisites Configuration Complete ==="
 echo "End time: $(date)"

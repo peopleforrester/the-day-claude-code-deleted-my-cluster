@@ -31,7 +31,7 @@ fi
 prepare_kube_vip_for_node() {
     local node=$1
     local interface=$2
-    local temp_manifest="/tmp/kube-vip-${node}.yaml"
+    local temp_manifest="/tmp/kube-vip-${node}.yaml"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     echo "Preparing kube-vip manifest for $node with interface $interface..."
     cp "$KUBE_VIP_MANIFEST" "$temp_manifest"
@@ -68,15 +68,15 @@ for i in ${!CONTROL_NODES[@]}; do
     # Copy kube-vip manifest to node
     echo "Copying kube-vip manifest to $NODE..."
     ssh root@$NODE_IP "mkdir -p /etc/kubernetes/manifests"
-    scp "/tmp/kube-vip-${NODE}.yaml" root@$NODE_IP:/etc/kubernetes/manifests/kube-vip.yaml
+    scp "/tmp/kube-vip-${NODE}.yaml" root@$NODE_IP:/etc/kubernetes/manifests/kube-vip.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # Copy and execute join command
     echo "Copying join script to $NODE..."
-    scp "$CONTROL_PLANE_JOIN" root@$NODE_IP:/tmp/join-control-plane.sh
-    ssh root@$NODE_IP "chmod +x /tmp/join-control-plane.sh"
+    scp "$CONTROL_PLANE_JOIN" root@$NODE_IP:/tmp/join-control-plane.sh  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+    ssh root@$NODE_IP "chmod +x /tmp/join-control-plane.sh"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     echo "Executing join command on $NODE..."
-    ssh root@$NODE_IP "/tmp/join-control-plane.sh"
+    ssh root@$NODE_IP "/tmp/join-control-plane.sh"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
     # Wait for node to be ready
     echo "Waiting for $NODE to be ready..."

@@ -69,7 +69,7 @@ print_test "Creating test pods on different nodes..."
 run_on_master "kubectl create namespace ${TEST_NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -" >/dev/null 2>&1
 
 # Create test pods
-cat << 'EOF' > /tmp/network-test.yaml
+cat << 'EOF' > /tmp/network-test.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 apiVersion: v1
 kind: Pod
 metadata:
@@ -109,7 +109,7 @@ spec:
     targetPort: 80
 EOF
 
-scp /tmp/network-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1
+scp /tmp/network-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 run_on_master "kubectl apply -f /tmp/network-test.yaml" >/dev/null 2>&1
 
 sleep 5
@@ -132,7 +132,7 @@ print_result "✓ DNS resolution working!"
 print_section "6. SERVICE LOAD BALANCING TEST"
 print_test "Creating a service with multiple endpoints..."
 
-cat << 'EOF' > /tmp/lb-test.yaml
+cat << 'EOF' > /tmp/lb-test.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -174,7 +174,7 @@ spec:
     targetPort: 5678
 EOF
 
-scp /tmp/lb-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1
+scp /tmp/lb-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 run_on_master "kubectl apply -f /tmp/lb-test.yaml" >/dev/null 2>&1
 
 echo "  Waiting for deployment to be ready..."
@@ -191,7 +191,7 @@ print_result "✓ Service load balancing working!"
 print_section "7. INGRESS CONTROLLER TEST"
 print_test "Testing NGINX Ingress Controller..."
 
-cat << 'EOF' > /tmp/ingress-test.yaml
+cat << 'EOF' > /tmp/ingress-test.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -212,7 +212,7 @@ spec:
               number: 80
 EOF
 
-scp /tmp/ingress-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1
+scp /tmp/ingress-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 run_on_master "kubectl apply -f /tmp/ingress-test.yaml" >/dev/null 2>&1
 
 sleep 3
@@ -237,7 +237,7 @@ print_result "Dashboard accessible at: https://${MASTER_IP}:${DASHBOARD_PORT}"
 print_section "9. HORIZONTAL POD AUTOSCALING TEST"
 print_test "Creating HPA test deployment..."
 
-cat << 'EOF' > /tmp/hpa-test.yaml
+cat << 'EOF' > /tmp/hpa-test.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -296,7 +296,7 @@ spec:
         averageUtilization: 50
 EOF
 
-scp /tmp/hpa-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1
+scp /tmp/hpa-test.yaml root@${MASTER_IP}:/tmp/ >/dev/null 2>&1  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 run_on_master "kubectl apply -f /tmp/hpa-test.yaml" >/dev/null 2>&1
 
 sleep 5

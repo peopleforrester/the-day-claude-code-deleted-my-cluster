@@ -24,13 +24,13 @@ install_containerd_node() {
     # Download containerd v2.1.4 binary
     echo "  Downloading containerd v${CONTAINERD_VERSION}..." | tee -a $LOG_FILE
     ssh root@$ip "
-        curl -L https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz -o /tmp/containerd.tar.gz
+        curl -L https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz -o /tmp/containerd.tar.gz  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     " >> $LOG_FILE 2>&1
 
     # Extract containerd
     echo "  Extracting containerd..." | tee -a $LOG_FILE
     ssh root@$ip "
-        tar Cxzvf /usr/local /tmp/containerd.tar.gz
+        tar Cxzvf /usr/local /tmp/containerd.tar.gz  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     " >> $LOG_FILE 2>&1
 
     # Download and install runc
@@ -44,8 +44,8 @@ install_containerd_node() {
     echo "  Installing CNI plugins..." | tee -a $LOG_FILE
     ssh root@$ip "
         mkdir -p /opt/cni/bin
-        curl -L https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz -o /tmp/cni-plugins.tgz
-        tar Cxzvf /opt/cni/bin /tmp/cni-plugins.tgz
+        curl -L https://github.com/containernetworking/plugins/releases/download/v1.6.1/cni-plugins-linux-amd64-v1.6.1.tgz -o /tmp/cni-plugins.tgz  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+        tar Cxzvf /opt/cni/bin /tmp/cni-plugins.tgz  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     " >> $LOG_FILE 2>&1
 
     # Create containerd service file
@@ -97,8 +97,8 @@ install_containerd_node() {
     # Install crictl for testing
     echo "  Installing crictl..." | tee -a $LOG_FILE
     ssh root@$ip "
-        curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.1/crictl-v1.31.1-linux-amd64.tar.gz -o /tmp/crictl.tar.gz
-        tar zxvf /tmp/crictl.tar.gz -C /usr/local/bin
+        curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.31.1/crictl-v1.31.1-linux-amd64.tar.gz -o /tmp/crictl.tar.gz  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+        tar zxvf /tmp/crictl.tar.gz -C /usr/local/bin  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
         # Configure crictl
         cat > /etc/crictl.yaml <<EOF

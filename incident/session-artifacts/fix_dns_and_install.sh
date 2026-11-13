@@ -50,4 +50,4 @@ sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-relea
 
 # Now run the main installation
 echo "Running main Kubernetes installation..."
-sudo /tmp/install_k8s_prerequisites.sh
+sudo /tmp/install_k8s_prerequisites.sh  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md

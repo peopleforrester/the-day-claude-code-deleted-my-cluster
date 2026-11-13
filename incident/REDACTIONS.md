@@ -1,9 +1,11 @@
 # Redactions in this tree
 
 The artifacts under `session-artifacts/` are recovered verbatim from git history,
-with one deliberate exception: credential **values** have been replaced with
-`<REDACTED-...>` markers. Structure, filenames, commands, and everything that
-carries evidentiary weight are untouched.
+with two deliberate exceptions. Credential **values** have been replaced with
+`<REDACTED-...>` markers, and lines that name a system temp directory carry a
+trailing `tmp-ok` comment, described under "The tmp-ok comment" below.
+Structure, filenames, commands, and everything that carries evidentiary weight
+are untouched.
 
 | What | Count |
 |---|---|
@@ -38,6 +40,26 @@ argues. A talk about deterministic controls that ships live-looking credentials 
 its own evidence undercuts itself, and the reader cannot tell a dead token from a
 live one by looking. Redacting is the cheap deterministic control, applied to the
 one artifact set most likely to be read closely.
+
+## The tmp-ok comment
+
+Every repo in the fleet keeps its temp files in its own git-ignored `tmp/`, and
+a check (`sk-tmp-check`, from `peopleforrester/scripts-knowledge`) fails on any
+tracked shell or Python line that names `/tmp`, `/var/tmp` or `/dev/shm` without
+saying why. These scripts name `/tmp` constantly, almost always on a cluster
+node at the far end of an `ssh` or `scp`. They are evidence, nothing runs them
+from here, and rewriting a path would falsify the record. So each such line
+keeps its text and gains one comment at its end:
+
+```
+  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
+```
+
+It is on 133 lines in 37 files, and `tests/test_tmp_paths.py` holds that count
+and the comment's form. Nothing else on those lines changed. To read a line as
+the agent wrote it, cut from the two spaces before `# tmp-ok:` to the end of
+the line. Where the line sits inside a quoted command sent over `ssh`, the
+comment is inside the quotes too, so cut it before quoting the command anywhere.
 
 ## If you need an original
 

@@ -36,11 +36,11 @@ install_containerd() {
     
     # Download containerd 2.1.4
     echo "Downloading containerd $CONTAINERD_VERSION..." | tee -a "$INSTALL_LOG"
-    ssh root@$ip "cd /tmp && wget -q https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" 2>&1 | tee -a "$INSTALL_LOG"
+    ssh root@$ip "cd /tmp && wget -q https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" 2>&1 | tee -a "$INSTALL_LOG"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     
     # Extract containerd
     echo "Extracting containerd..." | tee -a "$INSTALL_LOG"
-    ssh root@$ip "tar -C /usr/local -xzf /tmp/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" 2>&1 | tee -a "$INSTALL_LOG"
+    ssh root@$ip "tar -C /usr/local -xzf /tmp/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" 2>&1 | tee -a "$INSTALL_LOG"  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
     
     # Download runc
     echo "Downloading runc $RUNC_VERSION..." | tee -a "$INSTALL_LOG"

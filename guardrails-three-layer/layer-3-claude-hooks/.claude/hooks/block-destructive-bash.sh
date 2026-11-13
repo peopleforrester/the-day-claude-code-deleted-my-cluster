@@ -33,14 +33,17 @@ for pat in "${BLOCK_PATTERNS[@]}"; do
     fi
 done
 
-# netplan apply requires an explicit prior backup (named /tmp/netplan-backup-*.yaml).
+# netplan apply requires an explicit prior backup, netplan-backup-*.yaml in the project's
+# own tmp/. A system tempdir is no place for it: it does not survive the reboot a bad
+# apply ends in.
 if [[ "${CMD}" =~ netplan[[:space:]]+apply ]]; then
-    if ! ls /tmp/netplan-backup-*.yaml >/dev/null 2>&1; then
-        jq -n '{
+    BACKUP_DIR="${CLAUDE_PROJECT_DIR:-${PWD}}/tmp"
+    if ! ls "${BACKUP_DIR}"/netplan-backup-*.yaml >/dev/null 2>&1; then
+        jq -n --arg d "${BACKUP_DIR}" '($d | @sh) as $q | {
           hookSpecificOutput: {
             hookEventName: "PreToolUse",
             permissionDecision: "deny",
-            permissionDecisionReason: "netplan apply requires a backup at /tmp/netplan-backup-*.yaml first. Create one with: cp /etc/netplan/*.yaml /tmp/netplan-backup-$(date +%s).yaml"
+            permissionDecisionReason: "netplan apply requires a backup at \($d)/netplan-backup-*.yaml first. Create one with: mkdir -p \($q) && cp /etc/netplan/*.yaml \($q)/netplan-backup-$(date +%s).yaml"
           }
         }'
         exit 0

@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 KIT = REPO_ROOT / "guardrails-three-layer"
 DOCS = [KIT / "README.md", KIT / "START_HERE.md"]
 
-CLONE_DIR = "/tmp/three-layers"
+CLONE_DIR = "/tmp/three-layers"  # tmp-ok: the path the kit docs tell a reader to clone into, only parsed
 CLONE_URL = "https://github.com/{}/{}".format(*CANONICAL_OWNER_REPO)
 CLONE = re.compile(r"git clone\b[^\n]*")
 CLONE_PATH = re.compile(re.escape(CLONE_DIR) + r"(/[^\s`'\")]*)?")

@@ -12,11 +12,11 @@ echo "This may take several minutes..."
 
 # Copy kubeadm config to master1
 echo "Copying kubeadm configuration..."
-scp configs/kubeadm-config.yaml root@$MASTER1:/tmp/kubeadm-config.yaml
+scp configs/kubeadm-config.yaml root@$MASTER1:/tmp/kubeadm-config.yaml  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 # Initialize the cluster
 echo "Running kubeadm init on $MASTER1..."
-ssh root@$MASTER1 "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" | tee steps/06-init-master/init-output.log
+ssh root@$MASTER1 "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" | tee steps/06-init-master/init-output.log  # tmp-ok: incident evidence kept verbatim, see incident/REDACTIONS.md
 
 # Extract important information from output
 echo

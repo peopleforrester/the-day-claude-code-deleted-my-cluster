@@ -114,6 +114,10 @@ mails on every Monday's run.
   video check against live YouTube, and each delivery tag's report on its
   conference-knowledge issue; needs the network, the pinned `yt-dlp`, and `gh`
   with read access to conference-knowledge.
+- Temp files: everything goes in the git-ignored `tmp/`, never `/tmp` (#48).
+  The suite's `tmp_path` is a directory of the run's own under `tmp/`, removed
+  when the run ends. `sk-tmp-check` (scripts-knowledge `bin/`) must print no
+  "a system tempdir path" finding.
 - CI: none configured.
 
 ## Phase history
@@ -291,3 +295,9 @@ mails on every Monday's run.
   holds the annotation to the cue card and the table. The next revision puts
   the slide back at nine, in #33's corrected copy, which still waits for a
   booked delivery
+- 2026-11-13 temp files moved out of `/tmp` for PRD 526 (#48). `.gitignore`
+  covers `tmp/`; the suite roots `tmp_path` under it and cleans up; the Layer 3
+  kit's `stop-run-tests.sh` log and `block-destructive-bash.sh` netplan backup
+  move to the reader's project `tmp/`. The 133 lines of incident evidence that
+  name a node's `/tmp` keep their text and gain a trailing `tmp-ok` comment,
+  recorded in `incident/REDACTIONS.md`; no command was rewritten
