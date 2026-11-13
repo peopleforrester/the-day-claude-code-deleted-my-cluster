@@ -83,9 +83,11 @@ fi
 
 while IFS= read -r file; do
     if [ -z "$file" ]; then continue; fi
-    if [ -f "$file" ] && file "$file" | grep -q text; then
-        # Capture before truncating: piping grep into head under pipefail lets
-        # grep die of SIGPIPE on a file with many matches, reading as clean.
+    if [ -f "$file" ] && grep -qI '' "$file" 2>/dev/null; then
+        # The patterns are plain ERE: GNU grep rejects -E with -P, and BSD grep
+        # has no -P. Capture before truncating: piping grep into head under
+        # pipefail lets grep die of SIGPIPE on a file with many matches,
+        # reading as clean.
         matches=$(grep -nE "$SECRET_PATTERNS" "$file" 2>/dev/null || true)
         if [ -n "$matches" ]; then
             head -5 <<< "$matches"

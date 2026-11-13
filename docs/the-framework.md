@@ -84,7 +84,7 @@ is the right trade. It should be a decision, not an accident.
 
 | Event | Hook | Purpose | Known bypass |
 |---|---|---|---|
-| **SessionStart** | `session-start.sh` | Detect pending work and uncommitted changes; direct the agent to reconcile state before new edits | Advisory only. The agent can fail to read it, or read it and not comply. |
+| **SessionStart** | `session-start.sh` | Detect pending work and uncommitted changes and report them, so the agent reconciles state before new edits | Advisory only. The agent can fail to read it, or read it and not comply. |
 | **PreToolUse** (Bash) | `check-commit-message.sh` | Block a commit whose message carries AI attribution | `--no-verify`; `core.hooksPath=/dev/null`; editing the hook if its directory is writable; committing by direct filesystem writes. A command shape its parser does not read: a message built in a variable, an alias, `sudo`. **Until 2026-10-31 it extracted the first heredoc in the command, not the commit's, so a command that wrote a file before committing got the file body scanned and the real message never examined** (`hooks/README.md`). |
 | **PreToolUse** (Edit\|Write) | `block-sensitive-files.sh` | Exit 2 on writes to `.env`, credentials, keys, secrets | A `Bash` redirect (`>`, `cat <<EOF >`) never touches Edit or Write. Pattern evasion. Editing the deny-list. |
 | **PreToolUse** (Edit\|Write) | `enforce-prd-issue-first.sh` | Require a tracking issue before a spec file is created | Same Bash-redirect gap. |
@@ -92,7 +92,7 @@ is the right trade. It should be a decision, not an accident.
 | **PostToolUse** (Edit\|Write) | `check-aboutme.sh` | Warn on a missing `ABOUTME:` header | Warn only. |
 | **PostToolUse** (Edit\|Write) | `check-rule-frontmatter.sh` | Validate frontmatter on rule files | Warn only. |
 | **PostToolUse** (Edit\|Write) | `cascade-decision-check.sh` | Flag an edit that should have been recorded as a decision | Warn only. |
-| **PostCompact** | `auto-reanchor.sh` | Re-read context after compaction and surface an orientation block | Re-orientation, not enforcement. The agent can drift again immediately. |
+| **SessionStart** (`source: compact`) | `session-start.sh` | After compaction, print an orientation block: branch, recent commits, dirty files, next step, where the rules live | Re-orientation, not enforcement. The agent can drift again immediately. **Until 2026-11-13 this was `auto-reanchor.sh` on PostCompact, whose stderr never reached the model** (`hooks/README.md`). |
 | **Stop** | `auto-test-on-stop.sh` | Run the project's tests when a turn ends | Non-blocking. A failure does not roll back what just happened. |
 
 ### Events worth knowing that this repo does not yet use
@@ -169,7 +169,7 @@ what catches the agent when a workflow goes wrong.
 
 | Skill | Triggered when | What it does |
 |---|---|---|
-| `/post-compact` | After a compaction event | Re-anchor context (manual mirror of the `auto-reanchor.sh` hook) |
+| `/post-compact` | After a compaction event | Re-anchor context (manual mirror of the `session-start.sh` compact re-anchor) |
 | `/continue` | Resuming a session | Read `PROJECT_STATE.md`, task list, git log; pick next step |
 | `/remediate` | After `/review-senior` | Convert review findings into phased TDD plan and ship them |
 | `/task` | Any task operation | Manage `tasks.yaml` with dependency tracking and crash recovery |

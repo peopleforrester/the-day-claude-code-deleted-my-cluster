@@ -1,11 +1,29 @@
 # Hooks: install this on your own machine
 
-**Synced from a live working configuration on 2026-09-10, and verified against
-the agent's published hook reference the same day.** If you are reading this
-much later, check the dates below before trusting the event names: this surface
-moves fast, and the previous version of this file was four months stale and
-wrong about it. `check-commit-message.sh` and its `lib/` were synced again on
-2026-10-31; see the defect below.
+**Synced from the live working configuration on 2026-11-13, at
+`peopleforrester/llm-coding-workflow` commit
+[`2255e69`](https://github.com/peopleforrester/llm-coding-workflow/commit/2255e69df0c4877418bdc7074562aeff384ce6b5),
+which lands llm-coding-workflow#482.** That issue brought the SIGPIPE fixes
+made here first back into the live hooks, and its parent commit `a8a8072`
+(llm-coding-workflow#481) brought back the `pre-push` secret-scan fix. At that
+commit the attribution library, the post-compaction re-anchor and the `pre-push`
+secret scan here match the live ones. `2255e69` was on the workflow repo's
+`staging` branch on 2026-11-13, waiting on its gate before `main` fast-forwards
+to it.
+
+The full set was first synced on 2026-09-10 and verified against the agent's
+published hook reference the same day; the event list below dates from then.
+If you are reading this much later, check before trusting the event names: this
+surface moves fast, and the version of this file before that was four months
+stale and wrong about it.
+
+Not every script moved with the 2026-11-13 sync. `check-commit-message.sh` and
+`lib/extract_commit_message.py` stay as synced on 2026-10-31 plus the fixes
+made here (see the defect below); since then the live set has rewritten the
+extractor to read the command as a shell would (llm-coding-workflow#360), and
+that rewrite is not mirrored. The live hooks that read the host they run on
+(the safety-net installer, the inbox, the per-repo objectives) are not
+published, so `session-start.sh` here carries the live re-anchor without them.
 
 These are the actual scripts behind [`docs/the-framework.md`](../docs/the-framework.md)
 and the talk. Paths, hostnames and usernames are replaced with `$HOME`, `$USER`
@@ -92,7 +110,7 @@ command to decide whether it cares:
 
 | Script | Event | Purpose | How it is bypassed |
 |---|---|---|---|
-| `session-start.sh` | SessionStart | Detect pending work in `PROJECT_STATE.md` plus uncommitted changes; emit a directive to reconcile before editing | Advisory. The model can ignore the directive |
+| `session-start.sh` | SessionStart | Detect pending work in `PROJECT_STATE.md` plus uncommitted changes and report them. On `source: compact` it also prints the re-anchor block: repo, branch, recent commits, dirty files, next step, and where the rules live | Advisory. The model can ignore what it reports, and drift again right after |
 | `check-commit-message.sh` | PreToolUse (Bash) | Block a commit whose message carries AI attribution | `--no-verify`; `core.hooksPath=/dev/null`; committing without the CLI; a command shape its parser does not read (see the defect below) |
 | `block-sensitive-files.sh` | PreToolUse (Edit\|Write) | Exit 2 on writes to `.env`, `*.pem`, `*.key`, `id_*`, `*credential*`, `*secret*` | A `Bash` redirect writes the same file without touching Edit or Write. Pattern evasion |
 | `enforce-prd-issue-first.sh` | PreToolUse (Edit\|Write) | Require a tracking issue before a spec file is created | Same Bash-redirect gap |
@@ -100,7 +118,6 @@ command to decide whether it cares:
 | `check-aboutme.sh` | PostToolUse (Edit\|Write) | Warn when a file is missing its `ABOUTME:` header | Warn only |
 | `check-rule-frontmatter.sh` | PostToolUse (Edit\|Write) | Validate frontmatter on rule files | Warn only |
 | `cascade-decision-check.sh` | PostToolUse (Edit\|Write) | Flag edits that should have been recorded as a decision | Warn only |
-| `auto-reanchor.sh` | PostCompact | Re-read context after compaction and surface an orientation block | Reorientation, not enforcement |
 | `auto-test-on-stop.sh` | Stop | Run the project's tests when a turn ends | Non-blocking. Failures do not roll anything back |
 
 ### A defect worth studying, in `check-commit-message.sh`
@@ -157,22 +174,39 @@ The 2026-09-10 copy, defect included, stays in this repo's history at
 `3c3cb28`, the commit `main` held when the talk started at DevOpsDays Portland,
 which the `delivered/devopsdays-portland-2026` tag marks.
 
+### Retired: `auto-reanchor.sh`
+
+Until 2026-11-13 this mirror published `auto-reanchor.sh`, a `PostCompact`
+hook that printed the re-anchor block to stderr. The live set deleted it in
+llm-coding-workflow#332 because nothing it printed reached the model: a
+`PostCompact` hook cannot add context, and stderr from a hook that exits 0 is
+not shown to the model. The re-anchor now runs in `session-start.sh` when
+`SessionStart` fires with `source: compact`, which is the only event that can
+put text in context after a compaction. The mirror followed on 2026-11-13
+(#49). If you installed `auto-reanchor.sh` from here, delete it and its
+`PostCompact` entry; the `SessionStart` entry below already covers compaction.
+The old script is in this repo's history at `89979df`.
+
 ### Fixed here first: pipes cut short under pipefail
 
-`auto-reanchor.sh` cut `git status --short` to ten lines by piping it into
+The retired `auto-reanchor.sh` cut `git status --short` to ten lines by piping it into
 `head -10` under `set -euo pipefail`. On a working tree with many changes, head
 exited while git was still writing, git died of SIGPIPE, and `set -e` ended the
 hook before it printed the re-anchor block. `lib/check-ai-attribution.sh` had
 the same shape in `echo "$scrubbed" | grep -qiP`: sourced by a caller that sets
 pipefail, a message longer than a pipe buffer with an attribution near its top
-read as clean, because echo died once grep had its match. Both now capture the
-output and search or cut the captured text, as `check-commit-message.sh` does
-for its issue-link check, and `tests/test_hooks.py` runs them on
-a 20,000-file working tree and a 200,000-line message (#34).
+read as clean, because echo died once grep had its match. Both were changed to
+capture the output and search or cut the captured text, as
+`check-commit-message.sh` does for its issue-link check, and
+`tests/test_hooks.py` ran them on a 20,000-file working tree and a
+200,000-line message (#34).
 
-These fixes were made here on 2026-10-31. The live copies in the working set
-still pipe, and its native `commit-msg` hook sources the library under
-pipefail, so the sync date at the top stays until the two are resynced.
+These fixes were made here on 2026-10-31, and llm-coding-workflow#482 brought
+them back into the live set at `2255e69`. That fix matters most there: the live
+native `commit-msg` hook sources the library under pipefail, and a test there
+showed a commit with an attribution near its top going through. The re-anchor's
+capture-then-cut now lives in `session-start.sh`, here and in the live set, and
+`tests/test_hooks.py` runs it on the same 20,000-file tree.
 
 ### Install
 
@@ -209,14 +243,14 @@ Then wire them up in `~/.claude/settings.json`:
         {"type": "command", "command": "~/.claude/hooks/cascade-decision-check.sh"}
       ]}
     ],
-    "PostCompact": [{"hooks": [{"type": "command", "command": "~/.claude/hooks/auto-reanchor.sh"}]}],
     "Stop":        [{"hooks": [{"type": "command", "command": "~/.claude/hooks/auto-test-on-stop.sh"}]}]
   }
 }
 ```
 
-Restart the agent. `session-start.sh` fires on entry; the rest fire on their
-events.
+Restart the agent. `session-start.sh` fires on entry and again after every
+compaction (an entry with no `matcher` runs for every `source`); the rest fire
+on their events.
 
 ### Deliberately not published
 
@@ -259,10 +293,13 @@ captures the matches first and truncates only the listing, with a test that
 commits a file of 200,000 keys.
 
 Both fixes were made in this mirror (2026-10-16 and 2026-10-31), after the
-2026-09-10 sync, and the live configuration still carries the broken line. The
-sync date at the top stays where it is until the live copy is fixed and the two
-are resynced. If you installed `pre-push` from here before 2026-10-31, copy it
-again.
+2026-09-10 sync. The live configuration took them in llm-coding-workflow#481
+(commit `a8a8072`), testing a file for text with `grep -qI ''` rather than
+piping `file` into `grep`; the copy here took that line back on 2026-11-13, so
+the secret scan matches the live one line for line. The rest of the live
+`pre-push` has moved on (it scopes the Python tiers to the files a push
+changes, and checks PRD numbering) and is not mirrored. If you installed
+`pre-push` from here before 2026-10-31, copy it again.
 
 ### Install (per repo)
 

@@ -313,31 +313,80 @@ def test_check_commit_message_blocks_attribution_in_every_message_form(command: 
     assert 'AI/Claude reference: "Claude Code"' in result.stderr
 
 
-# ─── auto-reanchor.sh (PostCompact) ────────────────────────────────────
+# ─── session-start.sh (SessionStart, source compact) ───────────────────
+# The re-anchor after compaction. It was auto-reanchor.sh on PostCompact until
+# the live set moved it here (llm-coding-workflow#332): a PostCompact hook
+# cannot add context, and stderr from a hook that exits 0 never reaches the
+# model, so the old block was printed where nothing read it (#49).
 
-AUTO_REANCHOR = CLAUDE_HOOKS / "auto-reanchor.sh"
+SESSION_START = CLAUDE_HOOKS / "session-start.sh"
 
 
-def test_auto_reanchor_prints_block_on_clean_tree(git_repo: Path) -> None:
-    commit_file(git_repo, "a.txt", "a\n")
-    result = run_hook(AUTO_REANCHOR, cwd=git_repo)
+def run_session_start(repo: Path, source: str, home: Path) -> subprocess.CompletedProcess[str]:
+    # HOME is a scratch directory, so the live set's config-drift check, which
+    # the hook looks for under $HOME/repos, cannot run on a machine that has it.
+    return run_hook(
+        SESSION_START,
+        {"cwd": str(repo), "source": source, "hook_event_name": "SessionStart"},
+        cwd=repo,
+        env={"HOME": str(home)},
+    )
+
+
+def test_session_start_reanchors_on_compact_with_a_clean_tree(git_repo: Path, tmp_path: Path) -> None:
+    commit_file(git_repo, "AGENTS.md", "rules\n")
+    commit_file(git_repo, "PROJECT_STATE.md", "**Next step**\n- Ship the deck\n")
+    result = run_session_start(git_repo, "compact", tmp_path)
     assert result.returncode == 0, result.stderr
-    assert "--- POST-COMPACTION RE-ANCHOR ---" in result.stderr
-    assert "Working tree clean" in result.stderr
+    out = result.stdout
+    assert out.startswith("Re-anchor after compaction:\n  Repo: repo | Branch: main\n")
+    assert "chore: PROJECT_STATE.md" in out
+    assert "  Working tree clean" in out
+    assert "  Next step: Ship the deck" in out
+    assert "dropped are in: AGENTS.md PROJECT_STATE.md." in out
+    assert "PROJECT_STATE.md has no pending tasks; /continue resumes from it." in out
 
 
-def test_auto_reanchor_prints_block_on_very_dirty_tree(git_repo: Path) -> None:
+def test_session_start_reanchors_on_compact_with_a_very_dirty_tree(git_repo: Path, tmp_path: Path) -> None:
     # Enough untracked files that git status is still writing when the listing
-    # is cut to ten lines; the hook must still print its block.
+    # is cut to ten lines; the block must still print, before the findings.
     commit_file(git_repo, "a.txt", "a\n")
     for i in range(20_000):
         (git_repo / f"untracked-{i:05d}.txt").touch()
-    result = run_hook(AUTO_REANCHOR, cwd=git_repo)
+    result = run_session_start(git_repo, "compact", tmp_path)
     assert result.returncode == 0, result.stderr[-500:]
-    assert "--- POST-COMPACTION RE-ANCHOR ---" in result.stderr
-    assert "Dirty files: ?? untracked-00000.txt" in result.stderr
-    assert result.stderr.count("?? untracked-") == 10
-    assert "ACTION: Re-read CLAUDE.md" in result.stderr
+    out = result.stdout
+    assert out.startswith("Re-anchor after compaction:")
+    assert "  Dirty files:\n    ?? untracked-00000.txt\n" in out
+    assert out.count("    ?? untracked-") == 10
+    assert "20000 uncommitted/untracked files" in out
+
+
+def test_session_start_does_not_reanchor_on_startup(git_repo: Path, tmp_path: Path) -> None:
+    commit_file(git_repo, "a.txt", "a\n")
+    result = run_session_start(git_repo, "startup", tmp_path)
+    assert result.returncode == 0, result.stderr
+    assert "Re-anchor after compaction" not in result.stdout
+    assert "No PROJECT_STATE.md found" in result.stdout
+
+
+def test_readme_wires_only_published_hooks() -> None:
+    # Every hook the README's settings.json wires up ships in hooks/claude-code,
+    # so a retired hook cannot stay wired after its file is gone (#49).
+    readme = (REPO_ROOT / "hooks" / "README.md").read_text()
+    block = readme.split('```json\n{\n  "hooks"', 1)[1].split("```", 1)[0]
+    config = json.loads('{\n  "hooks"' + block)
+    wired = [
+        hook["command"]
+        for groups in config["hooks"].values()
+        for group in groups
+        for hook in group["hooks"]
+    ]
+    assert wired
+    for command in wired:
+        name = command.removeprefix("~/.claude/hooks/")
+        assert (CLAUDE_HOOKS / name).is_file(), command
+    assert "PostCompact" not in config["hooks"]
 
 
 # ─── enforce-prd-issue-first.sh (PreToolUse Edit|Write) ────────────────
