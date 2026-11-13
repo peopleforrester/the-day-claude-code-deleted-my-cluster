@@ -475,3 +475,41 @@ prompts pass. The same file checks every command in the template's
 `settings.json` against `git ls-files`, not the disk, and requires mode
 `100755`, because a reader's clone holds what git tracks, and their copy runs the
 hook as a command. `tests/test_shell_lint.py` picks the script up unchanged.
+
+## 2026-11-13 · The hooks mirror is synced to llm-coding-workflow 2255e69, and auto-reanchor.sh is removed, not kept as retired (#49)
+
+`hooks/README.md` now dates its sync 2026-11-13 at llm-coding-workflow commit
+`2255e69`, which lands llm-coding-workflow#482 (the SIGPIPE fixes made here
+first, brought back into the live hooks). Its parent, `a8a8072`, lands
+llm-coding-workflow#481, the live `pre-push` secret-scan fix #22 asked for.
+`2255e69` was on that repo's `staging` on the day, with `main` 46 commits
+behind and set to fast-forward to it, so the SHA holds once it promotes.
+
+The sync covers what those two issues moved and no more. At `2255e69` the
+attribution library matches the live one apart from comments, the
+`pre-push` secret-scan block matches line for line (the mirror took the live
+`grep -qI ''` text test), and the re-anchor matches the live
+`session-start.sh` compact block. Three things deliberately stay out, and the
+README says so:
+
+- The live extractor rewrite (llm-coding-workflow#360) is not mirrored.
+  `check-commit-message.sh` and `lib/extract_commit_message.py` stay as
+  resynced under #38 plus this repo's fixes, which `tests/test_hooks.py`
+  pins shape by shape. Porting a 400-line shell lexer belongs to its own issue.
+- The rest of the live `pre-push` is not mirrored. Its e2e tier counts pytest
+  exit 5 ("no tests collected") as a pass, which is the fallback #42 removed
+  from `workflows/e2e.yml`, and its change scoping and PRD check source
+  scripts this repo does not publish.
+- The live `session-start.sh` blocks that read the host (the safety-net
+  installer, the inbox, the per-repo objectives under `$HOME/repos`) are not
+  published, for the same reason as the hooks the README already holds back.
+
+`auto-reanchor.sh` is deleted rather than kept with a "retired" banner. The
+live set deleted it in llm-coding-workflow#332 because a `PostCompact` hook's
+stderr never reaches the model, so a published copy only teaches a hook that
+does nothing. The README keeps a "Retired" section pointing to the
+`session-start.sh` compact re-anchor and to `89979df`, the last commit that
+has the script, and the settings example drops its `PostCompact` entry. Its
+two tests now drive `session-start.sh` with `source: compact` on a clean tree
+and the same 20,000-file tree. A new test fails if the README's settings
+example wires a hook that `hooks/claude-code/` does not ship.

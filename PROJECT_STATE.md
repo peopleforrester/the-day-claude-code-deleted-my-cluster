@@ -103,6 +103,10 @@ mails on every Monday's run.
   `prompt-secret-scan.sh` its `settings.json` runs, and
   `tests/test_layer3_hooks.py` holds every hook path that file names to a
   tracked, executable script.
+- Issue #49 is fixed: `hooks/README.md` dates the mirror's sync at
+  llm-coding-workflow `2255e69`, and `auto-reanchor.sh` is gone in favor of
+  the `session-start.sh` compact re-anchor. #22's ask (the live pre-push fix
+  and the moved sync date) is met with it.
 
 ## Branch & Tests
 - Branch: main. `staging` is kept fast-forwarded to main and carries no
@@ -291,3 +295,11 @@ mails on every Monday's run.
   holds the annotation to the cue card and the table. The next revision puts
   the slide back at nine, in #33's corrected copy, which still waits for a
   booked delivery
+- 2026-11-13 the hooks mirror resynced to llm-coding-workflow `2255e69`
+  (#49), which lands llm-coding-workflow#482 and, in its parent `a8a8072`,
+  #481, the live pre-push fix #22 waited on. `hooks/README.md` dates the sync
+  there and names what is not mirrored (the #360 extractor rewrite, the rest
+  of the live pre-push, the host-bound session-start checks).
+  `auto-reanchor.sh` is deleted; its re-anchor is now in `session-start.sh` on
+  `SessionStart` source `compact`, as in the live set (#332). #22's ask is met
+  by this sync and can close with #49
