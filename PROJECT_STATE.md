@@ -313,3 +313,7 @@ mails on every Monday's run.
   longer scanned (llm-coding-workflow#360) and a `-F` message file is read
   against the tool call's `cwd` and any `git -C` (llm-coding-workflow#516).
   The rest of `check-commit-message.sh` stays as published
+- 2026-11-13 `e2e/test_extractor_sync_live.py` checks that match (#51): the
+  published extractor below its header is the live helper on
+  llm-coding-workflow's `staging` and at the commit its header names. The E2E
+  command now also needs `gh` read access to llm-coding-workflow

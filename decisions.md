@@ -539,3 +539,22 @@ extraction. The rest of the live hook (Gemini CLI's `run_shell_command`, the
 issue-link warning sent as `additionalContext`) is not resynced, because #50
 did not ask for it and `tests/test_hooks.py` pins the stderr warning. The
 README says so.
+
+## 2026-11-13 · The extractor's match with the live helper is checked in the E2E suite, against llm-coding-workflow's staging (#51)
+
+#50 made `hooks/claude-code/lib/extract_commit_message.py` the live helper
+apart from its header comment, but no test checked it. The check needs the
+private `peopleforrester/llm-coding-workflow`, so it lives in `e2e/` as
+`test_extractor_sync_live.py`, read through `gh`, and fails when `gh` cannot
+read that repo.
+
+"Live" is read as that repo's `staging`, not `main`. Its gate fast-forwards
+`main` to `staging`, so a helper change lands on `staging` first, and on the
+day `main` still held the line-based helper while `staging` held `e400946`. A
+check against `main` would fail now for a sync #50 did on purpose; one against
+`staging` fails the first time the live helper moves without this copy.
+
+The test also reads the file at the commit the header names, so the header's
+sync point cannot drift from the body, and it requires the published header to
+be the live one followed only by comment lines. The header is everything above
+the line that opens the module docstring.

@@ -118,10 +118,13 @@ the README's "Given at" table links resolves on YouTube as this talk;
 on the live channel; every tag in "Tags so far" is named, with its event
 id, on the conference-knowledge issue its row says reported it; and every
 action the kit templates and root `workflows/` pin by SHA is the commit its
-version comment's tag names on GitHub. It needs the network, `git`, the `e2e`
-dependency group's pinned `yt-dlp`, and `gh` with read access to
-`peopleforrester/conference-knowledge`, which is private, and fails when any
-is missing.
+version comment's tag names on GitHub; and
+`hooks/claude-code/lib/extract_commit_message.py` is the live
+llm-coding-workflow helper, on that repo's `staging` and at the commit its
+header names, apart from its header comment. It needs the network, `git`, the
+`e2e` dependency group's pinned `yt-dlp`, and `gh` with read access to
+`peopleforrester/conference-knowledge` and `peopleforrester/llm-coding-workflow`,
+which are private, and fails when any is missing.
 
 ## Where things live
 

@@ -51,13 +51,15 @@ pytest
 `e2e/` holds the checks that need live services, run with
 `uv run --group e2e pytest -q e2e` (the `E2E command:` in AGENTS.md). They
 need the network, the `e2e` group's pinned `yt-dlp`, and `gh` with read access
-to the private `peopleforrester/conference-knowledge`, and fail rather than
-skip when any is missing.
+to the private `peopleforrester/conference-knowledge` and
+`peopleforrester/llm-coding-workflow`, and fail rather than skip when any is
+missing.
 
 | File | What's asserted |
 |---|---|
 | `e2e/test_recordings_live.py` | Every YouTube link in the README's "Given at" table resolves and is titled as this talk; `scripts/check-talk-video.sh`, unstubbed, reads FOUND for the Portland Ignite alone on the live channel |
 | `e2e/test_tag_reports_live.py` | Each tag in AGENTS.md's "Tags so far" table is named, with its event id, in the body or a comment of the conference-knowledge issue its "Reported in" cell cites, read live through `gh` (#32) |
+| `e2e/test_extractor_sync_live.py` | `hooks/claude-code/lib/extract_commit_message.py` below its header comment is byte for byte the live `scripts/git-hooks/lib/extract_commit_message.py` on llm-coding-workflow's `staging` and at the commit its header names, read through `gh`, and its header only adds comment lines to the live one (#51) |
 
 ## Adding tests
 
