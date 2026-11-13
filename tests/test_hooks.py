@@ -280,8 +280,9 @@ def test_check_commit_message_allows_a_commit_left_to_the_editor() -> None:
 
 
 # Commands whose message the 2026-09-10 copy here or the live copy of
-# 2026-10-31 did not read, or read wrongly, and so passed; this copy reads
-# each (#38). The apostrophe was the old copy's alone.
+# 2026-10-31 did not read, or read wrongly, and so passed; the copy here read
+# each from #38 on, and the live lexer synced under #50 still does
+# (llm-coding-workflow#483). The apostrophe was the old copy's alone.
 @pytest.mark.parametrize(
     "command",
     [
@@ -311,6 +312,63 @@ def test_check_commit_message_blocks_attribution_in_every_message_form(command: 
     result = run_hook(CHECK_COMMIT, bash_payload(command))
     assert result.returncode == 2, result.stderr
     assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+# Text handed to another program is not the commit's message. The line-based
+# helper read a `git commit` at the start of any line outside a heredoc, and
+# every -m from the commit on, so it blocked these clean commands; the lexer
+# synced from llm-coding-workflow#360 reads them as a shell does (#50).
+@pytest.mark.parametrize(
+    "command",
+    [
+        "gh issue create --title 'Hook passes a second -m' --body 'Reproduce with:\n"
+        'git commit -m "Fix" -m "Generated with Claude Code"\n'
+        "and the commit goes through.'",
+        'git commit -m "Fix the retry loop\n\nIssue #50" && '
+        "gh issue comment 50 --body 'use -m \"Generated with Claude Code\"'",
+    ],
+    ids=["issue-body-quotes-a-commit", "issue-comment-after-a-commit"],
+)
+def test_check_commit_message_allows_a_commit_quoted_in_an_issue_body(command: str) -> None:
+    result = run_hook(CHECK_COMMIT, bash_payload(command))
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
+
+
+# A -F message file is read from disk, against the payload's cwd and any
+# `git -C`, as git resolves it (llm-coding-workflow#516). The line-based helper
+# found no message in it and allowed the commit (#50). The hook runs from this
+# repo's root, so only the payload's cwd can find the file.
+@pytest.mark.parametrize(
+    ("command", "subdir"),
+    [
+        ("git commit -F msg.txt", ""),
+        ("git commit --file=msg.txt", ""),
+        ("git add -A && git commit -aF msg.txt", ""),
+        ("git -C repo commit --file msg.txt", "repo"),
+    ],
+    ids=["short", "long-equals", "combined-aF", "global-C"],
+)
+@pytest.mark.parametrize("hooks_dir", ["repo", "installed"])
+def test_check_commit_message_blocks_attribution_in_a_message_file(
+    tmp_path: Path, installed_hooks: Path, hooks_dir: str, command: str, subdir: str
+) -> None:
+    script = CHECK_COMMIT if hooks_dir == "repo" else installed_hooks / CHECK_COMMIT.name
+    workdir = tmp_path / "work"
+    (workdir / subdir).mkdir(parents=True)
+    (workdir / subdir / "msg.txt").write_text("Fix the retry loop\n\nGenerated with Claude Code\n")
+    payload = {**bash_payload(command), "cwd": str(workdir)}
+    result = run_hook(script, payload, cwd=REPO_ROOT)
+    assert result.returncode == 2, result.stderr
+    assert 'AI/Claude reference: "Claude Code"' in result.stderr
+
+
+def test_check_commit_message_allows_a_clean_message_file(tmp_path: Path) -> None:
+    (tmp_path / "msg.txt").write_text("Fix the retry loop\n\nIssue #50\n")
+    payload = {**bash_payload("git commit -F msg.txt"), "cwd": str(tmp_path)}
+    result = run_hook(CHECK_COMMIT, payload, cwd=REPO_ROOT)
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
 
 
 # ─── session-start.sh (SessionStart, source compact) ───────────────────

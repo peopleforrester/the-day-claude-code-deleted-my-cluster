@@ -107,6 +107,11 @@ mails on every Monday's run.
   llm-coding-workflow `2255e69`, and `auto-reanchor.sh` is gone in favor of
   the `session-start.sh` compact re-anchor. #22's ask (the live pre-push fix
   and the moved sync date) is met with it.
+- Issue #50 is fixed: `hooks/claude-code/lib/extract_commit_message.py` is
+  the live llm-coding-workflow shell lexer at `e400946` (that repo's #360 and
+  #516) apart from its header comment, and `check-commit-message.sh` passes
+  the payload's `cwd` to it. An issue body quoting a commit is allowed, and
+  attribution in a `-F` file is blocked; `tests/test_hooks.py` holds both.
 
 ## Branch & Tests
 - Branch: main. `staging` is kept fast-forwarded to main and carries no
@@ -303,3 +308,8 @@ mails on every Monday's run.
   `auto-reanchor.sh` is deleted; its re-anchor is now in `session-start.sh` on
   `SessionStart` source `compact`, as in the live set (#332). #22's ask is met
   by this sync and can close with #49
+- 2026-11-13 the commit-message extractor resynced to the live shell lexer at
+  llm-coding-workflow `e400946` (#50): text handed to another program is no
+  longer scanned (llm-coding-workflow#360) and a `-F` message file is read
+  against the tool call's `cwd` and any `git -C` (llm-coding-workflow#516).
+  The rest of `check-commit-message.sh` stays as published

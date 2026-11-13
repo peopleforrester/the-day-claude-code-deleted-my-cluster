@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # ABOUTME: Extracts the message from a git commit invocation inside a shell command.
-# ABOUTME: Heredoc-aware, so a decoy heredoc cannot mask the real message (#154).
+# ABOUTME: Reads the command as a shell would, so only the commit's own arguments are scanned.
+#
+# Synced from llm-coding-workflow scripts/git-hooks/lib/extract_commit_message.py
+# at e400946 (llm-coding-workflow#516) on 2026-11-13; below this comment the
+# file is the live one unchanged. Issue numbers in it are that repo's.
 """Pull the commit message out of a shell command string.
-
-Synced from the live working set (llm-coding-workflow
-scripts/git-hooks/lib/extract_commit_message.py) on 2026-10-31, with the
-fixes made here first that are marked below (#38).
 
 The hook that used this logic inline decided what to scan by pattern-matching
 the raw command, which failed three ways, all reproduced on 2026-09-10 and
@@ -18,134 +18,447 @@ again on 2026-09-24:
 3. It fired on commands running no git at all, because the literal string
    `git commit` appeared inside a heredoc body as documentation.
 
-The fix is to track heredoc extent while walking the command, so a line is
-known to be either shell or body, and only shell lines can carry an
-invocation. Reading `stdin` and printing the message keeps it callable from
-bash and directly testable from Python.
+Tracking heredoc extent line by line fixed those (#154), but a line was still
+"shell" whenever no heredoc was open, so two shapes kept firing (#360):
 
-It is still a parser of a command string, not a shell, so it is still a
-guess. hooks/README.md lists what it does not see.
+4. A quoted argument spanning lines, as in `gh issue create --body '...'`
+   quoting a reproduction, put `git commit -m "<attribution>"` at the start of
+   a line, where it read as an invocation.
+5. Every `-m` from the commit line to the end of the command was collected,
+   so `git commit -m x && gh issue comment 1 --body 'use -m "<attribution>"'`
+   scanned the issue comment as part of the message.
+
+So the command is now read the way a shell reads it: quotes, heredocs,
+command substitution and separators all have their real extent, the command
+is split into simple commands, and the message comes only from a `git commit`
+command's own message arguments and its own stdin. Text another program is
+handed (an issue body, a file being written) is never scanned.
+
+A `-F <file>` (`--file`) message is read from disk when the file is there as
+the hook runs, resolved as git would: against `--cwd` (the tool call's working
+directory, else this process's) and any `git -C` before `commit`. Without
+that, attribution in a message file passed this layer (#516). A file the
+command itself writes first, or one behind an earlier `cd`, is not found yet
+and is left to the native commit-msg hook, which sees the final message.
 
 Exit status:
     0  a commit message was extracted and printed
     1  the command contains no git commit invocation
-    2  a commit runs, but no message is present (interactive editor, -F file)
+    2  a commit runs, but no message is present (interactive editor, or a
+       -F file that cannot be read yet)
 """
 
 from __future__ import annotations
 
+import argparse
+import os
 import re
 import sys
+from dataclasses import dataclass, field
 
-# `git commit` at a command position: start of line, or after a separator.
-# Anchoring this is what stops a mention inside prose being read as a call.
-#
-# Fixed here first: a global option that takes a separate value
-# (`git -C <path> commit`, `git -c <key>=<value> commit`) was not recognized,
-# so the commit was read as no commit at all and allowed untouched.
-_GIT_COMMIT = re.compile(
-    r"(?:^|[;&|(`]|\&\&|\|\|)\s*git\s+"
-    r"(?:(?:-C|-c|--git-dir|--work-tree|--namespace)\s+\S+\s+|-\S+\s+)*commit\b"
-)
+_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 
-# A heredoc redirection, capturing the delimiter and whether it is quoted.
-_HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+# Words that can stand before the program a simple command runs.
+_RESERVED = {"if", "then", "else", "elif", "do", "while", "until", "!", "{", "}", "time"}
+_WRAPPERS = {"sudo", "nohup", "env", "command", "exec", "timeout", "nice", "stdbuf"}
+_WRAPPER_ARG = re.compile(r"^(-.*|\d+(\.\d+)?[smhd]?)$")
 
-# A message option and its value.
-#
-# Fixed here first: the live copy read only a separate `-m` and `--message=`.
-# `git commit -am "..."`, one of the most common forms, was a commit with no
-# message to scan, and so were `-m"..."`, `--message "..."` and an unquoted
-# one-word value.
-_MESSAGE_OPT = re.compile(
-    r"(?<![\w-])(?:-[A-Za-z]*m[ \t]*|--message(?:=|[ \t]+))"
-    r"(?:(?P<q>['\"])(?P<body>.*?)(?<!\\)(?P=q)|(?P<bare>[^\s'\";&|)]+))",
-    re.S,
-)
+# Programs that run a string argument as shell, which is read through.
+_SHELLS = {"sh", "bash", "dash", "zsh", "ksh"}
+_MAX_DEPTH = 5
 
-# `-m "$(cat <<'EOF'` names a heredoc whose body is read separately; the text
-# between the quotes is only the substitution's shell, not message.
-_HEREDOC_SUBSTITUTION = re.compile(r"^\$\(.*<<", re.S)
+# git's own options before the subcommand that take a separate value.
+_GIT_VALUE_OPTS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env"}
+
+# `git commit` options whose value becomes part of the message. A trailer is
+# appended to it, so `--trailer` can carry attribution as surely as `-m`.
+_MESSAGE_LONG = ("--message", "--trailer")
+# The option whose value names a file holding the message (#516).
+_FILE_LONG = "--file"
+
+# Other `git commit` options that take a separate value, which must be skipped
+# so the value is not read as an option.
+_VALUE_LONG = {
+    "--reuse-message",
+    "--reedit-message",
+    "--template",
+    "--author",
+    "--date",
+    "--fixup",
+    "--squash",
+    "--cleanup",
+    "--pathspec-from-file",
+}
+_VALUE_SHORT = set("mFCct")
+# Short options whose optional value can only be attached (`-S<key>`, `-uno`).
+_ATTACHED_SHORT = set("Su")
 
 
-def _open_heredocs(line: str) -> list[tuple[int, str]]:
-    """Heredocs opened by this shell line, in order, as (offset, delimiter)."""
-    return [(m.start(), m.group(2)) for m in _HEREDOC.finditer(line)]
+@dataclass
+class _Command:
+    """One simple command: its words and what it is fed on stdin."""
+
+    words: list[str] = field(default_factory=list)
+    stdin: list[str] = field(default_factory=list)
+
+    def literal_text(self) -> str:
+        """The text this command carries, standing in for its output."""
+        return "\n".join(self.words[1:] + self.stdin)
 
 
-def extract(command: str) -> tuple[str | None, bool]:
+class _Lexer:
+    """A shell reader just deep enough to know which text belongs to which command.
+
+    It handles single, double and ANSI-C quotes, backslash escapes, comments,
+    heredocs (`<<`, `<<-`) and here-strings, `$(...)` and backticks (whose
+    commands are collected too, since a shell runs them), redirections and the
+    separators `; & && | || ( )` and newline. It does not expand anything.
+    """
+
+    def __init__(self, source: str) -> None:
+        self.src = source
+        self.commands: list[_Command] = []
+
+    def run(self) -> list[_Command]:
+        self._parse(0, None)
+        return self.commands
+
+    def _parse(self, i: int, close: str | None) -> tuple[int, list[_Command]]:
+        """Read shell from `i` up to `close` (`)` or a backtick) or the end.
+
+        Returns the index after the closing character and the commands read at
+        this level.
+        """
+        src, n = self.src, len(self.src)
+        level: list[_Command] = []
+        cmd = _Command()
+        buf: list[str] = []
+        in_word = False
+        expect = ""  # what the next word is: heredoc delimiter, here-string, redirect target
+        pending: list[tuple[str, bool, _Command]] = []
+        depth = 0
+
+        def end_word() -> None:
+            nonlocal in_word, expect
+            if not in_word:
+                return
+            value = "".join(buf)
+            buf.clear()
+            in_word = False
+            if expect in ("heredoc", "heredoc-strip"):
+                pending.append((value, expect == "heredoc-strip", cmd))
+            elif expect == "herestring":
+                cmd.stdin.append(value)
+            elif expect != "redirect":
+                cmd.words.append(value)
+            expect = ""
+
+        def end_command() -> None:
+            nonlocal cmd, expect
+            end_word()
+            expect = ""
+            if cmd.words or cmd.stdin or any(owner is cmd for _, _, owner in pending):
+                level.append(cmd)
+                self.commands.append(cmd)
+            cmd = _Command()
+
+        while i < n:
+            c = src[i]
+            nxt = src[i + 1] if i + 1 < n else ""
+            if close is not None and c == close and (close == "`" or depth == 0):
+                end_command()
+                return i + 1, level
+            if c == "\\":
+                if nxt != "\n":
+                    buf.append(nxt)
+                    in_word = True
+                i += 2
+            elif c == "'":
+                end = src.find("'", i + 1)
+                end = n if end < 0 else end
+                buf.append(src[i + 1 : end])
+                in_word = True
+                i = end + 1
+            elif c == '"':
+                i = self._double_quoted(i + 1, buf)
+                in_word = True
+            elif c == "$" and nxt == "'":
+                i = self._ansi_quoted(i + 2, buf)
+                in_word = True
+            elif c == "$" and nxt == "(":
+                i, inner = self._parse(i + 2, ")")
+                buf.append("\n".join(sub.literal_text() for sub in inner))
+                in_word = True
+            elif c == "`":
+                i, inner = self._parse(i + 1, "`")
+                buf.append("\n".join(sub.literal_text() for sub in inner))
+                in_word = True
+            elif c == "#" and not in_word:
+                end = src.find("\n", i)
+                i = n if end < 0 else end
+            elif c in " \t\r":
+                end_word()
+                i += 1
+            elif c == "\n":
+                end_command()
+                i = self._heredoc_bodies(i + 1, pending)
+            elif c == "&" and nxt == ">":
+                end_word()
+                i += 3 if src.startswith("&>>", i) else 2
+                expect = "redirect"
+            elif c in ";&|":
+                end_command()
+                i += 1
+                while i < n and src[i] in ";&|":
+                    i += 1
+            elif c in "<>":
+                if in_word and "".join(buf).isdigit():
+                    buf.clear()  # a file descriptor number, not a word
+                    in_word = False
+                end_word()
+                if src.startswith("<<<", i):
+                    expect, i = "herestring", i + 3
+                elif src.startswith("<<-", i):
+                    expect, i = "heredoc-strip", i + 3
+                elif src.startswith("<<", i):
+                    expect, i = "heredoc", i + 2
+                else:
+                    i += 1
+                    while i < n and src[i] in "<>&|":
+                        i += 1
+                    expect = "redirect"
+            elif c == "(":
+                end_command()
+                depth += 1
+                i += 1
+            elif c == ")":
+                end_command()
+                depth = max(depth - 1, 0)
+                i += 1
+            else:
+                buf.append(c)
+                in_word = True
+                i += 1
+
+        end_command()
+        if pending:
+            # The command ended right after the redirection, with no body.
+            self._heredoc_bodies(n, pending)
+        return n, level
+
+    def _double_quoted(self, i: int, buf: list[str]) -> int:
+        src, n = self.src, len(self.src)
+        while i < n:
+            c = src[i]
+            nxt = src[i + 1] if i + 1 < n else ""
+            if c == '"':
+                return i + 1
+            if c == "\\" and nxt in '$`"\\\n':
+                if nxt != "\n":
+                    buf.append(nxt)
+                i += 2
+            elif c == "$" and nxt == "(":
+                i, inner = self._parse(i + 2, ")")
+                buf.append("\n".join(sub.literal_text() for sub in inner))
+            elif c == "`":
+                i, inner = self._parse(i + 1, "`")
+                buf.append("\n".join(sub.literal_text() for sub in inner))
+            else:
+                buf.append(c)
+                i += 1
+        return n
+
+    def _ansi_quoted(self, i: int, buf: list[str]) -> int:
+        src, n = self.src, len(self.src)
+        escapes = {"n": "\n", "t": "\t", "r": "\r", "\\": "\\", "'": "'", '"': '"'}
+        while i < n:
+            c = src[i]
+            if c == "'":
+                return i + 1
+            if c == "\\" and i + 1 < n:
+                buf.append(escapes.get(src[i + 1], src[i : i + 2]))
+                i += 2
+            else:
+                buf.append(c)
+                i += 1
+        return n
+
+    def _heredoc_bodies(self, i: int, pending: list[tuple[str, bool, _Command]]) -> int:
+        """Read the bodies of the heredocs opened on the line just ended.
+
+        An unterminated body runs to the end of the command, as in bash.
+        """
+        src, n = self.src, len(self.src)
+        for delimiter, strip_tabs, owner in pending:
+            lines: list[str] = []
+            while i < n:
+                end = src.find("\n", i)
+                line = src[i:] if end < 0 else src[i:end]
+                i = n if end < 0 else end + 1
+                if strip_tabs:
+                    line = line.lstrip("\t")
+                if line == delimiter:
+                    break
+                lines.append(line)
+            owner.stdin.append("\n".join(lines))
+        pending.clear()
+        return i
+
+
+def _program(words: list[str]) -> list[str]:
+    """The words from the program a simple command runs, past prefixes."""
+    i = 0
+    while i < len(words):
+        word = words[i]
+        if _ASSIGNMENT.match(word) or word in _RESERVED:
+            i += 1
+        elif os.path.basename(word) in _WRAPPERS:
+            i += 1
+            while i < len(words) and (_WRAPPER_ARG.match(words[i]) or _ASSIGNMENT.match(words[i])):
+                i += 1
+        else:
+            return words[i:]
+    return []
+
+
+def _commit_args(words: list[str]) -> tuple[list[str], list[str]] | None:
+    """For `git commit`, its arguments and the `-C` directories before it, else None."""
+    if not words or os.path.basename(words[0]) != "git":
+        return None
+    i = 1
+    chdirs: list[str] = []
+    while i < len(words) and words[i].startswith("-"):
+        if words[i] == "-C" and i + 1 < len(words):
+            chdirs.append(words[i + 1])
+        i += 2 if words[i] in _GIT_VALUE_OPTS else 1
+    if i < len(words) and words[i] == "commit":
+        return words[i + 1 :], chdirs
+    return None
+
+
+def _long_name(option: str) -> str:
+    """The long option an argument names, accepting git's unique abbreviations."""
+    for name in (*_MESSAGE_LONG, _FILE_LONG):
+        if len(option) >= 5 and name.startswith(option):
+            return name
+    return option
+
+
+def _message_values(args: list[str]) -> tuple[list[str], list[str]]:
+    """Every `-m`, `--message` and `--trailer` value in order, and every `-F` file.
+
+    Git joins repeated messages as paragraphs, so each is part of the message.
+    Reading only the first let attribution through in a second `-m`, as did
+    `-am`, `-m'x'` and `--message 'x'` (#342). `-F -` is stdin, which the
+    caller reads already, so it is not listed as a file.
+    """
+    values: list[str] = []
+    files: list[str] = []
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == "--":
+            break
+        if arg.startswith("--"):
+            option, eq, value = arg.partition("=")
+            option = _long_name(option)
+            if option in _MESSAGE_LONG or option == _FILE_LONG:
+                target = values if option in _MESSAGE_LONG else files
+                if eq:
+                    target.append(value)
+                elif i + 1 < len(args):
+                    target.append(args[i + 1])
+                    i += 1
+            elif option in _VALUE_LONG and not eq:
+                i += 1
+        elif arg.startswith("-") and len(arg) > 1:
+            cluster = arg[1:]
+            for j, letter in enumerate(cluster):
+                if letter in _ATTACHED_SHORT:
+                    break
+                if letter in _VALUE_SHORT:
+                    value = cluster[j + 1 :]
+                    if not value and i + 1 < len(args):
+                        value = args[i + 1]
+                        i += 1
+                    if letter == "m":
+                        values.append(value)
+                    elif letter == "F":
+                        files.append(value)
+                    break
+        i += 1
+    return values, [name for name in files if name and name != "-"]
+
+
+def _read_message_file(name: str, cwd: str, chdirs: list[str]) -> str | None:
+    """The text of a `-F` file, resolved as git resolves it, or None if unreadable.
+
+    The lexer expands nothing, so `$VAR` and `~` are expanded here from this
+    process's environment, which is the shell's the command will run in.
+    """
+    base = cwd
+    for directory in chdirs:
+        base = os.path.join(base, os.path.expanduser(os.path.expandvars(directory)))
+    path = os.path.join(base, os.path.expanduser(os.path.expandvars(name)))
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
+def _commands(source: str, depth: int = 0) -> list[_Command]:
+    """Every simple command in `source`, including script text a shell is handed."""
+    found: list[_Command] = []
+    for command in _Lexer(source).run():
+        words = _program(command.words)
+        if depth < _MAX_DEPTH and words:
+            if os.path.basename(words[0]) in _SHELLS and "-c" in words[1:-1]:
+                found.extend(_commands(words[words.index("-c", 1) + 1], depth + 1))
+            elif words[0] == "eval":
+                found.extend(_commands(" ".join(words[1:]), depth + 1))
+        found.append(_Command(words=words, stdin=command.stdin))
+    return found
+
+
+def extract(command: str, cwd: str | None = None) -> tuple[str | None, bool]:
     """Return (message, commit_seen).
 
     `commit_seen` is False when no git commit runs, which is a different
     outcome from a commit whose message could not be found: the first must be
     allowed through untouched, the second is worth reporting.
     """
-    lines = command.split("\n")
-    pending: list[str] = []  # delimiters whose bodies have not closed yet
-    # Index, among the bodies still pending, of the commit's own heredoc.
-    target: int | None = None
-    body: list[str] = []
+    base = cwd or os.getcwd()
     commit_seen = False
-    # Shell text from the commit invocation on, heredoc bodies left out.
-    shell: list[str] = []
-
-    for line in lines:
-        if pending:
-            # Inside a heredoc body. Never shell, so never an invocation.
-            if line.strip() == pending[0]:
-                pending.pop(0)
-                if target is not None:
-                    target -= 1
-            elif target == 0:
-                body.append(line)
+    parts: list[str] = []
+    for cmd in _commands(command):
+        found = _commit_args(cmd.words)
+        if found is None:
             continue
-
-        opened = _open_heredocs(line)
-        if not commit_seen:
-            commit = _GIT_COMMIT.search(line)
-            if commit:
-                commit_seen = True
-                shell.append(line[commit.start():])
-                # Fixed here first: only a heredoc opened after the invocation
-                # can be its message. `cat > f <<'EOF' && git commit -m ...`
-                # opens the file's heredoc on the commit line, and taking it
-                # read the file body instead of the -m message.
-                mine = [i for i, (offset, _) in enumerate(opened) if offset >= commit.start()]
-                if mine:
-                    target = mine[0]
-        else:
-            shell.append(line)
-        pending.extend(delimiter for _, delimiter in opened)
+        args, chdirs = found
+        commit_seen = True
+        values, files = _message_values(args)
+        # stdin is the message under `-F -`; read it whatever the flags say,
+        # since failing closed costs nothing when it is not.
+        parts.extend(values + cmd.stdin)
+        for name in files:
+            text = _read_message_file(name, base, chdirs)
+            if text is not None:
+                parts.append(text)
 
     if not commit_seen:
         return None, False
-
-    # Fixed here first: every -m, read from the invocation on. The live copy
-    # searched from the start of the commit line, so `git stash push -m "wip"
-    # && git commit -m ...` scanned "wip", and it kept only the first -m, while
-    # git joins every -m into the message: `-m "subject" -m "Co-Authored-By:
-    # ..."` put the trailer past the check. A heredoc after the invocation that
-    # belongs to a later command on the line is scanned too, as a message would
-    # be: on an ambiguous line this reads too much rather than too little.
-    #
-    # Scanning from the commit line to the end rather than that line alone: a
-    # multi-line -m message continues on lines that carry no `git commit`
-    # themselves, and collecting only matching lines silently dropped
-    # everything after the subject, which is where attribution trailers live.
-    joined = "\n".join(shell)
-    parts = ["\n".join(body)] if body else []
-    for m in _MESSAGE_OPT.finditer(joined):
-        value = m.group("body") if m.group("q") else m.group("bare")
-        if value and not _HEREDOC_SUBSTITUTION.match(value):
-            parts.append(value)
-
-    if not parts:
-        return None, True
-    return "\n\n".join(parts), True
+    parts = [part for part in parts if part]
+    if parts:
+        return "\n\n".join(parts), True
+    return None, True
 
 
 def main() -> int:
-    message, commit_seen = extract(sys.stdin.read())
+    parser = argparse.ArgumentParser(description="Print the message a git commit command carries.")
+    parser.add_argument("--cwd", default="", help="directory the command runs in")
+    options = parser.parse_args()
+    message, commit_seen = extract(sys.stdin.read(), options.cwd or None)
     if not commit_seen:
         return 1
     if message is None:

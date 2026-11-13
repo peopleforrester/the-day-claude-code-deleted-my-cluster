@@ -17,13 +17,19 @@ If you are reading this much later, check before trusting the event names: this
 surface moves fast, and the version of this file before that was four months
 stale and wrong about it.
 
-Not every script moved with the 2026-11-13 sync. `check-commit-message.sh` and
-`lib/extract_commit_message.py` stay as synced on 2026-10-31 plus the fixes
-made here (see the defect below); since then the live set has rewritten the
-extractor to read the command as a shell would (llm-coding-workflow#360), and
-that rewrite is not mirrored. The live hooks that read the host they run on
-(the safety-net installer, the inbox, the per-repo objectives) are not
-published, so `session-start.sh` here carries the live re-anchor without them.
+`check-commit-message.sh` and `lib/extract_commit_message.py` are one step
+later, at llm-coding-workflow commit
+[`e400946`](https://github.com/peopleforrester/llm-coding-workflow/commit/e400946d89bf01826b13a1c47de9f41d415a38af)
+(llm-coding-workflow#516), also on that repo's `staging` on 2026-11-13 (#50).
+The helper is the live one apart from its header comment, and the hook calls it
+as the live hook does, passing the tool call's `cwd`; see the defect below. The
+rest of that hook is not resynced: it still answers only the `Bash` tool and
+prints its issue-link warning to stderr, where the live one also reads Gemini
+CLI's `run_shell_command` and sends the warning as `additionalContext`.
+
+The live hooks that read the host they run on (the safety-net installer, the
+inbox, the per-repo objectives) are not published, so `session-start.sh` here
+carries the live re-anchor without them.
 
 These are the actual scripts behind [`docs/the-framework.md`](../docs/the-framework.md)
 and the talk. Paths, hostnames and usernames are replaced with `$HOME`, `$USER`
@@ -150,8 +156,8 @@ where each heredoc body starts and ends. A line is shell or body, only a shell
 line can carry the `git commit`, and only a heredoc opened by that invocation is
 its message.
 
-Resyncing turned up more of the same, so the copy here is ahead of the live one
-again, with every shape tested in `tests/test_hooks.py`. The live helper read a
+Resyncing turned up more of the same, and the copy here got ahead of the live
+one, with every shape tested in `tests/test_hooks.py`. The live helper read a
 `-m` from the start of the commit's line, so `git stash push -m "wip" && git
 commit -m ...` scanned `wip`, a regression the old script did not have. Both
 read only the first `-m`, while git joins every `-m` into the message. Neither
@@ -160,12 +166,28 @@ read `git commit -am "..."`, `-m"..."` or `--message "..."`, and neither saw
 helper did fix one more: the old script cut a `-m` message at its first
 apostrophe.)
 
-The lesson is the same one, made sharper by the fix. **A control that parses a
+A line-based walk still had two holes, and the live set closed both by
+rewriting the helper as a small shell lexer, which the copy here now is (#50).
+It read any line outside a heredoc as shell, so a `gh issue create --body`
+whose quoted text reproduced a `git commit -m "..."` was blocked as a commit,
+and it took every `-m` from the commit on, so `git commit -m x && gh issue
+comment --body '-m "..."'` scanned the comment as the message
+(llm-coding-workflow#360). The lexer gives quotes, heredocs, substitution and
+separators their real extent, splits the command into simple commands, and
+takes the message only from a `git commit` command's own `-m`, `--message` and
+`--trailer` values and its own stdin. And a `-F <file>` message was never read,
+so attribution in a message file passed; the helper now reads the file from
+disk, resolved against the tool call's `cwd` (the hook passes it with `--cwd`)
+and any `git -C` (llm-coding-workflow#516). llm-coding-workflow#483 checked the
+lexer against every shape the copy here had fixed first, and the live set now
+runs this file's list of message forms as its own test.
+
+The lesson is the same one, made sharper by each fix. **A control that parses a
 command string is guessing.** The helper is a better guess, and it is still a
 guess: it is not a shell. A message built in a variable (`git commit -m "$msg"`),
-read from a file (`-F msg.txt`), or written by an editor is not seen here, and
-a commit run through an alias, `sudo` or `env` is not recognized as one. The
-reliable version anchors on the invocation, or runs where the action actually
+a `-F` file the same command writes first or reaches through an earlier `cd`,
+or a message written by an editor is not seen here, and a commit run through
+an alias is not recognized as one. The reliable version anchors on the invocation, or runs where the action actually
 happens: the live set sources the same pattern list from a native `commit-msg`
 hook, which reads the message git is about to record, and Layer 1 and Layer 2
 sit above both.

@@ -513,3 +513,29 @@ has the script, and the settings example drops its `PostCompact` entry. Its
 two tests now drive `session-start.sh` with `source: compact` on a clean tree
 and the same 20,000-file tree. A new test fails if the README's settings
 example wires a hook that `hooks/claude-code/` does not ship.
+
+## 2026-11-13 · The commit-message extractor is synced to the live lexer at llm-coding-workflow e400946 (#50)
+
+This supersedes the first bullet of the 2026-11-13 #49 entry, which kept the
+live extractor rewrite out of the mirror. `hooks/claude-code/lib/extract_commit_message.py`
+is now the live `scripts/git-hooks/lib/extract_commit_message.py` at
+llm-coding-workflow `e400946`, which lands llm-coding-workflow#516 on top of
+the #360 lexer. Below its header comment the file is the live one byte for
+byte; the header adds only where and when it was synced, and that its issue
+numbers are the workflow repo's. `e400946` was on that repo's `staging` on
+the day, the latest commit touching the helper, with `main` 97 commits behind.
+
+The sync point is `e400946`, not `2255e69` where the rest of the mirror sits,
+because the issue asks for the `-F` file reading and the `--cwd` argument,
+which `2255e69` does not have; the lexer's only change between the two is #516.
+
+The line-based helper's own fixes ("fixed here first") are not carried over
+separately: llm-coding-workflow#483 confirmed the lexer handles every shape,
+and the mirror's every-message-form list still passes against it unchanged.
+
+`check-commit-message.sh` takes only the matching call: it reads `cwd` from the
+payload and passes it as `--cwd`, and its comments describe the new
+extraction. The rest of the live hook (Gemini CLI's `run_shell_command`, the
+issue-link warning sent as `additionalContext`) is not resynced, because #50
+did not ask for it and `tests/test_hooks.py` pins the stderr warning. The
+README says so.

@@ -8,10 +8,13 @@
 # It receives JSON on stdin describing what Claude wants to do:
 #   {"tool_name": "Bash", "tool_input": {"command": "git commit -m 'message'"}}
 #
-# The hook extracts ONLY the commit message (from -m, heredoc, or --message)
-# and checks for references to Claude, Claude Code, AI, Anthropic, or similar
-# attribution. If found, it blocks the commit by exiting with code 2 and
-# suggests a corrected message. File paths in the command are not scanned.
+# The hook extracts ONLY the commit message (from every -m, --message and
+# --trailer, a -F file already on disk, or the heredoc / here-string the
+# commit reads) and checks for references to Claude, Claude Code, AI,
+# Anthropic, or similar attribution. If found, it blocks the commit by exiting
+# with code 2 and suggests a corrected message. File paths in the command are
+# not scanned, and neither is text handed to another program, such as a
+# `gh issue create --body` in the same command (llm-coding-workflow#360).
 #
 # EXIT CODES:
 #   0 = allow the command to proceed
@@ -43,6 +46,9 @@ fi
 
 # --- Step 3: Extract the command ---
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+# The directory the command runs in, against which a `-F <file>` is read
+# (llm-coding-workflow#516).
+CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
 
 # --- Step 4: Find the commit's own message, heredoc-aware ---
 #
@@ -57,12 +63,15 @@ COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 #      `git commit` appeared inside a heredoc body as documentation. That one
 #      blocked a `cat` writing these very tests on 2026-09-24.
 #
-# The helper walks the command tracking heredoc extent, so a line is known to
-# be shell or body and only shell lines can carry an invocation. It ships in
-# lib/ beside this script, as the attribution library does (hooks/README.md).
-# Synced from the live working set on 2026-10-31 (#38), when the copy published
-# here still took the first delimiter; that version is in the history at
-# 3c3cb28, the commit tagged delivered/devopsdays-portland-2026.
+# The helper reads the command the way a shell does (quotes, heredocs,
+# substitution, separators) and takes the message only from a `git commit`
+# command's own arguments, its stdin and any -F file, so an issue body quoting
+# a commit is not read as one (llm-coding-workflow#360). It ships in lib/
+# beside this script, as the attribution library does (hooks/README.md).
+# Synced from the live working set on 2026-11-13 (#50). The line-based helper
+# published on 2026-10-31 (#38) is in the history at 7091e7e, and the copy that
+# still took the first delimiter at 3c3cb28, the commit tagged
+# delivered/devopsdays-portland-2026.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXTRACT="${SCRIPT_DIR}/lib/extract_commit_message.py"
 
@@ -72,13 +81,13 @@ if [ ! -f "$EXTRACT" ]; then
 fi
 
 set +e
-MSG=$(printf '%s' "$COMMAND" | python3 "$EXTRACT")
+MSG=$(printf '%s' "$COMMAND" | python3 "$EXTRACT" --cwd "$CWD")
 EXTRACT_STATUS=$?
 set -e
 
 case "$EXTRACT_STATUS" in
     1) exit 0 ;;   # no git commit in this command
-    2) exit 0 ;;   # a commit runs but carries no inline message (editor, -F file)
+    2) exit 0 ;;   # a commit runs but carries no message yet (editor, unreadable -F file)
     0) ;;
     *)
         echo "check-commit-message.sh: message extraction failed (status $EXTRACT_STATUS)." >&2
