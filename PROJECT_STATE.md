@@ -325,3 +325,6 @@ mails on every Monday's run.
   timeline's "fifteen minutes" at 19:58:43 corrected to twelve after the 150
   claim, fifteen after the false report began, and the analysis's "fifteen
   minutes later" to twelve (`decisions.md`)
+- 2026-11-13 README's License section corrected from MIT to CC BY 4.0 to
+  match `LICENSE` (#52), and `tests/test_license.py` now fails when they
+  name different licenses

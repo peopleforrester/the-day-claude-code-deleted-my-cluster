@@ -129,5 +129,7 @@ inside an existing guardrail, is unsettled.
 
 ## License
 
-MIT. See [`LICENSE`](LICENSE). The incident artifacts are included as evidence for
-the talk; reuse them freely.
+Creative Commons Attribution 4.0 International (CC BY 4.0). See
+[`LICENSE`](LICENSE). Share and adapt the material for any purpose, with credit.
+The incident artifacts are included as evidence for the talk; reuse them freely,
+with credit.

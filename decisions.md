@@ -582,3 +582,24 @@ article's dated statements ("as of 2026-10-31 the session page still carries
 both sentences") stay dated, because publication, and any refresh it needs,
 belongs to `mrf-engagement-orchestrator`. Landing the draft is not publishing
 it.
+## 2026-11-13 · The repo is CC BY 4.0, and the README's "MIT" is corrected to match LICENSE (#52)
+
+The README's License section said MIT while `LICENSE` is Creative Commons
+Attribution 4.0 International. CC BY 4.0 is what applies. It is the only
+license this repo has ever committed: `395cb59` (2026-04-25) added it on
+purpose, its message giving the reason (the standard choice for talk content,
+permitting sharing and remixing with attribution). "MIT" arrived in `b3d92a8`
+(2026-08-31), a README rewrite for the consolidation that did not touch
+`LICENSE` and recorded no decision to relicense, so it is read as a slip and
+not as a grant. Changing to MIT would be relicensing published material, which
+no record asks for.
+
+`tests/test_license.py` now identifies the license in `LICENSE` and the one the
+README's `## License` section names, from a short table of recognised licenses,
+and fails when they differ, when the section names none, or when `LICENSE`
+carries no recognised license. A relicense adds its row to that table first.
+
+`395cb59` noted that helper scripts might later warrant a separate code
+license. The repo now publishes hooks, scripts and workflow templates, all
+covered by CC BY 4.0 as things stand; whether to dual-license them is left to a
+follow-up rather than decided here.
