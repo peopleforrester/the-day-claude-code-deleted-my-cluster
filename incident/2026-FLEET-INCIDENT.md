@@ -81,7 +81,7 @@ The 2025 incident was an over-permissioned agent taking destructive actions. The
    says exist" before the claim reached a human.
 4. **The correction was quieter than the claim.** "150 clusters are provisioning
    concurrently" was a headline. "0 attendee clusters exist right now" was a
-   clause inside a status block fifteen minutes later.
+   clause inside a status block twelve minutes later.
 
 A confident false report is not a lesser failure than a destructive action. Both
 incidents end with the same sentence: no gate stopped it anywhere in the chain.

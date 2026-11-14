@@ -323,4 +323,5 @@ mails on every Monday's run.
 - 2026-11-13 post-talk article on the verification gap, written for #5 on
   2026-10-31 and stranded on `agent/5-13454`, landed under #53; the incident
   timeline's "fifteen minutes" at 19:58:43 corrected to twelve after the 150
-  claim, fifteen after the false report began
+  claim, fifteen after the false report began, and the analysis's "fifteen
+  minutes later" to twelve (`decisions.md`)

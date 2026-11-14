@@ -558,3 +558,27 @@ The test also reads the file at the commit the header names, so the header's
 sync point cannot drift from the body, and it requires the published header to
 be the live one followed only by comment lines. The header is everything above
 the line that opens the module docstring.
+
+## 2026-11-13 · The work stranded on `agent/5-13454` lands on `main` (#53)
+
+`agent/5-13454` held two commits from 2026-10-31 that no other branch carried
+(found by talks-knowledge#189). Both are landed rather than dropped.
+
+`8621538` is a factual correction to the incident record, not a matter of
+taste. "0 attendee clusters exist right now" was sent at 19:58:43, twelve
+minutes after "150 clusters are provisioning concurrently" at 19:46:56, and
+fifteen after the false report began at 19:43:27. The timeline row now states
+both. The same "fifteen minutes later" sat in the analysis's fourth failure,
+"The correction was quieter than the claim", where it measures from the same
+150-clusters headline, so it now reads twelve as well. The article already
+measured its fifteen minutes from 19:43:27 and is right as written.
+
+`c26f194` is the post-talk article #5 was rescoped to on 2026-09-18
+(`8087d12`): `post-event/the-guardrails-did-not-cover-it/` and
+`tests/test_post_event_article.py`, which holds its quotes to the incident
+record. It is cherry-picked unchanged; only the README, the tests README and
+`PROJECT_STATE.md`, which `main` had moved on since, were merged by hand. The
+article's dated statements ("as of 2026-10-31 the session page still carries
+both sentences") stay dated, because publication, and any refresh it needs,
+belongs to `mrf-engagement-orchestrator`. Landing the draft is not publishing
+it.
