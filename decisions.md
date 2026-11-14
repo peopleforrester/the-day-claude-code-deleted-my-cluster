@@ -603,3 +603,50 @@ carries no recognised license. A relicense adds its row to that table first.
 license. The repo now publishes hooks, scripts and workflow templates, all
 covered by CC BY 4.0 as things stand; whether to dual-license them is left to a
 follow-up rather than decided here.
+
+## 2026-11-14 · The code takes MIT in `LICENSE-CODE`; the talk stays CC BY 4.0 (#54)
+
+The repo is now dual-licensed by path. Everything under `hooks/`, `scripts/`,
+`guardrails-three-layer/`, `workflows/`, `tests/` and `e2e/`, their READMEs
+included, is under the MIT License in `LICENSE-CODE`. Everything else stays
+CC BY 4.0 in `LICENSE`, as #52 recorded: the abstract, decks, speaker notes,
+the framework, the post-event material and the incident forensics.
+
+Why a separate license at all. CC BY 4.0 was chosen in `395cb59` for talk
+content, and that commit expected a dual-license follow-up if code landed.
+Code has landed: agent and git hooks meant to be copied into other repos, a
+kit with install and evaluate scripts, and workflow templates. Creative Commons
+advises against its licenses for software, since they say nothing about source
+code or patents, and CC BY's attribution term reads awkwardly for a hook pasted
+into someone's `.claude/`.
+
+Why MIT rather than Apache-2.0. The hooks under `hooks/` are a mirror of
+`peopleforrester/llm-coding-workflow`, which is MIT (its `LICENSE`, read
+2026-11-14), and `hooks/claude-code/lib/extract_commit_message.py` is held
+byte for byte to that repo's helper by `e2e/test_extractor_sync_live.py`. MIT
+here makes the published copy carry the license the source does, and puts the
+notice MIT asks copies to keep beside them. Apache-2.0's patent grant matters
+little for shell hooks and YAML. `agentic-covenants` chose Apache-2.0 for its
+code; that is its own repo's call and does not bind this one.
+
+Why by directory, not by file type. A rule like "non-Markdown files" would
+leave the kit's `CLAUDE.md` template and its READMEs under CC BY, though they
+ship with the code and are copied with it. Six directories are easy to state,
+and `tests/test_license.py` checks them.
+
+Why the incident artifacts stay CC BY. `incident/session-artifacts/` holds
+scripts recovered from the 2025 home-lab incident, the destructive ones among
+them. They are evidence for the talk, not code offered to run, so they stay
+with the content license, and the README says so.
+
+`LICENSE` stays the CC BY file, and its preamble now carves the six code
+paths out to `LICENSE-CODE`. `LICENSE-CODE` is the MIT text unchanged. Copies of the code
+taken before this change came under CC BY 4.0, and that grant is irrevocable,
+so they keep it; the code here is MIT from now on.
+
+`tests/test_license.py` now requires `LICENSE` to carry CC BY 4.0 alone and
+`LICENSE-CODE` MIT alone; the README's License section to name exactly those
+two and link both files; the code paths the README lists to match the ones
+`LICENSE` carves out, and each to exist; and every executable tracked outside
+`incident/` to sit under one of them, so a new script cannot fall under CC BY
+by accident.

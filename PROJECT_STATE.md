@@ -328,3 +328,8 @@ mails on every Monday's run.
 - 2026-11-13 README's License section corrected from MIT to CC BY 4.0 to
   match `LICENSE` (#52), and `tests/test_license.py` now fails when they
   name different licenses
+- 2026-11-14 the code is dual-licensed (#54): `hooks/`, `scripts/`,
+  `guardrails-three-layer/`, `workflows/`, `tests/` and `e2e/` are MIT in
+  `LICENSE-CODE`, matching the llm-coding-workflow source of the hooks; the
+  rest stays CC BY 4.0. `tests/test_license.py` holds the README, `LICENSE`
+  and the tree to that split

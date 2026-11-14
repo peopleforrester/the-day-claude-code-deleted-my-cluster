@@ -129,7 +129,20 @@ inside an existing guardrail, is unsettled.
 
 ## License
 
-Creative Commons Attribution 4.0 International (CC BY 4.0). See
-[`LICENSE`](LICENSE). Share and adapt the material for any purpose, with credit.
-The incident artifacts are included as evidence for the talk; reuse them freely,
+Two licenses, split by path.
+
+**Code** is under the MIT License. See [`LICENSE-CODE`](LICENSE-CODE). It is
+everything under these paths, their READMEs included:
+
+- [`hooks/`](hooks/)
+- [`scripts/`](scripts/)
+- [`guardrails-three-layer/`](guardrails-three-layer/)
+- [`workflows/`](workflows/)
+- [`tests/`](tests/)
+- [`e2e/`](e2e/)
+
+**Everything else** is under Creative Commons Attribution 4.0 International
+(CC BY 4.0). See [`LICENSE`](LICENSE). Share and adapt the material for any
+purpose, with credit. The incident artifacts, the scripts recovered into them
+included, are evidence for the talk rather than code to run; reuse them freely,
 with credit.
