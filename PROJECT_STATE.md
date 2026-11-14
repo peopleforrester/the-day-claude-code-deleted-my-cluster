@@ -333,3 +333,7 @@ mails on every Monday's run.
   `LICENSE-CODE`, matching the llm-coding-workflow source of the hooks; the
   rest stays CC BY 4.0. `tests/test_license.py` holds the README, `LICENSE`
   and the tree to that split
+- 2026-11-14 `images.lock` committed at the root from the 2026-11-13 netcup
+  image sweep (#55; llm-coding-workflow#484): eighteen references, each
+  pinned by digest with its source, the pod security example's placeholder
+  marked `not-an-image:`. `mirror-images.sh check .` reports no problems
