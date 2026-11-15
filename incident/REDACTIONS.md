@@ -1,8 +1,10 @@
 # Redactions in this tree
 
 The artifacts under `session-artifacts/` are recovered verbatim from git history,
-with one deliberate exception: credential **values** have been replaced with
-`<REDACTED-...>` markers. Structure, filenames, commands, and everything that
+with two deliberate exceptions. Credential **values** have been replaced with
+`<REDACTED-...>` markers, counted in the table below. And the lines that name a
+path under `/tmp` carry one fixed trailing comment, described under
+[Annotations](#annotations). Structure, filenames, commands, and everything that
 carries evidentiary weight are untouched.
 
 | What | Count |
@@ -26,6 +28,37 @@ The last three rows were missed by the first pass. The monthly security scan of
 2026-10 (`peopleforrester/infrastructure-security-scanning#129`) found them, and
 they were redacted on 2026-10-31 (#26). The first pass had redacted the token
 beside each certificate key and left the key.
+
+## Annotations
+
+**133 lines in 37 files** end with this comment, added on 2026-11-15 (#48):
+
+`# tmp-ok: incident evidence, command kept as recovered`
+
+The house rule since November 2026 is that no script writes to the system
+`/tmp`; each repo keeps its temp files in its own git-ignored `tmp/`, and a
+check (`sk-tmp-check`) reads every tracked shell and Python file for a path
+under `/tmp`, `/var/tmp` or `/dev/shm`. A line that has to keep such a path says
+why with `tmp-ok: <reason>` on that line. These scripts are what the agent
+wrote and ran in 2025, so the paths stay and each line says why.
+
+Nothing else on those lines changed. Remove the comment, two spaces before the
+`#` included, and the line is the recovered one byte for byte.
+`tests/test_tmp_waivers.py` holds the count, the exact form of the comment, and
+a digest of the 133 recovered lines with their positions.
+
+On 105 of the lines the comment is an ordinary comment in the script itself,
+and bash parses the file to the same commands as before. The other 28 sit
+inside a quoted string or a heredoc opener that the script hands to `ssh`, so
+the comment travels with the command text and is a comment to the remote shell
+instead. It holds no quote, `$` or backslash, so it cannot close the string or
+expand. The commands that run are the same either way; the text sent over
+`ssh` on those 28 lines is longer by the comment.
+
+Two lines the check also reports are left exactly as recovered, because they
+name no path: a bare `mktemp -d` at line 34 of both copies of
+`install-kube-vip.sh`. A bare `mktemp` follows `$TMPDIR`, and the check lists
+it as a different kind of finding.
 
 ## Why, given the credentials are dead
 

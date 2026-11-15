@@ -24,7 +24,7 @@ echo "✓ Reset complete" | tee -a "$INIT_LOG"
 
 # Create kubeadm config with VIP as control plane endpoint
 echo "Creating kubeadm configuration with VIP..." | tee -a "$INIT_LOG"
-ssh root@$FIRST_MASTER "cat > /tmp/kubeadm-config.yaml <<EOF
+ssh root@$FIRST_MASTER "cat > /tmp/kubeadm-config.yaml <<EOF  # tmp-ok: incident evidence, command kept as recovered
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:
@@ -59,7 +59,7 @@ echo "✓ Config created" | tee -a "$INIT_LOG"
 
 # Initialize with upload-certs for HA
 echo "Initializing cluster with upload-certs..." | tee -a "$INIT_LOG"
-ssh root@$FIRST_MASTER "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" 2>&1 | tee -a "$INIT_LOG"
+ssh root@$FIRST_MASTER "kubeadm init --config=/tmp/kubeadm-config.yaml --upload-certs" 2>&1 | tee -a "$INIT_LOG"  # tmp-ok: incident evidence, command kept as recovered
 
 # Setup kubectl
 echo "Configuring kubectl..." | tee -a "$INIT_LOG"

@@ -34,7 +34,7 @@ check_node_full() {
         echo '  Swap:' \$(free -h | grep Swap | awk '{print \"Total: \"\$2\", Used: \"\$3}')
         echo
         echo '  === Disk Usage ==='
-        df -h / /var /tmp 2>/dev/null | grep -v Filesystem
+        df -h / /var /tmp 2>/dev/null | grep -v Filesystem  # tmp-ok: incident evidence, command kept as recovered
         echo
         echo '  === Top 5 CPU Processes ==='
         ps aux --sort=-%cpu | head -6 | tail -5 | awk '{print \"  \"\$11\" CPU:\"\$3\"%\"}'

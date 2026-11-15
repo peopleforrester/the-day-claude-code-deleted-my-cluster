@@ -182,7 +182,7 @@ for node in $ALL_NODES; do
         rm -f /etc/crictl.yaml
 
         # Reboot flag
-        touch /tmp/needs-reboot
+        touch /tmp/needs-reboot  # tmp-ok: incident evidence, command kept as recovered
     '
 done
 

@@ -20,7 +20,7 @@ INVENTORY="${PROJECT_ROOT}/inventory/hosts.yml"
 PLAYBOOK_DIR="${PROJECT_ROOT}/playbooks"
 LOG_DIR="${PROJECT_ROOT}/logs"
 BACKUP_DIR="/backup/kubernetes"
-LOCK_FILE="/tmp/k8s-upgrade.lock"
+LOCK_FILE="/tmp/k8s-upgrade.lock"  # tmp-ok: incident evidence, command kept as recovered
 STATE_FILE="${PROJECT_ROOT}/.upgrade-state"
 
 # Timing

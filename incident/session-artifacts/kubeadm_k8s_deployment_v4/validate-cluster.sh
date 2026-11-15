@@ -176,8 +176,8 @@ print_header "VALIDATION SUMMARY"
 
 # Count results
 total_tests=$(grep -c "run_test" $0)
-passed_tests=$(grep -c "PASSED" /tmp/validation_$$.log 2>/dev/null || echo "0")
-failed_tests=$(grep -c "FAILED" /tmp/validation_$$.log 2>/dev/null || echo "0")
+passed_tests=$(grep -c "PASSED" /tmp/validation_$$.log 2>/dev/null || echo "0")  # tmp-ok: incident evidence, command kept as recovered
+failed_tests=$(grep -c "FAILED" /tmp/validation_$$.log 2>/dev/null || echo "0")  # tmp-ok: incident evidence, command kept as recovered
 
 echo -e "\n${BOLD}Final Results:${NC}"
 echo -e "  Total Components Tested: ${BLUE}10${NC}"
@@ -202,4 +202,4 @@ echo -e "\n${GREEN}${BOLD}✅ CLUSTER VALIDATION COMPLETE - ALL SYSTEMS OPERATIO
 echo -e "\nCompleted at: $(date)\n"
 
 # Cleanup
-rm -f /tmp/validation_$$.log
+rm -f /tmp/validation_$$.log  # tmp-ok: incident evidence, command kept as recovered

@@ -29,16 +29,16 @@ fi
 
 # Save current network state
 echo "Saving current network state..."
-ip addr show > /tmp/network-before-${NODE_OCTET}.txt
-ip route show > /tmp/routes-before-${NODE_OCTET}.txt
-ip link show br0 > /tmp/br0-before-${NODE_OCTET}.txt
+ip addr show > /tmp/network-before-${NODE_OCTET}.txt  # tmp-ok: incident evidence, command kept as recovered
+ip route show > /tmp/routes-before-${NODE_OCTET}.txt  # tmp-ok: incident evidence, command kept as recovered
+ip link show br0 > /tmp/br0-before-${NODE_OCTET}.txt  # tmp-ok: incident evidence, command kept as recovered
 
 # Get the physical interface that's part of br0
 PHYSICAL_IF=$(bridge link show master br0 2>/dev/null | head -1 | awk '{print $2}' | cut -d: -f1)
 echo "Physical interface in bridge: ${PHYSICAL_IF}"
 
 # Create rollback script
-cat > /tmp/rollback-mac.sh << EOF
+cat > /tmp/rollback-mac.sh << EOF  # tmp-ok: incident evidence, command kept as recovered
 #!/bin/bash
 echo "ROLLBACK: Starting at \$(date)" >> /var/log/mac-change.log
 ip link set br0 down
@@ -57,11 +57,11 @@ fi
 
 echo "ROLLBACK: Completed - restored MAC to ${OLD_MAC}" >> /var/log/mac-change.log
 EOF
-chmod +x /tmp/rollback-mac.sh
+chmod +x /tmp/rollback-mac.sh  # tmp-ok: incident evidence, command kept as recovered
 
 # Schedule rollback in 2 minutes (will be cancelled if successful)
 echo "Scheduling rollback in 2 minutes..."
-echo "/tmp/rollback-mac.sh" | at now + 2 minutes 2>/dev/null
+echo "/tmp/rollback-mac.sh" | at now + 2 minutes 2>/dev/null  # tmp-ok: incident evidence, command kept as recovered
 ROLLBACK_JOB=$(atq | tail -1 | awk '{print $1}')
 echo "Rollback job ID: ${ROLLBACK_JOB}"
 
