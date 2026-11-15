@@ -142,8 +142,10 @@ mails on every Monday's run.
   contents, not application behavior.
 - E2E: `uv run --group e2e pytest -q e2e`. Checks the linked recordings and the
   video check against live YouTube, and each delivery tag's report on its
-  conference-knowledge issue; needs the network, the pinned `yt-dlp`, and `gh`
-  with read access to conference-knowledge.
+  conference-knowledge issue, the extractor against llm-coding-workflow, and
+  `sk-tmp-check` from scripts-knowledge over the repo; needs the network, the
+  pinned `yt-dlp`, and `gh` with read access to conference-knowledge,
+  llm-coding-workflow and scripts-knowledge.
 - CI: none configured.
 
 ## Phase history
@@ -360,3 +362,8 @@ mails on every Monday's run.
   checkout's `tmp/`, the two Layer 3 kit hooks on the project's `tmp/`, and
   the 133 incident-script lines waived in place with a trailing `tmp-ok:`
   comment instead of rewritten (`decisions.md`, `incident/REDACTIONS.md`)
+- 2026-11-15 `e2e/test_tmp_check_live.py` holds #48's check (#57): it fetches
+  scripts-knowledge's live `sk-tmp-check` through `gh`, runs it at the repo
+  root, and fails on any "a system tempdir path" finding, with a probe that
+  fails if the checker stops wording a `/tmp` path that way. The E2E command
+  now also needs `gh` read access to scripts-knowledge

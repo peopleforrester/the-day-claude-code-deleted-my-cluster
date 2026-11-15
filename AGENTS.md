@@ -121,9 +121,11 @@ action the kit templates and root `workflows/` pin by SHA is the commit its
 version comment's tag names on GitHub; and
 `hooks/claude-code/lib/extract_commit_message.py` is the live
 llm-coding-workflow helper, on that repo's `staging` and at the commit its
-header names, apart from its header comment. It needs the network, `git`, the
-`e2e` dependency group's pinned `yt-dlp`, and `gh` with read access to
-`peopleforrester/conference-knowledge` and `peopleforrester/llm-coding-workflow`,
+header names, apart from its header comment; and scripts-knowledge's live
+`sk-tmp-check`, run at the repo root, prints no "a system tempdir path"
+finding. It needs the network, `git`, the `e2e` dependency group's pinned
+`yt-dlp`, and `gh` with read access to `peopleforrester/conference-knowledge`,
+`peopleforrester/llm-coding-workflow` and `peopleforrester/scripts-knowledge`,
 which are private, and fails when any is missing.
 
 ## Where things live

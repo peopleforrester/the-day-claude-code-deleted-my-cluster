@@ -751,3 +751,29 @@ where its `tmp_path` was, that git found no repository from it, and that the
 run's directory is gone afterwards.
 
 No dependency was added.
+
+## 2026-11-15 · The E2E suite runs the live `sk-tmp-check` for #48's criterion (#57)
+
+#48 was closed on `sk-tmp-check`, run at the repo root, printing no "a system
+tempdir path" finding, but no test ran it: the offline tests cover the Layer 3
+hooks and the waived incident lines, so a new `/tmp` path in any other tracked
+`.sh`, `.bash` or `.py` file passed the suite.
+
+`e2e/test_tmp_check_live.py` fetches `bin/sk-tmp-check`, `bin/tmp_writes.py`
+and `bin/shell_text.py` from `peopleforrester/scripts-knowledge` at `main`
+through `gh`, into a fresh directory under the checkout's git-ignored `tmp/`
+that it removes afterwards, runs the check at the repo root, and fails on any
+output line carrying that phrase, or when the check exits 2 (it did not run).
+The two bare `mktemp -d` findings the 2026-11-15 #48 entry leaves on
+`install-kube-vip.sh` do not fail it. A second test runs `tmp_writes.py` on a
+probe script that names a `/tmp` path and requires the phrase, so a reworded
+checker fails here rather than letting the main test pass on nothing.
+
+It is in the E2E suite, not the Test command, because the checker lives in a
+private repo and is not installed where the light gate runs. Re-implementing
+its shell and Python reading offline would be a second checker that drifts
+from the one #48 names; vendoring a copy would drift the same way. The E2E
+command now also needs `gh` read access to scripts-knowledge, recorded in
+AGENTS.md and `tests/README.md`.
+
+No dependency was added.
