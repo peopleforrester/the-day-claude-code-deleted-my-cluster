@@ -650,3 +650,25 @@ two and link both files; the code paths the README lists to match the ones
 `LICENSE` carves out, and each to exist; and every executable tracked outside
 `incident/` to sit under one of them, so a new script cannot fall under CC BY
 by accident.
+
+## 2026-11-15 · The article links both recordings; one social variant does (#36)
+
+`post-event/the-guardrails-did-not-cover-it/blog.md` links the Portland Ignite
+recording (`rUJ07SnFsXA`) with Atlanta's (`ts0ZnPDrBRI`) beside it, where "What
+I presented in Portland" first describes the talk. "The abstract still says it"
+adds that the recording's description repeats the submitted abstract, and says
+the 250 were never created. The description is not quoted. The two abstract
+sentences the section already quotes are attributed to the program, as before.
+
+In `social.md` only the first variant links the recording. It is the longest
+and the only one about the Portland talk. The second is the abstract
+correction and quotes "250, gone", the wording the video's description
+repeats; a recording link beside that quote would read as quoting the
+description, which #36 rules out. The third is about the `PreToolUse` gap and
+does not mention the talk.
+
+`tests/test_post_event_article.py` now requires both links in `blog.md`, the
+link in the longest social variant, and, in every file, that no paragraph
+linking a recording or mentioning its description quotes the abstract's
+wording, and that one mentioning the description says the 250 were never
+created.

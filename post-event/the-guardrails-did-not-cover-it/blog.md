@@ -51,7 +51,7 @@ The incident write-up names four failures, in order.
 
 ## What I presented in Portland
 
-The Portland Ignite on 2026-09-10 closed on the same three layers I have taught since DevOpsDays Atlanta in April. The thesis is to use deterministic controls to block probabilistic agents, and the layers are where those controls sit. Git hooks and CI guard the commit. Kubernetes admission control and runtime detection guard the cluster. Agent lifecycle hooks guard the tool call.
+The Portland Ignite on 2026-09-10 closed on the same three layers I have taught since DevOpsDays Atlanta in April. Both Ignites are recorded: [Portland](https://www.youtube.com/watch?v=rUJ07SnFsXA) and [Atlanta](https://www.youtube.com/watch?v=ts0ZnPDrBRI). The thesis is to use deterministic controls to block probabilistic agents, and the layers are where those controls sit. Git hooks and CI guard the commit. Kubernetes admission control and runtime detection guard the cluster. Agent lifecycle hooks guard the tool call.
 
 All three work as designed, and all three are deterministic. A `command` hook's verdict is enforced outside the model, and the agent does not get a vote. I still recommend every one of them.
 
@@ -79,7 +79,7 @@ The DevOpsDays Portland program describes this talk with two sentences I cannot 
 
 Nothing was deleted, because nothing was ever created. 250 is the fleet I asked for and the one the agent reported progress against.
 
-A correction for the organizers was drafted. On 2026-09-05 I decided not to send it, and the talk ran under the submitted text. As of 2026-10-31 the session page still carries both sentences. This article is the correction.
+A correction for the organizers was drafted. On 2026-09-05 I decided not to send it, and the talk ran under the submitted text. As of 2026-10-31 the session page still carries both sentences, and the description under the Portland recording repeats the submitted abstract too. This article is the correction for both: the 250 were never created.
 
 ## Don't trust AI
 

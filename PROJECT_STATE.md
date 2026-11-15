@@ -99,6 +99,10 @@ mails on every Monday's run.
   resolving it. `tests/test_post_event_article.py` holds it to the incident
   record. Publication is owned by `mrf-engagement-orchestrator`, whose calendar
   row `teaser-devopsdays-portland-2026` still needs re-dating and renaming.
+  Since #36, `blog.md` links both Ignite recordings where it describes the
+  Portland talk, says the recording's description repeats the abstract and
+  that the 250 were never created, and quotes none of the description.
+  `social.md`'s first variant links the Portland recording.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.

@@ -128,3 +128,64 @@ def test_quote_extraction_catches_a_paraphrase(incident: str) -> None:
     """A paraphrased agent quote must not pass as a match for the record."""
     paraphrase = "Confirmed clean: current run has 0 failures. The fix works"
     assert _normalize(paraphrase) not in incident
+
+
+# Issue #36: the article links both Ignite recordings. The IDs are the ones
+# the README's "Given at" table pins in tests/test_event_details.py.
+PORTLAND_RECORDING = "https://www.youtube.com/watch?v=rUJ07SnFsXA"
+ATLANTA_RECORDING = "https://www.youtube.com/watch?v=ts0ZnPDrBRI"
+ABSTRACT_QUOTES = ("deleted 250 clusters", "250, gone")
+
+
+def _paragraphs(text: str) -> list[str]:
+    """Published paragraphs: the ABOUTME header comment is not article text."""
+    prose = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+    return [p for p in re.split(r"\n\s*\n", prose) if p.strip()]
+
+
+def test_blog_links_both_recordings(repo_root: Path) -> None:
+    text = (repo_root / ARTICLE_DIR / "blog.md").read_text(encoding="utf-8")
+    assert PORTLAND_RECORDING in text, "blog.md does not link the Portland Ignite recording."
+    assert ATLANTA_RECORDING in text, "blog.md does not link the Atlanta Ignite recording."
+
+
+def test_social_variant_naming_the_talk_links_the_portland_recording(
+    repo_root: Path,
+) -> None:
+    """The longest variant, the one about the Portland talk, links its recording.
+
+    The abstract-correction variant does not: it quotes the wording the video's
+    description repeats, and test_recording_description_is_not_quoted keeps the
+    two apart.
+    """
+    text = (repo_root / ARTICLE_DIR / "social.md").read_text(encoding="utf-8")
+    body = text.split("# Social variants", 1)[1]
+    variants = [v.strip() for v in body.split("\n---\n")]
+    longest = max(variants, key=lambda v: len(v.replace(PORTLAND_RECORDING, "")))
+    assert "DevOpsDays Portland" in longest and PORTLAND_RECORDING in longest, (
+        f"social.md's longest variant does not link the Portland recording: {longest[:60]}"
+    )
+
+
+@pytest.mark.parametrize("name", ARTICLE_FILES)
+def test_recording_description_is_not_quoted(repo_root: Path, name: str) -> None:
+    """The video's description is the uncorrected abstract: link it, never quote it.
+
+    A paragraph that links a recording or mentions its description quotes none of
+    the abstract's wording, and one that mentions the description says the 250
+    were never created.
+    """
+    text = (repo_root / ARTICLE_DIR / name).read_text(encoding="utf-8")
+    for paragraph in _paragraphs(text):
+        flat = " ".join(paragraph.split())
+        mentions_description = re.search(r"\bdescription\b", flat, re.IGNORECASE)
+        links_recording = PORTLAND_RECORDING in flat or ATLANTA_RECORDING in flat
+        if not (mentions_description or links_recording):
+            continue
+        quoted = [q for q in _quotes(flat) if any(a in q for a in ABSTRACT_QUOTES)]
+        assert not quoted, f"{name} quotes the recording's description: {quoted}"
+        if mentions_description:
+            assert "never created" in flat, (
+                f"{name} mentions the recording's description without saying the "
+                f"250 were never created: {flat[:80]}"
+            )

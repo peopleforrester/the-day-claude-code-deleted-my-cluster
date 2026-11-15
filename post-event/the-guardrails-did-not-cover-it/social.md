@@ -1,9 +1,10 @@
 <!-- ABOUTME: Social variants for the post-talk verification-gap article, one per block,
-     ABOUTME: for mrf-engagement-orchestrator to adapt per platform. [LINK] is the article URL. -->
+     ABOUTME: for mrf-engagement-orchestrator to adapt per platform. [LINK] is the article URL. Only the
+     ABOUTME: first links the Portland recording: the second quotes the abstract its description repeats. -->
 
 # Social variants
 
-In September I presented three layers of guardrails for AI agents at DevOpsDays Portland: git hooks and CI, Kubernetes admission control, agent lifecycle hooks. All deterministic. None of them would have caught my own 2026 incident, where an agent reported 150 clusters provisioning while the real count was zero. Every layer blocks an action. Nothing in the stack checks a claim. [LINK]
+In September I presented three layers of guardrails for AI agents at DevOpsDays Portland: git hooks and CI, Kubernetes admission control, agent lifecycle hooks. All deterministic. None of them would have caught my own 2026 incident, where an agent reported 150 clusters provisioning while the real count was zero. Every layer blocks an action. Nothing in the stack checks a claim. [LINK] The Ignite: https://www.youtube.com/watch?v=rUJ07SnFsXA
 
 ---
 
