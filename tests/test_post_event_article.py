@@ -167,6 +167,70 @@ def test_social_variant_naming_the_talk_links_the_portland_recording(
     )
 
 
+PORTLAND_TALK = re.compile(r"\bPortland\b")
+
+
+def _social_variants(text: str) -> list[str]:
+    """The blocks under "# Social variants", split on the `---` separators."""
+    body = text.split("# Social variants", 1)[1]
+    return [v.strip() for v in body.split("\n---\n") if v.strip()]
+
+
+def _quotes_the_abstract(variant: str) -> bool:
+    flat = " ".join(variant.split())
+    return any(a in q for q in _quotes(flat) for a in ABSTRACT_QUOTES)
+
+
+def _variants_missing_the_recording(variants: list[str]) -> list[str]:
+    """Variants that name the Portland talk, quote none of the abstract, and lack the link.
+
+    decisions.md 2026-11-15 (#36): a variant about the Portland talk links its
+    recording; the one that quotes the abstract does not, because the video's
+    description repeats that wording; one that never names the talk has no
+    reason to link it.
+    """
+    return [
+        v
+        for v in variants
+        if PORTLAND_TALK.search(v)
+        and not _quotes_the_abstract(v)
+        and PORTLAND_RECORDING not in v
+    ]
+
+
+def test_social_variants_naming_the_talk_all_link_the_portland_recording(
+    repo_root: Path,
+) -> None:
+    """Issue #56: every longer variant about the Portland talk carries the link, not only one."""
+    text = (repo_root / ARTICLE_DIR / "social.md").read_text(encoding="utf-8")
+    variants = _social_variants(text)
+    assert len(variants) >= 2, f"social.md has {len(variants)} variant(s); expected several."
+    missing = _variants_missing_the_recording(variants)
+    assert not missing, (
+        "social.md variants name the Portland talk, quote none of the abstract, and do "
+        f"not link its recording: {[v[:60] for v in missing]}"
+    )
+    linked = [v for v in variants if PORTLAND_RECORDING in v]
+    assert linked, "No social.md variant links the Portland recording."
+    assert all(PORTLAND_TALK.search(v) for v in linked), (
+        "A social.md variant links the Portland recording without naming the talk."
+    )
+    assert not [v for v in linked if _quotes_the_abstract(v)], (
+        "A social.md variant links the Portland recording beside the abstract's wording."
+    )
+
+
+def test_missing_recording_check_catches_a_second_talk_variant() -> None:
+    """A second variant about the Portland talk without the link is caught."""
+    variants = [
+        f"At DevOpsDays Portland I presented three layers. {PORTLAND_RECORDING}",
+        "Back at DevOpsDays Portland, none of the layers checked a claim. [LINK]",
+        'My DevOpsDays Portland abstract still says "250, gone". [LINK]',
+        "A PreToolUse hook fires on a tool call. [LINK]",
+    ]
+    assert _variants_missing_the_recording(variants) == [variants[1]]
+
+
 @pytest.mark.parametrize("name", ARTICLE_FILES)
 def test_recording_description_is_not_quoted(repo_root: Path, name: str) -> None:
     """The video's description is the uncorrected abstract: link it, never quote it.

@@ -672,3 +672,18 @@ link in the longest social variant, and, in every file, that no paragraph
 linking a recording or mentioning its description quotes the abstract's
 wording, and that one mentioning the description says the 250 were never
 created.
+
+## 2026-11-15 · Every social variant about the Portland talk is held to the link (#56)
+
+The #36 entry above tested the link in the longest `social.md` variant only.
+#36's criterion is plural ("the longer variants"), so
+`test_social_variants_naming_the_talk_all_link_the_portland_recording` in
+`tests/test_post_event_article.py` now applies the rule that entry records to
+every variant: one that names Portland and quotes none of the abstract's
+wording must link the recording; one that quotes the abstract, or never names
+the talk, does not need it. The same test requires at least one variant to
+link it, and no linking variant to sit beside the abstract's wording or to
+omit the talk's name. `test_missing_recording_check_catches_a_second_talk_variant`
+shows the rule catches a second Portland variant without the link. Today only
+the first variant qualifies, so `social.md` is unchanged; a new or rewritten
+variant about the talk fails until it carries the link.

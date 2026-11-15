@@ -102,7 +102,9 @@ mails on every Monday's run.
   Since #36, `blog.md` links both Ignite recordings where it describes the
   Portland talk, says the recording's description repeats the abstract and
   that the 250 were never created, and quotes none of the description.
-  `social.md`'s first variant links the Portland recording.
+  `social.md`'s first variant links the Portland recording. Since #56 a test
+  requires the link in every variant that names the Portland talk and quotes
+  none of the abstract, not only in the longest.
 - The deck's speaker notes are unreadable on an Ignite stage with no confidence
   monitor. `presentations/CUE-CARD.md` is the printable answer and was written
   after that was discovered the hard way.
