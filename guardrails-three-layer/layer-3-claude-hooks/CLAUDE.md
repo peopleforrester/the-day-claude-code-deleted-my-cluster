@@ -23,7 +23,7 @@ You (Claude) MUST NOT:
   `yarn.lock`), or `.git/`.
 - Run `sudo` or elevate privileges.
 - Apply `netplan` changes without first backing up the current config to
-  `/tmp/netplan-backup-<timestamp>.yaml`.
+  `tmp/netplan-backup-<timestamp>.yaml` in this project (git-ignored).
 - Disable Claude Code hooks (`"disableAllHooks": true`).
 
 ## If you think you need an exception

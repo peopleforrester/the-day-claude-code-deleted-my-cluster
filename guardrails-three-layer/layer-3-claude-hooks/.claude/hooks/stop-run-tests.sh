@@ -6,24 +6,41 @@ INPUT="$(cat)"
 ACTIVE="$(jq -r '.stop_hook_active' <<<"${INPUT}")"
 [[ "${ACTIVE}" == "true" ]] && exit 0
 
+# Test output goes to the project's own tmp/, not the system tempdir, so it
+# stays with the project and nothing else on the machine can overwrite it.
+LOG_DIR="${CLAUDE_PROJECT_DIR:-${PWD}}/tmp"
+LOG="${LOG_DIR}/claude-tests.log"
+
 fail() {
-    echo "Stop blocked: $1. Fix before ending the turn." >&2
+    echo "Stop blocked: $1. Fix before ending the turn. Output: ${LOG}" >&2
     exit 2
 }
 
+# run_tests LABEL COMMAND... - run one suite with its output in the log.
+# A tmp/ this hook creates ignores itself, so it never shows in git status.
+run_tests() {
+    local label="$1"
+    shift
+    if [[ ! -d "${LOG_DIR}" ]]; then
+        mkdir -p "${LOG_DIR}"
+        printf '*\n' >"${LOG_DIR}/.gitignore"
+    fi
+    "$@" >"${LOG}" 2>&1 || fail "${label} failed"
+}
+
 if [[ -f package.json ]]; then
-    npm test --silent >/tmp/claude-tests.log 2>&1 || fail "npm test failed"
+    run_tests "npm test" npm test --silent
 fi
 if [[ -f pyproject.toml || -f setup.py ]]; then
     if command -v pytest >/dev/null 2>&1; then
-        pytest -q >/tmp/claude-tests.log 2>&1 || fail "pytest failed"
+        run_tests "pytest" pytest -q
     fi
 fi
 if [[ -f Cargo.toml ]]; then
-    cargo test --quiet >/tmp/claude-tests.log 2>&1 || fail "cargo test failed"
+    run_tests "cargo test" cargo test --quiet
 fi
 if [[ -f go.mod ]]; then
-    go test ./... >/tmp/claude-tests.log 2>&1 || fail "go test failed"
+    run_tests "go test" go test ./...
 fi
 
 exit 0

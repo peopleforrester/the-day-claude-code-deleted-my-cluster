@@ -33,14 +33,22 @@ for pat in "${BLOCK_PATTERNS[@]}"; do
     fi
 done
 
-# netplan apply requires an explicit prior backup (named /tmp/netplan-backup-*.yaml).
+# netplan apply requires an explicit prior backup, named netplan-backup-*.yaml,
+# in the project's own tmp/ (not the system tempdir, which any process shares).
+# A tmp/ this hook creates ignores itself: a netplan file can carry Wi-Fi
+# passphrases, and the backup must not be committed by a later `git add`.
 if [[ "${CMD}" =~ netplan[[:space:]]+apply ]]; then
-    if ! ls /tmp/netplan-backup-*.yaml >/dev/null 2>&1; then
-        jq -n '{
+    BACKUP_DIR="${CLAUDE_PROJECT_DIR:-${PWD}}/tmp"
+    if ! ls "${BACKUP_DIR}"/netplan-backup-*.yaml >/dev/null 2>&1; then
+        if [[ ! -d "${BACKUP_DIR}" ]]; then
+            mkdir -p "${BACKUP_DIR}"
+            printf '*\n' >"${BACKUP_DIR}/.gitignore"
+        fi
+        jq -n --arg d "${BACKUP_DIR}" '{
           hookSpecificOutput: {
             hookEventName: "PreToolUse",
             permissionDecision: "deny",
-            permissionDecisionReason: "netplan apply requires a backup at /tmp/netplan-backup-*.yaml first. Create one with: cp /etc/netplan/*.yaml /tmp/netplan-backup-$(date +%s).yaml"
+            permissionDecisionReason: "netplan apply requires a backup at \($d)/netplan-backup-*.yaml first. Create one with: cp /etc/netplan/*.yaml \"\($d)/netplan-backup-$(date +%s).yaml\""
           }
         }'
         exit 0
