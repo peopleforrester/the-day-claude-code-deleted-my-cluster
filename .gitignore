@@ -25,6 +25,10 @@ npm-debug.log*
 scratch/
 drafts-local/
 
+# The repo's own temp directory: test runs, hook logs and session scratch
+# land here instead of the system tempdir (#48).
+/tmp/
+
 # Submitted under "visible to organizers only" — captured locally,
 # not published. Remove this line deliberately to publish.
 abstract/speaker-notes-organizers.md

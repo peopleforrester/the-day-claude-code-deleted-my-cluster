@@ -1,12 +1,49 @@
-# ABOUTME: Shared pytest fixtures for this repo's self-consistency suite.
-# ABOUTME: Exposes repo root, file-content readers, the git remote URL and canonical owner/repo.
+# ABOUTME: Shared pytest fixtures for this repo's self-consistency suite: repo root, file readers, the remote.
+# ABOUTME: Also roots every tmp_path in the checkout's git-ignored tmp/, removed when the run ends (#48).
 
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
+
+ROOT = Path(__file__).resolve().parent.parent
+TMP = ROOT / "tmp"
+CEILING = "GIT_CEILING_DIRECTORIES"
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config: pytest.Config) -> None:
+    """Give the run its own basetemp under tmp/ unless --basetemp names one.
+
+    Left alone, pytest roots tmp_path at /tmp/pytest-of-<user>. Pass --basetemp
+    to keep a failing test's files.
+
+    tmp/ sits inside this checkout, so git started in a tmp_path that is not
+    itself a repository would walk up and find this one. Naming tmp/ in
+    GIT_CEILING_DIRECTORIES stops that walk, for the tests and the hooks they run.
+    """
+    if config.option.basetemp is not None:
+        return
+    TMP.mkdir(exist_ok=True)
+    run = tempfile.mkdtemp(prefix="pytest-", dir=TMP)
+    config.option.basetemp = str(Path(run) / "basetemp")
+    config.add_cleanup(lambda: shutil.rmtree(run, ignore_errors=True))
+
+    before = os.environ.get(CEILING)
+    os.environ[CEILING] = os.pathsep.join(filter(None, [before, str(TMP)]))
+
+    def restore() -> None:
+        if before is None:
+            os.environ.pop(CEILING, None)
+        else:
+            os.environ[CEILING] = before
+
+    config.add_cleanup(restore)
 
 
 @pytest.fixture(scope="session")

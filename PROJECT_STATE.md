@@ -122,6 +122,18 @@ mails on every Monday's run.
   the payload's `cwd` to it. An issue body quoting a commit is allowed, and
   attribution in a `-F` file is blocked; `tests/test_hooks.py` holds both.
 
+- Issue #48 is done: nothing this repo runs keeps a file in the system
+  `/tmp`. `.gitignore` covers `/tmp/`, the repo's own temp directory.
+  `tests/conftest.py` roots every `tmp_path` under `tmp/pytest-<random>/` and
+  removes it when the run ends. The Layer 3 kit's `stop-run-tests.sh` logs to
+  the project's `tmp/claude-tests.log` and `block-destructive-bash.sh` looks
+  for the netplan backup in the project's `tmp/`. The 133 incident-script
+  lines that name a `/tmp` path are unchanged apart from one trailing
+  `tmp-ok:` comment each, recorded in `incident/REDACTIONS.md` and held by
+  `tests/test_tmp_waivers.py`. `sk-tmp-check` (scripts-knowledge) reports no
+  path findings; the two it still prints are a bare `mktemp -d` in the
+  incident evidence, left as recovered (`decisions.md`).
+
 ## Branch & Tests
 - Branch: main. `staging` is kept fast-forwarded to main and carries no
   independent work.
@@ -343,3 +355,8 @@ mails on every Monday's run.
   image sweep (#55; llm-coding-workflow#484): eighteen references, each
   pinned by digest with its source, the pod security example's placeholder
   marked `not-an-image:`. `mirror-images.sh check .` reports no problems
+- 2026-11-15 temp files moved out of `/tmp` for llm-coding-workflow's PRD 526
+  (#48): `/tmp/` in `.gitignore`, the test suite's `tmp_path` under the
+  checkout's `tmp/`, the two Layer 3 kit hooks on the project's `tmp/`, and
+  the 133 incident-script lines waived in place with a trailing `tmp-ok:`
+  comment instead of rewritten (`decisions.md`, `incident/REDACTIONS.md`)

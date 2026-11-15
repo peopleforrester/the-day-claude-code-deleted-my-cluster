@@ -687,3 +687,67 @@ omit the talk's name. `test_missing_recording_check_catches_a_second_talk_varian
 shows the rule catches a second Portland variant without the link. Today only
 the first variant qualifies, so `social.md` is unchanged; a new or rewritten
 variant about the talk fails until it carries the link.
+
+## 2026-11-15 · The incident scripts keep their `/tmp` paths, each line waived; the kit and the tests move to `tmp/` (#48)
+
+llm-coding-workflow's PRD 526 has every repo keep its temp files in its own
+git-ignored `tmp/`, and its check, `sk-tmp-check` from scripts-knowledge,
+reported 140 lines here that name a path under `/tmp`: 133 in the 2025 incident
+scripts under `incident/session-artifacts/`, six in two Layer 3 kit hooks, and
+one in a test. The PRD's third open question asked whether this repo is in
+scope or takes a repo-level waiver, and Michael answered "in scope" on
+2026-11-10, so each line is dealt with.
+
+**The 133 incident lines are waived, not rewritten.** They are what the agent
+wrote and ran, and AGENTS.md rules out rewriting a command from either
+incident. Each line gains one fixed trailing comment,
+`# tmp-ok: incident evidence, command kept as recovered`, two spaces after the
+recovered text, and nothing else changes. `incident/REDACTIONS.md` records it
+as the second deliberate difference from the recovered tree.
+`tests/test_tmp_waivers.py` holds the count (133 lines, 37 files), the exact
+form, and a sha256 of the recovered lines with their positions, so moving a
+waiver or editing a waived command fails.
+
+Checked with bash's own parser (each script wrapped in a function and printed
+with `declare -f`, before and after): 19 of the 37 files parse to identical
+commands. In the other 18 the comment falls on 28 lines inside a quoted string
+or heredoc opener handed to `ssh`, where it reaches the remote shell as a
+comment. The comment's wording holds no quote, `$` or backslash for that
+reason, and the test holds it to letters, digits, spaces, commas, colons and
+hyphens.
+
+**Two findings remain, on purpose.** `sk-tmp-check` still exits 1 on a bare
+`mktemp -d` at line 34 of both copies of `install-kube-vip.sh`. They name no
+path, the issue lists only the 133, and the PRD leaves bare `mktemp` to
+`$TMPDIR` as a non-goal, so the evidence is not touched a second time for
+them. If the shared CI check is later made to fail on that kind of finding,
+the same comment on those two lines settles it, with the count in the test
+and in REDACTIONS.md moved to 135.
+
+**The Layer 3 kit hooks use the project's `tmp/`.** `stop-run-tests.sh` writes
+`tmp/claude-tests.log` under `$CLAUDE_PROJECT_DIR` (the working directory when
+that is unset) and names the log in its blocking message.
+`block-destructive-bash.sh` looks for `netplan-backup-*.yaml` there and gives
+the full path in its denial. A reader's repo may not ignore `tmp/`, and a
+netplan file can carry Wi-Fi passphrases, so a hook that has to create `tmp/`
+writes a `.gitignore` holding `*` into it; an existing `tmp/` is left as it
+is, and the kit's README says to ignore it. The kit's docs still tell a reader
+to clone into `/tmp/three-layers` and to write a demo file under `/tmp`: that
+is the reader's machine, in Markdown the check does not read, and
+`tests/test_kit_clone_paths.py` only parses the path, so its one line is
+waived as "only parsed here".
+
+**The tests.** `.gitignore` gains `/tmp/`, anchored to the root so it covers
+this repo's own directory and no `tmp/` deeper in the tree. `tests/conftest.py`
+gives each run `tmp/pytest-<random>/basetemp` when no `--basetemp` is passed,
+removes it when the run ends, pass or fail, and adds `tmp/` to
+`GIT_CEILING_DIRECTORIES` so git started in a `tmp_path` does not walk up into
+this checkout. It lives in `tests/conftest.py`, not a root `conftest.py`,
+because the license split of 2026-11-14 (#54) puts code under `tests/` and a
+root file would fall under CC BY. The E2E suite takes no `tmp_path` today; a
+test there that starts to needs the same hook in `e2e/`.
+`tests/test_tmp_root.py` runs a child pytest with no `--basetemp` and checks
+where its `tmp_path` was, that git found no repository from it, and that the
+run's directory is gone afterwards.
+
+No dependency was added.
