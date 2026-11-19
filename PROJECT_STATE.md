@@ -133,6 +133,13 @@ mails on every Monday's run.
   `tests/test_tmp_waivers.py`. `sk-tmp-check` (scripts-knowledge) reports no
   path findings; the two it still prints are a bare `mktemp -d` in the
   incident evidence, left as recovered (`decisions.md`).
+- Issue #58 (2026-11-19) re-filed #48's 133 lines word for word. Nothing
+  here had regressed: on `main` every one carries its `tmp-ok:` comment and
+  the live `sk-tmp-check` still prints no path finding. `tmp-inventory`
+  walks Michael's local checkout in `~/repos`, which predates the #48
+  commits, so it saw the lines as they were. A further re-filing with the
+  same list means that checkout is still behind `origin/main`; pull it rather
+  than reworking the lines.
 
 ## Branch & Tests
 - Branch: main. `staging` is kept fast-forwarded to main and carries no
